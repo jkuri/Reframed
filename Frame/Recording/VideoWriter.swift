@@ -6,7 +6,6 @@ import Logging
 final class VideoWriter: @unchecked Sendable {
   private var assetWriter: AVAssetWriter?
   private var videoInput: AVAssetWriterInput?
-  private var adaptor: AVAssetWriterInputPixelBufferAdaptor?
   private var isStarted = false
   private let outputURL: URL
   private let logger = Logger(label: "eu.jankuri.frame.video-writer")
@@ -29,15 +28,18 @@ final class VideoWriter: @unchecked Sendable {
     let writer = try AVAssetWriter(outputURL: outputURL, fileType: .mp4)
 
     let videoSettings: [String: Any] = [
-      AVVideoCodecKey: AVVideoCodecType.h264,
+      AVVideoCodecKey: AVVideoCodecType.hevc,
       AVVideoWidthKey: width,
       AVVideoHeightKey: height,
+      AVVideoColorPropertiesKey: [
+        AVVideoColorPrimariesKey: AVVideoColorPrimaries_ITU_R_709_2,
+        AVVideoTransferFunctionKey: AVVideoTransferFunction_ITU_R_709_2,
+        AVVideoYCbCrMatrixKey: AVVideoYCbCrMatrix_ITU_R_709_2,
+      ] as [String: Any],
       AVVideoCompressionPropertiesKey: [
-        AVVideoAverageBitRateKey: width * height * 10,
+        AVVideoAverageBitRateKey: max(80_000_000, width * height * 12),
         AVVideoExpectedSourceFrameRateKey: 60,
-        AVVideoMaxKeyFrameIntervalKey: 120,
-        AVVideoProfileLevelKey: AVVideoProfileLevelH264BaselineAutoLevel,
-        AVVideoH264EntropyModeKey: AVVideoH264EntropyModeCAVLC,
+        AVVideoMaxKeyFrameIntervalKey: 60,
         AVVideoAllowFrameReorderingKey: false,
       ] as [String: Any],
     ]
@@ -45,32 +47,23 @@ final class VideoWriter: @unchecked Sendable {
     let input = AVAssetWriterInput(mediaType: .video, outputSettings: videoSettings)
     input.expectsMediaDataInRealTime = true
 
-    let adaptor = AVAssetWriterInputPixelBufferAdaptor(
-      assetWriterInput: input,
-      sourcePixelBufferAttributes: [
-        kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA,
-        kCVPixelBufferWidthKey as String: width,
-        kCVPixelBufferHeightKey as String: height,
-      ]
-    )
-
     writer.add(input)
 
     self.assetWriter = writer
     self.videoInput = input
-    self.adaptor = adaptor
   }
 
-  func appendPixelBuffer(_ pixelBuffer: CVPixelBuffer, at timestamp: CMTime) {
+  func appendSampleBuffer(_ sampleBuffer: CMSampleBuffer) {
     dispatchPrecondition(condition: .onQueue(queue))
 
-    guard let assetWriter, let videoInput, let adaptor else { return }
+    guard let assetWriter, let videoInput else { return }
 
     if !isStarted {
       guard assetWriter.startWriting() else {
         logger.error("Failed to start writing: \(assetWriter.error?.localizedDescription ?? "unknown")")
         return
       }
+      let timestamp = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
       assetWriter.startSession(atSourceTime: timestamp)
       isStarted = true
       logger.info("Video writing started")
@@ -81,7 +74,7 @@ final class VideoWriter: @unchecked Sendable {
       return
     }
 
-    adaptor.append(pixelBuffer, withPresentationTime: timestamp)
+    videoInput.append(sampleBuffer)
     writtenFrames += 1
   }
 

@@ -1,3 +1,4 @@
+import CoreGraphics
 import Foundation
 import Logging
 @preconcurrency import ScreenCaptureKit
@@ -15,26 +16,28 @@ final class ScreenCaptureSession: NSObject, SCStreamDelegate, SCStreamOutput, @u
     super.init()
   }
 
-  func start(selection: SelectionRect, fps: Int = 60) async throws {
+  func start(selection: SelectionRect, display: SCDisplay, displayScale: CGFloat, fps: Int = 60) async throws {
     let content = try await Permissions.fetchShareableContent()
-
-    guard let display = content.displays.first(where: { $0.displayID == selection.displayID }) else {
-      throw CaptureError.displayNotFound
-    }
 
     let selfApp = content.applications.first { $0.bundleIdentifier == Bundle.main.bundleIdentifier }
     let excludedApps = [selfApp].compactMap { $0 }
     let filter = SCContentFilter(display: display, excludingApplications: excludedApps, exceptingWindows: [])
 
+    let sourceRect = selection.screenCaptureKitRect
+    let pixelW = Int(sourceRect.width * displayScale) & ~1
+    let pixelH = Int(sourceRect.height * displayScale) & ~1
+
     let config = SCStreamConfiguration()
-    config.sourceRect = selection.screenCaptureKitRect
-    config.width = selection.pixelWidth
-    config.height = selection.pixelHeight
+    config.sourceRect = sourceRect
+    config.width = pixelW
+    config.height = pixelH
     config.minimumFrameInterval = CMTime(value: 1, timescale: CMTimeScale(fps))
     config.pixelFormat = kCVPixelFormatType_32BGRA
     config.showsCursor = true
     config.capturesAudio = false
-    config.queueDepth = 8
+    config.queueDepth = 3
+    config.scalesToFit = false
+    config.colorSpaceName = CGColorSpace.sRGB as CFString
 
     let stream = SCStream(filter: filter, configuration: config, delegate: self)
     try stream.addStreamOutput(self, type: .screen, sampleHandlerQueue: videoWriter.queue)
@@ -45,7 +48,8 @@ final class ScreenCaptureSession: NSObject, SCStreamDelegate, SCStreamOutput, @u
     logger.info(
       "Capture started",
       metadata: [
-        "region": "\(selection.rect)",
+        "sourceRect": "\(sourceRect)",
+        "displayScale": "\(displayScale)",
         "fps": "\(fps)",
         "output_size": "\(config.width)x\(config.height)",
       ]
@@ -83,10 +87,7 @@ final class ScreenCaptureSession: NSObject, SCStreamDelegate, SCStreamOutput, @u
       lastLogTime = now
     }
 
-    guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
-    let timestamp = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
-
-    videoWriter.appendPixelBuffer(pixelBuffer, at: timestamp)
+    videoWriter.appendSampleBuffer(sampleBuffer)
   }
 
   func stream(_ stream: SCStream, didStopWithError error: any Error) {

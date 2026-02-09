@@ -6,11 +6,13 @@ struct SelectionRect: Sendable {
 
   var screenCaptureKitRect: CGRect {
     let screenHeight = CGFloat(CGDisplayPixelsHigh(displayID))
+    let w = CGFloat(Int(round(rect.width)) & ~1)
+    let h = CGFloat(Int(round(rect.height)) & ~1)
     return CGRect(
-      x: rect.origin.x,
-      y: screenHeight - rect.origin.y - rect.height,
-      width: rect.width,
-      height: rect.height
+      x: round(rect.origin.x),
+      y: round(screenHeight - rect.origin.y - h),
+      width: w,
+      height: h
     )
   }
 

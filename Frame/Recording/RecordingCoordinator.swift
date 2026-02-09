@@ -1,5 +1,7 @@
+import CoreGraphics
 import Foundation
 import Logging
+@preconcurrency import ScreenCaptureKit
 
 actor RecordingCoordinator {
   private var captureSession: ScreenCaptureSession?
@@ -9,13 +11,29 @@ actor RecordingCoordinator {
   func startRecording(selection: SelectionRect, fps: Int = 60) async throws -> Date {
     let tempURL = FileManager.default.tempRecordingURL()
 
+    let content = try await Permissions.fetchShareableContent()
+    guard let display = content.displays.first(where: { $0.displayID == selection.displayID }) else {
+      throw CaptureError.displayNotFound
+    }
+
+    let displayScale: CGFloat = {
+      guard let mode = CGDisplayCopyDisplayMode(selection.displayID) else { return 2.0 }
+      let px = CGFloat(mode.pixelWidth)
+      let pt = CGFloat(mode.width)
+      return pt > 0 ? px / pt : 2.0
+    }()
+
+    let sourceRect = selection.screenCaptureKitRect
+    let pixelW = Int(round(sourceRect.width * displayScale)) & ~1
+    let pixelH = Int(round(sourceRect.height * displayScale)) & ~1
+
     let writer = try VideoWriter(
       outputURL: tempURL,
-      width: selection.pixelWidth,
-      height: selection.pixelHeight
+      width: pixelW,
+      height: pixelH
     )
     let session = ScreenCaptureSession(videoWriter: writer)
-    try await session.start(selection: selection, fps: fps)
+    try await session.start(selection: selection, display: display, displayScale: displayScale, fps: fps)
 
     self.videoWriter = writer
     self.captureSession = session
