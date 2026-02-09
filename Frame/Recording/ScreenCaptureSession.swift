@@ -1,81 +1,85 @@
 import Foundation
-@preconcurrency import ScreenCaptureKit
 import Logging
+@preconcurrency import ScreenCaptureKit
 
 final class ScreenCaptureSession: NSObject, SCStreamDelegate, SCStreamOutput, @unchecked Sendable {
-    private var stream: SCStream?
-    private let videoWriter: VideoWriter
-    private let logger = Logger(label: "com.frame.capture-session")
+  private var stream: SCStream?
+  private let videoWriter: VideoWriter
+  private let logger = Logger(label: "com.frame.capture-session")
 
-    init(videoWriter: VideoWriter) {
-        self.videoWriter = videoWriter
-        super.init()
+  init(videoWriter: VideoWriter) {
+    self.videoWriter = videoWriter
+    super.init()
+  }
+
+  func start(selection: SelectionRect, fps: Int = 30) async throws {
+    let content = try await Permissions.fetchShareableContent()
+
+    guard let display = content.displays.first(where: { $0.displayID == selection.displayID }) else {
+      throw CaptureError.displayNotFound
     }
 
-    func start(selection: SelectionRect, fps: Int = 30) async throws {
-        let content = try await Permissions.fetchShareableContent()
+    let filter = SCContentFilter(display: display, excludingWindows: [])
 
-        guard let display = content.displays.first(where: { $0.displayID == selection.displayID }) else {
-            throw CaptureError.displayNotFound
-        }
+    let config = SCStreamConfiguration()
+    config.sourceRect = selection.screenCaptureKitRect
+    config.width = selection.pixelWidth
+    config.height = selection.pixelHeight
+    config.minimumFrameInterval = CMTime(value: 1, timescale: CMTimeScale(fps))
+    config.pixelFormat = kCVPixelFormatType_32BGRA
+    config.showsCursor = true
+    config.capturesAudio = false
 
-        let filter = SCContentFilter(display: display, excludingWindows: [])
+    let stream = SCStream(filter: filter, configuration: config, delegate: self)
+    try stream.addStreamOutput(self, type: .screen, sampleHandlerQueue: .global(qos: .userInteractive))
+    try await stream.startCapture()
 
-        let config = SCStreamConfiguration()
-        config.sourceRect = selection.screenCaptureKitRect
-        config.width = selection.pixelWidth
-        config.height = selection.pixelHeight
-        config.minimumFrameInterval = CMTime(value: 1, timescale: CMTimeScale(fps))
-        config.pixelFormat = kCVPixelFormatType_32BGRA
-        config.showsCursor = true
-        config.capturesAudio = false
+    self.stream = stream
 
-        let stream = SCStream(filter: filter, configuration: config, delegate: self)
-        try stream.addStreamOutput(self, type: .screen, sampleHandlerQueue: .global(qos: .userInteractive))
-        try await stream.startCapture()
+    logger.info(
+      "Capture started",
+      metadata: [
+        "region": "\(selection.rect)",
+        "fps": "\(fps)",
+        "output_size": "\(config.width)x\(config.height)",
+      ]
+    )
+  }
 
-        self.stream = stream
+  func stop() async throws {
+    try await stream?.stopCapture()
+    stream = nil
+    logger.info("Capture stopped")
+  }
 
-        logger.info("Capture started", metadata: [
-            "region": "\(selection.rect)",
-            "fps": "\(fps)",
-            "output_size": "\(config.width)x\(config.height)",
-        ])
+  // MARK: - SCStreamOutput
+
+  func stream(_ stream: SCStream, didOutputSampleBuffer sampleBuffer: CMSampleBuffer, of type: SCStreamOutputType) {
+    guard type == .screen, sampleBuffer.isValid else { return }
+
+    guard let attachments = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer, createIfNecessary: false) as? [[SCStreamFrameInfo: Any]],
+      let statusValue = attachments.first?[.status] as? Int,
+      let status = SCFrameStatus(rawValue: statusValue),
+      status == .complete
+    else {
+      return
     }
 
-    func stop() async throws {
-        try await stream?.stopCapture()
-        stream = nil
-        logger.info("Capture stopped")
+    guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
+    let timestamp = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
+
+    // CVPixelBuffer is thread-safe (backed by IOSurface); safe to send across isolation.
+    let writer = videoWriter
+    nonisolated(unsafe) let buffer = pixelBuffer
+    let ts = timestamp
+    Task { @Sendable in
+      await writer.appendPixelBuffer(buffer, at: ts)
     }
+  }
 
-    // MARK: - SCStreamOutput
+  // MARK: - SCStreamDelegate
 
-    func stream(_ stream: SCStream, didOutputSampleBuffer sampleBuffer: CMSampleBuffer, of type: SCStreamOutputType) {
-        guard type == .screen, sampleBuffer.isValid else { return }
-
-        guard let attachments = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer, createIfNecessary: false) as? [[SCStreamFrameInfo: Any]],
-              let statusValue = attachments.first?[.status] as? Int,
-              let status = SCFrameStatus(rawValue: statusValue),
-              status == .complete else {
-            return
-        }
-
-        guard let pixelBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) else { return }
-        let timestamp = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
-
-        // CVPixelBuffer is thread-safe (backed by IOSurface); safe to send across isolation.
-        let writer = videoWriter
-        nonisolated(unsafe) let buffer = pixelBuffer
-        let ts = timestamp
-        Task { @Sendable in
-            await writer.appendPixelBuffer(buffer, at: ts)
-        }
-    }
-
-    // MARK: - SCStreamDelegate
-
-    func stream(_ stream: SCStream, didStopWithError error: any Error) {
-        logger.error("Stream error: \(error.localizedDescription)")
-    }
+  func stream(_ stream: SCStream, didStopWithError error: any Error) {
+    logger.error("Stream error: \(error.localizedDescription)")
+  }
 }
