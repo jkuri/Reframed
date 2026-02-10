@@ -13,14 +13,14 @@ struct ModeButton: View {
       VStack(spacing: 3) {
         Image(systemName: icon)
           .font(.system(size: 18))
-          .foregroundStyle(.white)
+          .foregroundStyle(FrameColors.primaryText)
         Text(label)
           .font(.system(size: 10))
-          .foregroundStyle(Color.white.opacity(0.6))
+          .foregroundStyle(FrameColors.secondaryText)
       }
       .frame(width: 56, height: 52)
       .background(
-        isSelected ? Color.white.opacity(0.12) : isHovered ? Color.white.opacity(0.06) : Color.clear
+        isSelected ? FrameColors.selectedBackground : isHovered ? FrameColors.subtleHover : Color.clear
       )
       .clipShape(RoundedRectangle(cornerRadius: 6))
     }

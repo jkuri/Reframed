@@ -17,7 +17,7 @@ struct OptionsPopover: View {
       }
 
       Divider()
-        .background(Color.white.opacity(0.15))
+        .background(FrameColors.divider)
         .padding(.vertical, 4)
 
       SectionHeader(title: "Audio")
@@ -30,7 +30,7 @@ struct OptionsPopover: View {
       }
 
       Divider()
-        .background(Color.white.opacity(0.15))
+        .background(FrameColors.divider)
         .padding(.vertical, 4)
 
       SectionHeader(title: "Microphone")
@@ -52,7 +52,7 @@ struct OptionsPopover: View {
       }
 
       Divider()
-        .background(Color.white.opacity(0.15))
+        .background(FrameColors.divider)
         .padding(.vertical, 4)
 
       SectionHeader(title: "Options")
@@ -84,7 +84,7 @@ struct OptionsPopover: View {
     .clipShape(RoundedRectangle(cornerRadius: 8))
     .overlay(
       RoundedRectangle(cornerRadius: 8)
-        .strokeBorder(Color.white.opacity(0.1), lineWidth: 0.5)
+        .strokeBorder(FrameColors.subtleBorder, lineWidth: 0.5)
     )
   }
 }

@@ -25,7 +25,7 @@ struct CaptureToolbar: View {
     .clipShape(RoundedRectangle(cornerRadius: 10))
     .overlay(
       RoundedRectangle(cornerRadius: 10)
-        .strokeBorder(Color.white.opacity(0.1), lineWidth: 0.5)
+        .strokeBorder(FrameColors.subtleBorder, lineWidth: 0.5)
     )
     .alert("Restart Recording?", isPresented: $showRestartAlert) {
       Button("Cancel", role: .cancel) {}
@@ -44,7 +44,7 @@ struct CaptureToolbar: View {
       } label: {
         Image(systemName: "xmark.circle.fill")
           .font(.system(size: 20))
-          .foregroundStyle(Color.white.opacity(0.5))
+          .foregroundStyle(FrameColors.tertiaryText)
           .frame(width: 36, height: 52)
       }
       .buttonStyle(.plain)
@@ -88,7 +88,7 @@ struct CaptureToolbar: View {
           Image(systemName: "chevron.down")
             .font(.system(size: 9, weight: .semibold))
         }
-        .foregroundStyle(.white)
+        .foregroundStyle(FrameColors.primaryText)
         .padding(.horizontal, 14)
         .frame(height: 52)
         .contentShape(Rectangle())
@@ -105,7 +105,7 @@ struct CaptureToolbar: View {
       } label: {
         Image(systemName: "gearshape")
           .font(.system(size: 16))
-          .foregroundStyle(Color.white.opacity(0.7))
+          .foregroundStyle(FrameColors.secondaryText)
           .frame(width: 36, height: 52)
           .contentShape(Rectangle())
       }
@@ -128,12 +128,12 @@ struct CaptureToolbar: View {
           if session.options.captureSystemAudio {
             Image(systemName: "speaker.wave.2.fill")
               .font(.system(size: 11))
-              .foregroundStyle(.white.opacity(0.5))
+              .foregroundStyle(FrameColors.tertiaryText)
           }
           if session.options.selectedMicrophone != nil {
             Image(systemName: "mic.fill")
               .font(.system(size: 11))
-              .foregroundStyle(.white.opacity(0.5))
+              .foregroundStyle(FrameColors.tertiaryText)
           }
         }
         .padding(.trailing, 2)
@@ -172,7 +172,7 @@ struct CaptureToolbar: View {
         .scaleEffect(0.8)
       Text("Processing...")
         .font(.system(size: 13, weight: .medium))
-        .foregroundStyle(.white)
+        .foregroundStyle(FrameColors.primaryText)
     }
     .frame(height: 52)
     .padding(.horizontal, 8)
@@ -189,7 +189,7 @@ private struct CompactTimerView: View {
   var body: some View {
     Text(formatted)
       .font(.system(size: 16, design: .monospaced))
-      .foregroundStyle(.white)
+      .foregroundStyle(FrameColors.primaryText)
       .onReceive(timer) { _ in
         guard !frozen else { return }
         elapsed = Date().timeIntervalSince(startedAt)
@@ -222,9 +222,9 @@ private struct ToolbarActionButton: View {
     Button(action: action) {
       Image(systemName: icon)
         .font(.system(size: 15))
-        .foregroundStyle(.white)
+        .foregroundStyle(FrameColors.primaryText)
         .frame(width: 36, height: 36)
-        .background(isHovered ? Color.white.opacity(0.1) : Color.clear)
+        .background(isHovered ? FrameColors.hoverBackground : Color.clear)
         .clipShape(RoundedRectangle(cornerRadius: 6))
     }
     .buttonStyle(.plain)
@@ -236,7 +236,7 @@ private struct ToolbarActionButton: View {
 private struct ToolbarDivider: View {
   var body: some View {
     Rectangle()
-      .fill(Color.white.opacity(0.15))
+      .fill(FrameColors.divider)
       .frame(width: 1, height: 32)
       .padding(.horizontal, 8)
   }

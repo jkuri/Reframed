@@ -16,7 +16,7 @@ struct CheckmarkRow: View {
           .font(.system(size: 13))
         Spacer()
       }
-      .foregroundStyle(.white)
+      .foregroundStyle(FrameColors.primaryText)
       .padding(.horizontal, 12)
       .padding(.vertical, 5)
       .contentShape(Rectangle())
@@ -31,7 +31,7 @@ private struct CheckmarkRowHoverBackground: View {
 
   var body: some View {
     RoundedRectangle(cornerRadius: 4)
-      .fill(isHovered ? Color.white.opacity(0.1) : Color.clear)
+      .fill(isHovered ? FrameColors.hoverBackground : Color.clear)
       .padding(.horizontal, 4)
       .onHover { isHovered = $0 }
   }

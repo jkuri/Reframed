@@ -55,7 +55,7 @@ private struct PermissionRow: View {
       VStack(alignment: .leading, spacing: 4) {
         Text(title)
           .font(.system(size: 14, weight: .medium))
-          .foregroundStyle(.white)
+          .foregroundStyle(FrameColors.primaryText)
 
         Text(description)
           .font(.system(size: 12))
@@ -84,9 +84,9 @@ private struct PermissionRow: View {
         .padding(.vertical, 8)
         .background(
           RoundedRectangle(cornerRadius: 8)
-            .stroke(granted ? Color.green.opacity(0.5) : Color.white.opacity(0.2), lineWidth: 1)
+            .stroke(granted ? Color.green.opacity(0.5) : FrameColors.permissionBorder, lineWidth: 1)
         )
-        .foregroundStyle(granted ? .green : .white.opacity(0.8))
+        .foregroundStyle(granted ? .green : FrameColors.permissionText)
       }
       .buttonStyle(.plain)
     }

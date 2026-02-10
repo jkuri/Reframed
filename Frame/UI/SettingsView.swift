@@ -10,6 +10,7 @@ struct SettingsView: View {
   @State private var rememberLastSelection: Bool = ConfigService.shared.rememberLastSelection
   @State private var showMouseClicks: Bool = ConfigService.shared.showMouseClicks
   @State private var captureSystemAudio: Bool = ConfigService.shared.captureSystemAudio
+  @State private var appearance: String = ConfigService.shared.appearance
 
   private let fpsOptions = [24, 30, 60]
 
@@ -25,9 +26,10 @@ struct SettingsView: View {
   var body: some View {
     VStack(spacing: 0) {
       header
-      Divider().background(Color.white.opacity(0.1))
+      Divider().background(FrameColors.divider)
       ScrollView {
         VStack(alignment: .leading, spacing: 20) {
+          appearanceSection
           outputSection
           recordingSection
           audioSection
@@ -43,10 +45,35 @@ struct SettingsView: View {
   private var header: some View {
     Text("Settings")
       .font(.system(size: 16, weight: .semibold))
-      .foregroundStyle(.white)
+      .foregroundStyle(FrameColors.primaryText)
       .frame(maxWidth: .infinity, alignment: .leading)
       .padding(.horizontal, 24)
       .padding(.vertical, 16)
+  }
+
+  private var appearanceSection: some View {
+    VStack(alignment: .leading, spacing: 8) {
+      sectionLabel("Appearance")
+
+      HStack(spacing: 4) {
+        ForEach(["system", "light", "dark"], id: \.self) { mode in
+          Button {
+            appearance = mode
+            ConfigService.shared.appearance = mode
+            updateWindowBackgrounds()
+          } label: {
+            Text(mode.capitalized)
+              .font(.system(size: 12, weight: appearance == mode ? .semibold : .regular))
+              .foregroundStyle(FrameColors.primaryText)
+              .padding(.horizontal, 14)
+              .frame(height: 28)
+              .background(appearance == mode ? FrameColors.selectedActive : FrameColors.fieldBackground)
+              .clipShape(RoundedRectangle(cornerRadius: 6))
+          }
+          .buttonStyle(.plain)
+        }
+      }
+    }
   }
 
   private var outputSection: some View {
@@ -55,7 +82,7 @@ struct SettingsView: View {
       HStack(spacing: 8) {
         Text(outputFolder)
           .font(.system(size: 12))
-          .foregroundStyle(.white)
+          .foregroundStyle(FrameColors.primaryText)
           .lineLimit(1)
           .truncationMode(.middle)
           .frame(maxWidth: .infinity, alignment: .leading)
@@ -79,7 +106,7 @@ struct SettingsView: View {
       HStack {
         Text("Frame Rate")
           .font(.system(size: 13))
-          .foregroundStyle(.white)
+          .foregroundStyle(FrameColors.primaryText)
         Spacer()
         HStack(spacing: 4) {
           ForEach(fpsOptions, id: \.self) { option in
@@ -89,9 +116,9 @@ struct SettingsView: View {
             } label: {
               Text("\(option)")
                 .font(.system(size: 12, weight: fps == option ? .semibold : .regular))
-                .foregroundStyle(.white)
+                .foregroundStyle(FrameColors.primaryText)
                 .frame(width: 44, height: 28)
-                .background(fps == option ? Color.white.opacity(0.2) : FrameColors.fieldBackground)
+                .background(fps == option ? FrameColors.selectedActive : FrameColors.fieldBackground)
                 .clipShape(RoundedRectangle(cornerRadius: 6))
             }
             .buttonStyle(.plain)
@@ -102,7 +129,7 @@ struct SettingsView: View {
       HStack {
         Text("Timer Delay")
           .font(.system(size: 13))
-          .foregroundStyle(.white)
+          .foregroundStyle(FrameColors.primaryText)
         Spacer()
         HStack(spacing: 4) {
           ForEach(TimerDelay.allCases, id: \.self) { delay in
@@ -112,10 +139,10 @@ struct SettingsView: View {
             } label: {
               Text(delay.label)
                 .font(.system(size: 12, weight: timerDelay == delay.rawValue ? .semibold : .regular))
-                .foregroundStyle(.white)
+                .foregroundStyle(FrameColors.primaryText)
                 .padding(.horizontal, 10)
                 .frame(height: 28)
-                .background(timerDelay == delay.rawValue ? Color.white.opacity(0.2) : FrameColors.fieldBackground)
+                .background(timerDelay == delay.rawValue ? FrameColors.selectedActive : FrameColors.fieldBackground)
                 .clipShape(RoundedRectangle(cornerRadius: 6))
             }
             .buttonStyle(.plain)
@@ -133,7 +160,7 @@ struct SettingsView: View {
         ConfigService.shared.captureSystemAudio = captureSystemAudio
       }
 
-      Divider().background(Color.white.opacity(0.08)).padding(.vertical, 2)
+      Divider().background(FrameColors.divider).padding(.vertical, 2)
 
       sectionLabel("Microphone")
 
@@ -188,7 +215,7 @@ struct SettingsView: View {
           .font(.system(size: 13))
         Spacer()
       }
-      .foregroundStyle(.white)
+      .foregroundStyle(FrameColors.primaryText)
       .padding(.horizontal, 10)
       .padding(.vertical, 5)
       .contentShape(Rectangle())
@@ -201,7 +228,7 @@ struct SettingsView: View {
     HStack {
       Text(title)
         .font(.system(size: 13))
-        .foregroundStyle(.white)
+        .foregroundStyle(FrameColors.primaryText)
       Spacer()
       Toggle("", isOn: isOn)
         .toggleStyle(.switch)
@@ -213,6 +240,15 @@ struct SettingsView: View {
     }
     .padding(.horizontal, 10)
     .padding(.vertical, 4)
+  }
+
+  private func updateWindowBackgrounds() {
+    let bg = FrameColors.panelBackgroundNS
+    for window in NSApp.windows {
+      if window.titlebarAppearsTransparent {
+        window.backgroundColor = bg
+      }
+    }
   }
 
   private func chooseOutputFolder() {
@@ -238,10 +274,10 @@ private struct SettingsButtonStyle: ButtonStyle {
   func makeBody(configuration: Configuration) -> some View {
     configuration.label
       .font(.system(size: 12, weight: .medium))
-      .foregroundStyle(.white)
+      .foregroundStyle(FrameColors.primaryText)
       .padding(.horizontal, 14)
       .frame(height: 30)
-      .background(configuration.isPressed ? Color.white.opacity(0.15) : Color.white.opacity(0.1))
+      .background(configuration.isPressed ? FrameColors.buttonPressed : FrameColors.buttonBackground)
       .clipShape(RoundedRectangle(cornerRadius: 6))
   }
 }
@@ -251,7 +287,7 @@ private struct SettingsRowHover: View {
 
   var body: some View {
     RoundedRectangle(cornerRadius: 4)
-      .fill(isHovered ? Color.white.opacity(0.08) : Color.clear)
+      .fill(isHovered ? FrameColors.hoverBackground : Color.clear)
       .onHover { isHovered = $0 }
   }
 }

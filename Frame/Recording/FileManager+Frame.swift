@@ -2,8 +2,7 @@ import Foundation
 
 extension FileManager {
   private func frameTempDir() -> URL {
-    let home = homeDirectoryForCurrentUser
-    let tempDir = home.appendingPathComponent(".frame/tmp", isDirectory: true)
+    let tempDir = URL(fileURLWithPath: "/tmp/Frame", isDirectory: true)
     try? createDirectory(at: tempDir, withIntermediateDirectories: true)
     return tempDir
   }
@@ -45,5 +44,13 @@ extension FileManager {
       try removeItem(at: destination)
     }
     try moveItem(at: source, to: destination)
+  }
+
+  func cleanupTempDir() {
+    let tempDir = URL(fileURLWithPath: "/tmp/Frame", isDirectory: true)
+    guard let contents = try? contentsOfDirectory(at: tempDir, includingPropertiesForKeys: nil) else { return }
+    for file in contents {
+      try? removeItem(at: file)
+    }
   }
 }

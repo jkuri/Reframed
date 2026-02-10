@@ -11,7 +11,7 @@ struct NumberField: View {
     TextField("", value: $value, format: .number)
       .textFieldStyle(.plain)
       .font(.system(size: fontSize, design: .monospaced))
-      .foregroundStyle(.white)
+      .foregroundStyle(FrameColors.primaryText)
       .tint(FrameColors.textSelection)
       .multilineTextAlignment(.center)
       .frame(width: width, height: height)

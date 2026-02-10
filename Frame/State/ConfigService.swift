@@ -1,3 +1,4 @@
+import AppKit
 import Foundation
 import Logging
 
@@ -49,6 +50,22 @@ final class ConfigService {
     set { data.captureSystemAudio = newValue; save() }
   }
 
+  var appearance: String {
+    get { data.appearance }
+    set { data.appearance = newValue; save(); applyAppearance() }
+  }
+
+  func applyAppearance() {
+    switch data.appearance {
+    case "light":
+      NSApp.appearance = NSAppearance(named: .aqua)
+    case "dark":
+      NSApp.appearance = NSAppearance(named: .darkAqua)
+    default:
+      NSApp.appearance = nil
+    }
+  }
+
   private init() {
     let dir = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".frame", isDirectory: true)
     try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
@@ -84,4 +101,5 @@ private struct ConfigData: Codable {
   var showMouseClicks: Bool = false
   var fps: Int = 60
   var captureSystemAudio: Bool = false
+  var appearance: String = "system"
 }

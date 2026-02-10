@@ -10,16 +10,16 @@ struct StartRecordingOverlayView: View {
     VStack(spacing: 12) {
       Text(displayName)
         .font(.system(size: 14, weight: .medium))
-        .foregroundStyle(.white)
+        .foregroundStyle(FrameColors.primaryText)
 
       Text(resolution)
         .font(.system(size: 12))
-        .foregroundStyle(.white.opacity(0.6))
+        .foregroundStyle(FrameColors.secondaryText)
 
       StartRecordingButton(action: onStart)
     }
     .padding(24)
-    .background(.black.opacity(0.8))
+    .background(FrameColors.panelBackground)
     .clipShape(RoundedRectangle(cornerRadius: 16))
     .shadow(radius: 20)
     .frame(maxWidth: .infinity, maxHeight: .infinity)

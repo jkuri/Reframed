@@ -8,6 +8,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
   private var permissionsWindow: NSWindow?
 
   func applicationDidFinishLaunching(_ notification: Notification) {
+    ConfigService.shared.applyAppearance()
     setupStatusItem()
     if Permissions.allPermissionsGranted {
       session.showToolbar()
@@ -56,7 +57,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     window.isReleasedWhenClosed = false
     window.titlebarAppearsTransparent = true
     window.isMovableByWindowBackground = true
-    window.backgroundColor = NSColor(FrameColors.panelBackground)
+    window.backgroundColor = FrameColors.panelBackgroundNS
     window.center()
 
     window.collectionBehavior.insert(.moveToActiveSpace)

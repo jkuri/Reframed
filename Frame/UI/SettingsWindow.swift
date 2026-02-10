@@ -26,7 +26,7 @@ final class SettingsWindow: NSObject, NSWindowDelegate {
     )
 
     window.titlebarAppearsTransparent = true
-    window.backgroundColor = NSColor(FrameColors.panelBackground)
+    window.backgroundColor = FrameColors.panelBackgroundNS
     window.contentView = hostingView
     window.center()
     window.isReleasedWhenClosed = false

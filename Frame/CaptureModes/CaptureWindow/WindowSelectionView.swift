@@ -167,7 +167,7 @@ private struct ResizePopover: View {
       ResizeRow(label: "1920 \u{00d7} 1080") { windowController.resize(window, to: CGSize(width: 1920, height: 1080)) }
       ResizeRow(label: "2560 \u{00d7} 1440") { windowController.resize(window, to: CGSize(width: 2560, height: 1440)) }
 
-      Divider().background(Color.white.opacity(0.15)).padding(.vertical, 4)
+      Divider().background(FrameColors.divider).padding(.vertical, 4)
 
       SectionHeader(title: "4:3")
 
@@ -177,7 +177,7 @@ private struct ResizePopover: View {
       ResizeRow(label: "1280 \u{00d7} 960") { windowController.resize(window, to: CGSize(width: 1280, height: 960)) }
       ResizeRow(label: "1600 \u{00d7} 1200") { windowController.resize(window, to: CGSize(width: 1600, height: 1200)) }
 
-      Divider().background(Color.white.opacity(0.15)).padding(.vertical, 4)
+      Divider().background(FrameColors.divider).padding(.vertical, 4)
 
       SectionHeader(title: "16:9")
 
@@ -187,7 +187,7 @@ private struct ResizePopover: View {
       ResizeRow(label: "2560 \u{00d7} 1440") { windowController.resize(window, to: CGSize(width: 2560, height: 1440)) }
       ResizeRow(label: "3840 \u{00d7} 2160") { windowController.resize(window, to: CGSize(width: 3840, height: 2160)) }
 
-      Divider().background(Color.white.opacity(0.15)).padding(.vertical, 4)
+      Divider().background(FrameColors.divider).padding(.vertical, 4)
 
       SectionHeader(title: "16:10")
 
@@ -198,7 +198,7 @@ private struct ResizePopover: View {
       ResizeRow(label: "1920 \u{00d7} 1200") { windowController.resize(window, to: CGSize(width: 1920, height: 1200)) }
       ResizeRow(label: "2560 \u{00d7} 1600") { windowController.resize(window, to: CGSize(width: 2560, height: 1600)) }
 
-      Divider().background(Color.white.opacity(0.15)).padding(.vertical, 4)
+      Divider().background(FrameColors.divider).padding(.vertical, 4)
 
       SectionHeader(title: "9:16")
 
@@ -206,7 +206,7 @@ private struct ResizePopover: View {
       ResizeRow(label: "720 \u{00d7} 1280") { windowController.resize(window, to: CGSize(width: 720, height: 1280)) }
       ResizeRow(label: "1080 \u{00d7} 1920") { windowController.resize(window, to: CGSize(width: 1080, height: 1920)) }
 
-      Divider().background(Color.white.opacity(0.15)).padding(.vertical, 4)
+      Divider().background(FrameColors.divider).padding(.vertical, 4)
 
       SectionHeader(title: "Square")
 
@@ -222,7 +222,7 @@ private struct ResizePopover: View {
     .clipShape(RoundedRectangle(cornerRadius: 8))
     .overlay(
       RoundedRectangle(cornerRadius: 8)
-        .strokeBorder(Color.white.opacity(0.1), lineWidth: 0.5)
+        .strokeBorder(FrameColors.subtleBorder, lineWidth: 0.5)
     )
   }
 }
@@ -239,7 +239,7 @@ private struct ResizeRow: View {
           .font(.system(size: 13))
         Spacer()
       }
-      .foregroundStyle(.white)
+      .foregroundStyle(FrameColors.primaryText)
       .padding(.horizontal, 12)
       .padding(.vertical, 5)
       .contentShape(Rectangle())
@@ -247,7 +247,7 @@ private struct ResizeRow: View {
     .buttonStyle(.plain)
     .background(
       RoundedRectangle(cornerRadius: 4)
-        .fill(isHovered ? Color.white.opacity(0.1) : Color.clear)
+        .fill(isHovered ? FrameColors.hoverBackground : Color.clear)
         .padding(.horizontal, 4)
     )
     .onHover { isHovered = $0 }
