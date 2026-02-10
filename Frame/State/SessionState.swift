@@ -8,13 +8,78 @@ import SwiftUI
 final class SessionState {
   var state: CaptureState = .idle
   var lastRecordingURL: URL?
+  var captureMode: CaptureMode = .none
+  let options = RecordingOptions()
+
+  weak var statusItemButton: NSStatusBarButton?
+  var onBecomeIdle: (() -> Void)?
 
   private let logger = Logger(label: "eu.jankuri.frame.session")
   private var selectionCoordinator: SelectionCoordinator?
   private var recordingCoordinator: RecordingCoordinator?
   private var storedSelection: SelectionRect?
+  private var toolbarWindow: CaptureToolbarWindow?
+  private var backdropWindow: ToolbarBackdropWindow?
+  private var startRecordingWindow: StartRecordingWindow?
 
   weak var overlayView: SelectionOverlayView?
+
+  func toggleToolbar() {
+    if toolbarWindow != nil {
+      hideToolbar()
+    } else {
+      showToolbar()
+    }
+  }
+
+  func showToolbar() {
+    guard toolbarWindow == nil else { return }
+
+    let backdrop = ToolbarBackdropWindow { [weak self] in
+      MainActor.assumeIsolated {
+        self?.hideToolbar()
+      }
+    }
+    backdropWindow = backdrop
+    backdrop.orderFrontRegardless()
+
+    let window = CaptureToolbarWindow(session: self) { [weak self] in
+      MainActor.assumeIsolated {
+        self?.hideToolbar()
+      }
+    }
+    toolbarWindow = window
+    window.makeKeyAndOrderFront(nil)
+  }
+
+  func hideToolbar() {
+    hideStartRecordingOverlay()
+    toolbarWindow?.orderOut(nil)
+    toolbarWindow?.contentView = nil
+    toolbarWindow = nil
+    backdropWindow?.orderOut(nil)
+    backdropWindow?.contentView = nil
+    backdropWindow = nil
+  }
+
+  func selectMode(_ mode: CaptureMode) {
+    captureMode = mode
+    hideStartRecordingOverlay()
+
+    switch mode {
+    case .none:
+      break
+    case .entireScreen, .selectedWindow:
+      showStartRecordingOverlay()
+    case .selectedArea:
+      hideToolbar()
+      do {
+        try beginSelection()
+      } catch {
+        logger.error("Failed to begin selection: \(error)")
+      }
+    }
+  }
 
   func beginSelection() throws {
     guard case .idle = state else {
@@ -26,7 +91,7 @@ final class SessionState {
       throw CaptureError.permissionDenied
     }
 
-    state = .selecting
+    transition(to: .selecting)
     storedSelection = nil
 
     let coordinator = SelectionCoordinator()
@@ -53,7 +118,7 @@ final class SessionState {
     selectionCoordinator?.destroyAll()
     selectionCoordinator = nil
     overlayView = nil
-    state = .idle
+    transition(to: .idle)
     logger.info("Selection cancelled")
   }
 
@@ -77,7 +142,7 @@ final class SessionState {
     overlayView = nil
 
     let startedAt = try await coordinator.startRecording(selection: selection)
-    state = .recording(startedAt: startedAt)
+    transition(to: .recording(startedAt: startedAt))
   }
 
   func stopRecording() async throws {
@@ -88,7 +153,7 @@ final class SessionState {
       throw CaptureError.invalidTransition(from: "\(state)", to: "processing")
     }
 
-    state = .processing
+    transition(to: .processing)
     selectionCoordinator?.destroyAll()
     selectionCoordinator = nil
 
@@ -99,18 +164,87 @@ final class SessionState {
 
     recordingCoordinator = nil
     storedSelection = nil
-    state = .idle
+    transition(to: .idle)
   }
 
   func pauseRecording() {
     guard case .recording(let startedAt) = state else { return }
     let elapsed = Date().timeIntervalSince(startedAt)
-    state = .paused(elapsed: elapsed)
+    transition(to: .paused(elapsed: elapsed))
   }
 
   func resumeRecording() {
     guard case .paused(let elapsed) = state else { return }
     let resumedAt = Date().addingTimeInterval(-elapsed)
-    state = .recording(startedAt: resumedAt)
+    transition(to: .recording(startedAt: resumedAt))
+  }
+
+  private func transition(to newState: CaptureState) {
+    state = newState
+    updateStatusIcon()
+    if newState == .idle {
+      onBecomeIdle?()
+    }
+  }
+
+  private func updateStatusIcon() {
+    let iconName: String = switch state {
+    case .idle: "rectangle.dashed.badge.record"
+    case .selecting: "rectangle.dashed"
+    case .recording: "record.circle.fill"
+    case .paused: "pause.circle.fill"
+    case .processing: "gear"
+    case .editing: "film"
+    }
+    statusItemButton?.image = NSImage(
+      systemSymbolName: iconName,
+      accessibilityDescription: "Frame"
+    )
+  }
+
+  private func showStartRecordingOverlay() {
+    guard startRecordingWindow == nil else { return }
+    let window = StartRecordingWindow { [weak self] in
+      MainActor.assumeIsolated {
+        self?.startRecordingFromOverlay()
+      }
+    }
+    startRecordingWindow = window
+    window.orderFrontRegardless()
+    toolbarWindow?.makeKeyAndOrderFront(nil)
+  }
+
+  private func hideStartRecordingOverlay() {
+    startRecordingWindow?.orderOut(nil)
+    startRecordingWindow?.contentView = nil
+    startRecordingWindow = nil
+  }
+
+  private func startRecordingFromOverlay() {
+    hideToolbar()
+    recordEntireScreen()
+  }
+
+  private func recordEntireScreen() {
+    guard Permissions.hasScreenRecordingPermission else {
+      Permissions.requestScreenRecordingPermission()
+      return
+    }
+
+    guard let screen = NSScreen.main else { return }
+    let selection = SelectionRect(rect: screen.frame, displayID: screen.displayID)
+    storedSelection = selection
+
+    let coordinator = SelectionCoordinator()
+    selectionCoordinator = coordinator
+    coordinator.showRecordingBorder(screenRect: screen.frame)
+
+    Task {
+      do {
+        try await startRecording()
+      } catch {
+        logger.error("Failed to start recording: \(error)")
+      }
+    }
   }
 }

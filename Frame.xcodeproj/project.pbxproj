@@ -35,9 +35,19 @@
 		A1000000000000000000001A /* MenuBarExtraAccess in Frameworks */ = {isa = PBXBuildFile; productRef = E10000000000000000000002 /* MenuBarExtraAccess */; };
 		A1000000000000000000001C /* VideoTranscoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001C /* VideoTranscoder.swift */; };
 		A1000000000000000000001D /* RecordingBorderWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001D /* RecordingBorderWindow.swift */; };
-		A1000000000000000000001E /* SelectionControlsPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001E /* SelectionControlsPanel.swift */; };
+		A1000000000000000000001E /* CaptureAreaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001E /* CaptureAreaView.swift */; };
 		A1000000000000000000001F /* Colors.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001F /* Colors.swift */; };
 		A10000000000000000000020 /* NumberField.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000020 /* NumberField.swift */; };
+		A10000000000000000000021 /* RecordingOptions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000021 /* RecordingOptions.swift */; };
+		A10000000000000000000022 /* SectionHeader.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000022 /* SectionHeader.swift */; };
+		A10000000000000000000023 /* CheckmarkRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000023 /* CheckmarkRow.swift */; };
+		A10000000000000000000024 /* OptionsPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000024 /* OptionsPopover.swift */; };
+		A10000000000000000000025 /* CaptureMode.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000025 /* CaptureMode.swift */; };
+		A10000000000000000000026 /* ModeButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000026 /* ModeButton.swift */; };
+		A10000000000000000000027 /* CaptureToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000027 /* CaptureToolbar.swift */; };
+		A10000000000000000000028 /* CaptureToolbarWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000028 /* CaptureToolbarWindow.swift */; };
+		A10000000000000000000029 /* ToolbarBackdropWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000029 /* ToolbarBackdropWindow.swift */; };
+		A1000000000000000000002A /* StartRecordingOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000002A /* StartRecordingOverlay.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -70,9 +80,19 @@
 		B1000000000000000000001B /* Frame.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = Frame.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		B1000000000000000000001C /* VideoTranscoder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoTranscoder.swift; sourceTree = "<group>"; };
 		B1000000000000000000001D /* RecordingBorderWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingBorderWindow.swift; sourceTree = "<group>"; };
-		B1000000000000000000001E /* SelectionControlsPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectionControlsPanel.swift; sourceTree = "<group>"; };
+		B1000000000000000000001E /* CaptureAreaView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureAreaView.swift; sourceTree = "<group>"; };
 		B1000000000000000000001F /* Colors.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Colors.swift; sourceTree = "<group>"; };
 		B10000000000000000000020 /* NumberField.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NumberField.swift; sourceTree = "<group>"; };
+		B10000000000000000000021 /* RecordingOptions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingOptions.swift; sourceTree = "<group>"; };
+		B10000000000000000000022 /* SectionHeader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SectionHeader.swift; sourceTree = "<group>"; };
+		B10000000000000000000023 /* CheckmarkRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CheckmarkRow.swift; sourceTree = "<group>"; };
+		B10000000000000000000024 /* OptionsPopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = OptionsPopover.swift; sourceTree = "<group>"; };
+		B10000000000000000000025 /* CaptureMode.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureMode.swift; sourceTree = "<group>"; };
+		B10000000000000000000026 /* ModeButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ModeButton.swift; sourceTree = "<group>"; };
+		B10000000000000000000027 /* CaptureToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureToolbar.swift; sourceTree = "<group>"; };
+		B10000000000000000000028 /* CaptureToolbarWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureToolbarWindow.swift; sourceTree = "<group>"; };
+		B10000000000000000000029 /* ToolbarBackdropWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolbarBackdropWindow.swift; sourceTree = "<group>"; };
+		B1000000000000000000002A /* StartRecordingOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartRecordingOverlay.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -111,7 +131,7 @@
 				D10000000000000000000004 /* Logging */,
 				D10000000000000000000005 /* State */,
 				D10000000000000000000006 /* MenuBar */,
-				D10000000000000000000007 /* Selection */,
+				D1000000000000000000000D /* CaptureModes */,
 				D10000000000000000000008 /* Recording */,
 				D10000000000000000000009 /* Utilities */,
 				D1000000000000000000000C /* UI */,
@@ -124,6 +144,13 @@
 			children = (
 				B1000000000000000000001F /* Colors.swift */,
 				B10000000000000000000020 /* NumberField.swift */,
+				B10000000000000000000022 /* SectionHeader.swift */,
+				B10000000000000000000023 /* CheckmarkRow.swift */,
+				B10000000000000000000024 /* OptionsPopover.swift */,
+				B10000000000000000000026 /* ModeButton.swift */,
+				B10000000000000000000027 /* CaptureToolbar.swift */,
+				B10000000000000000000028 /* CaptureToolbarWindow.swift */,
+				B10000000000000000000029 /* ToolbarBackdropWindow.swift */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -151,6 +178,8 @@
 			children = (
 				B10000000000000000000006 /* CaptureState.swift */,
 				B10000000000000000000007 /* SessionState.swift */,
+				B10000000000000000000021 /* RecordingOptions.swift */,
+				B10000000000000000000025 /* CaptureMode.swift */,
 			);
 			path = State;
 			sourceTree = "<group>";
@@ -165,18 +194,51 @@
 			path = MenuBar;
 			sourceTree = "<group>";
 		};
-		D10000000000000000000007 /* Selection */ = {
+		D1000000000000000000000D /* CaptureModes */ = {
 			isa = PBXGroup;
 			children = (
+				D1000000000000000000000E /* Common */,
+				D1000000000000000000000F /* CaptureArea */,
+				D10000000000000000000010 /* CaptureScreen */,
+				D10000000000000000000011 /* CaptureWindow */,
+			);
+			path = CaptureModes;
+			sourceTree = "<group>";
+		};
+		D1000000000000000000000E /* Common */ = {
+			isa = PBXGroup;
+			children = (
+				B1000000000000000000000E /* SelectionRect.swift */,
+				B1000000000000000000001D /* RecordingBorderWindow.swift */,
 				B1000000000000000000000B /* SelectionCoordinator.swift */,
+			);
+			path = Common;
+			sourceTree = "<group>";
+		};
+		D1000000000000000000000F /* CaptureArea */ = {
+			isa = PBXGroup;
+			children = (
 				B1000000000000000000000C /* SelectionOverlayWindow.swift */,
 				B1000000000000000000000D /* SelectionOverlayView.swift */,
-				B1000000000000000000000E /* SelectionRect.swift */,
 				B1000000000000000000000F /* ResizeHandle.swift */,
-				B1000000000000000000001D /* RecordingBorderWindow.swift */,
-				B1000000000000000000001E /* SelectionControlsPanel.swift */,
+				B1000000000000000000001E /* CaptureAreaView.swift */,
 			);
-			path = Selection;
+			path = CaptureArea;
+			sourceTree = "<group>";
+		};
+		D10000000000000000000010 /* CaptureScreen */ = {
+			isa = PBXGroup;
+			children = (
+				B1000000000000000000002A /* StartRecordingOverlay.swift */,
+			);
+			path = CaptureScreen;
+			sourceTree = "<group>";
+		};
+		D10000000000000000000011 /* CaptureWindow */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			path = CaptureWindow;
 			sourceTree = "<group>";
 		};
 		D10000000000000000000008 /* Recording */ = {
@@ -309,12 +371,22 @@
 				A10000000000000000000012 /* VideoWriter.swift in Sources */,
 				A1000000000000000000001C /* VideoTranscoder.swift in Sources */,
 				A1000000000000000000001D /* RecordingBorderWindow.swift in Sources */,
-				A1000000000000000000001E /* SelectionControlsPanel.swift in Sources */,
+				A1000000000000000000001E /* CaptureAreaView.swift in Sources */,
 				A10000000000000000000013 /* FileManager+Frame.swift in Sources */,
 				A10000000000000000000014 /* NSScreen+Extensions.swift in Sources */,
 				A10000000000000000000015 /* CGRect+Extensions.swift in Sources */,
 				A1000000000000000000001F /* Colors.swift in Sources */,
 				A10000000000000000000020 /* NumberField.swift in Sources */,
+				A10000000000000000000021 /* RecordingOptions.swift in Sources */,
+				A10000000000000000000022 /* SectionHeader.swift in Sources */,
+				A10000000000000000000023 /* CheckmarkRow.swift in Sources */,
+				A10000000000000000000024 /* OptionsPopover.swift in Sources */,
+				A10000000000000000000025 /* CaptureMode.swift in Sources */,
+				A10000000000000000000026 /* ModeButton.swift in Sources */,
+				A10000000000000000000027 /* CaptureToolbar.swift in Sources */,
+				A10000000000000000000028 /* CaptureToolbarWindow.swift in Sources */,
+				A10000000000000000000029 /* ToolbarBackdropWindow.swift in Sources */,
+				A1000000000000000000002A /* StartRecordingOverlay.swift in Sources */,
 			);
 		};
 /* End PBXSourcesBuildPhase section */

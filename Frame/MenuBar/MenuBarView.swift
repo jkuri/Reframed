@@ -2,7 +2,6 @@ import SwiftUI
 
 struct MenuBarView: View {
   let session: SessionState
-  @Binding var isMenuPresented: Bool
 
   @State private var errorMessage: String?
 
@@ -10,7 +9,7 @@ struct MenuBarView: View {
     VStack(spacing: 12) {
       switch session.state {
       case .idle:
-        idleView
+        EmptyView()
       case .selecting:
         selectingView
       case .recording(let startedAt):
@@ -32,42 +31,6 @@ struct MenuBarView: View {
     }
     .padding(16)
     .frame(width: 240)
-  }
-
-  private var idleView: some View {
-    VStack(spacing: 8) {
-      Text("Frame")
-        .font(.headline)
-
-      Button("New Recording") {
-        isMenuPresented = false
-        do {
-          try session.beginSelection()
-        } catch {
-          errorMessage = error.localizedDescription
-        }
-      }
-      .buttonStyle(.borderedProminent)
-      .controlSize(.large)
-
-      if let url = session.lastRecordingURL {
-        Divider()
-        HStack {
-          Image(systemName: "film")
-          Text(url.lastPathComponent)
-            .font(.caption)
-            .lineLimit(1)
-            .truncationMode(.middle)
-          Spacer()
-          Button {
-            NSWorkspace.shared.activateFileViewerSelecting([url])
-          } label: {
-            Image(systemName: "folder")
-          }
-          .buttonStyle(.borderless)
-        }
-      }
-    }
   }
 
   private var selectingView: some View {

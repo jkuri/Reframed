@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct SelectionControlsView: View {
+struct CaptureAreaView: View {
   let session: SessionState
   @State private var x: Int = 0
   @State private var y: Int = 0

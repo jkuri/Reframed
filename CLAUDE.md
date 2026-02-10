@@ -37,11 +37,13 @@ idle → selecting → recording ⇄ paused → processing → idle
 
 ### Recording flow
 
-1. Full-screen transparent overlay with crosshair cursor
-2. Drag to select region (8 resize handles for adjustment)
-3. Confirm → ScreenCaptureKit captures the region
-4. CVPixelBuffers flow through VideoWriter to `/tmp/Frame/frame-{timestamp}.mp4`
-5. Stop → finalize → move to `~/Frame/`
+Frame offers three recording options:
+
+- **Record entire screen** — captures the full display
+- **Record specific window** — captures a single application window
+- **Record selected area** — full-screen transparent overlay with crosshair cursor; drag to select region (8 resize handles for adjustment)
+
+After selection, ScreenCaptureKit captures the chosen region, window, or screen. CVPixelBuffers flow through VideoWriter to `/tmp/Frame/frame-{timestamp}.mp4`. On stop → finalize → move to `~/Frame/`.
 
 ### Coordinate system
 

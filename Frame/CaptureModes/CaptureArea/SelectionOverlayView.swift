@@ -12,7 +12,7 @@ final class SelectionOverlayView: NSView {
   private var handleDragStart: CGPoint?
   private var originalRectBeforeResize: CGRect?
   private var mouseLocation: CGPoint = .zero
-  private var controlsHost: NSHostingView<SelectionControlsView>?
+  private var controlsHost: NSHostingView<CaptureAreaView>?
 
   override var acceptsFirstResponder: Bool { true }
   override var isFlipped: Bool { false }
@@ -144,7 +144,7 @@ final class SelectionOverlayView: NSView {
     }
 
     if controlsHost == nil {
-      let view = SelectionControlsView(session: session)
+      let view = CaptureAreaView(session: session)
       let hosting = NSHostingView(rootView: view)
       addSubview(hosting)
       controlsHost = hosting
