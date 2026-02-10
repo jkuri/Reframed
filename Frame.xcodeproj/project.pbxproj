@@ -23,9 +23,11 @@
 		A1000000000000000000000F /* ResizeHandle.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000000F /* ResizeHandle.swift */; };
 		A10000000000000000000010 /* RecordingCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000010 /* RecordingCoordinator.swift */; };
 		A10000000000000000000011 /* ScreenCaptureSession.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000011 /* ScreenCaptureSession.swift */; };
-		A10000000000000000000012 /* VideoWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000012 /* VideoWriter.swift */; };
+		A10000000000000000000012 /* VideoTrackWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000012 /* VideoTrackWriter.swift */; };
+		A10000000000000000000033 /* AudioTrackWriter.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000033 /* AudioTrackWriter.swift */; };
 		A10000000000000000000013 /* FileManager+Frame.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000013 /* FileManager+Frame.swift */; };
 		A10000000000000000000032 /* MicrophoneCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000032 /* MicrophoneCapture.swift */; };
+		A10000000000000000000034 /* SystemAudioCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000034 /* SystemAudioCapture.swift */; };
 		A10000000000000000000014 /* NSScreen+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000014 /* NSScreen+Extensions.swift */; };
 		A10000000000000000000015 /* CGRect+Extensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000015 /* CGRect+Extensions.swift */; };
 		A10000000000000000000017 /* ScreenCaptureKit.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B10000000000000000000017 /* ScreenCaptureKit.framework */; };
@@ -77,9 +79,11 @@
 		B1000000000000000000000F /* ResizeHandle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResizeHandle.swift; sourceTree = "<group>"; };
 		B10000000000000000000010 /* RecordingCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingCoordinator.swift; sourceTree = "<group>"; };
 		B10000000000000000000011 /* ScreenCaptureSession.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ScreenCaptureSession.swift; sourceTree = "<group>"; };
-		B10000000000000000000012 /* VideoWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoWriter.swift; sourceTree = "<group>"; };
+		B10000000000000000000012 /* VideoTrackWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoTrackWriter.swift; sourceTree = "<group>"; };
+		B10000000000000000000033 /* AudioTrackWriter.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioTrackWriter.swift; sourceTree = "<group>"; };
 		B10000000000000000000013 /* FileManager+Frame.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FileManager+Frame.swift"; sourceTree = "<group>"; };
 		B10000000000000000000032 /* MicrophoneCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MicrophoneCapture.swift; sourceTree = "<group>"; };
+		B10000000000000000000034 /* SystemAudioCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemAudioCapture.swift; sourceTree = "<group>"; };
 		B10000000000000000000014 /* NSScreen+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "NSScreen+Extensions.swift"; sourceTree = "<group>"; };
 		B10000000000000000000015 /* CGRect+Extensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CGRect+Extensions.swift"; sourceTree = "<group>"; };
 		B10000000000000000000017 /* ScreenCaptureKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = ScreenCaptureKit.framework; path = System/Library/Frameworks/ScreenCaptureKit.framework; sourceTree = SDKROOT; };
@@ -194,10 +198,12 @@
 				3CFD921258364EA6A604537F /* CaptureTarget.swift */,
 				B10000000000000000000010 /* RecordingCoordinator.swift */,
 				B10000000000000000000011 /* ScreenCaptureSession.swift */,
-				B10000000000000000000012 /* VideoWriter.swift */,
+				B10000000000000000000012 /* VideoTrackWriter.swift */,
+				B10000000000000000000033 /* AudioTrackWriter.swift */,
 				B1000000000000000000001C /* VideoTranscoder.swift */,
 				B10000000000000000000013 /* FileManager+Frame.swift */,
 				B10000000000000000000032 /* MicrophoneCapture.swift */,
+				B10000000000000000000034 /* SystemAudioCapture.swift */,
 			);
 			path = Recording;
 			sourceTree = "<group>";
@@ -388,12 +394,14 @@
 				A1000000000000000000000F /* ResizeHandle.swift in Sources */,
 				A10000000000000000000010 /* RecordingCoordinator.swift in Sources */,
 				A10000000000000000000011 /* ScreenCaptureSession.swift in Sources */,
-				A10000000000000000000012 /* VideoWriter.swift in Sources */,
+				A10000000000000000000012 /* VideoTrackWriter.swift in Sources */,
+				A10000000000000000000033 /* AudioTrackWriter.swift in Sources */,
 				A1000000000000000000001C /* VideoTranscoder.swift in Sources */,
 				A1000000000000000000001D /* RecordingBorderWindow.swift in Sources */,
 				A1000000000000000000001E /* CaptureAreaView.swift in Sources */,
 				A10000000000000000000013 /* FileManager+Frame.swift in Sources */,
 				A10000000000000000000032 /* MicrophoneCapture.swift in Sources */,
+				A10000000000000000000034 /* SystemAudioCapture.swift in Sources */,
 				A10000000000000000000014 /* NSScreen+Extensions.swift in Sources */,
 				A10000000000000000000015 /* CGRect+Extensions.swift in Sources */,
 				A1000000000000000000001F /* Colors.swift in Sources */,

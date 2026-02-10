@@ -9,16 +9,15 @@ struct MicrophoneFormat: Sendable {
 
 final class MicrophoneCapture: NSObject, AVCaptureAudioDataOutputSampleBufferDelegate, @unchecked Sendable {
   private var captureSession: AVCaptureSession?
-  private let videoWriter: VideoWriter
+  private let audioWriter: AudioTrackWriter
   private let logger = Logger(label: "eu.jankuri.frame.microphone-capture")
-  private let micQueue = DispatchQueue(label: "eu.jankuri.frame.microphone-capture.queue", qos: .userInteractive)
 
-  init(videoWriter: VideoWriter) {
-    self.videoWriter = videoWriter
+  init(audioWriter: AudioTrackWriter) {
+    self.audioWriter = audioWriter
     super.init()
   }
 
-  static func deviceFormat(deviceId: String) -> MicrophoneFormat? {
+  static func targetFormat(deviceId: String) -> MicrophoneFormat? {
     let discovery = AVCaptureDevice.DiscoverySession(
       deviceTypes: [.microphone],
       mediaType: .audio,
@@ -29,9 +28,11 @@ final class MicrophoneCapture: NSObject, AVCaptureAudioDataOutputSampleBufferDel
     }
     let desc = device.activeFormat.formatDescription
     let asbd = CMAudioFormatDescriptionGetStreamBasicDescription(desc)?.pointee
-    let sampleRate = asbd?.mSampleRate ?? 48000
-    let channels = Int(asbd?.mChannelsPerFrame ?? 1)
-    return MicrophoneFormat(sampleRate: sampleRate, channelCount: channels)
+    let nativeRate = asbd?.mSampleRate ?? 48000
+    let nativeChannels = Int(asbd?.mChannelsPerFrame ?? 1)
+
+    let targetRate: Double = nativeRate >= 44100 ? nativeRate : 48000
+    return MicrophoneFormat(sampleRate: targetRate, channelCount: nativeChannels)
   }
 
   func start(deviceId: String) async throws {
@@ -58,16 +59,30 @@ final class MicrophoneCapture: NSObject, AVCaptureAudioDataOutputSampleBufferDel
     }
     session.addInput(input)
 
+    let desc = device.activeFormat.formatDescription
+    let asbd = CMAudioFormatDescriptionGetStreamBasicDescription(desc)?.pointee
+    let nativeRate = asbd?.mSampleRate ?? 48000
+    let nativeChannels = Int(asbd?.mChannelsPerFrame ?? 1)
+
     let output = AVCaptureAudioDataOutput()
-    output.setSampleBufferDelegate(self, queue: micQueue)
+    if nativeRate < 44100 {
+      output.audioSettings = [
+        AVFormatIDKey: kAudioFormatLinearPCM,
+        AVSampleRateKey: 48000,
+        AVNumberOfChannelsKey: nativeChannels,
+        AVLinearPCMBitDepthKey: 32,
+        AVLinearPCMIsFloatKey: true,
+        AVLinearPCMIsNonInterleaved: false,
+      ]
+      logger.info("Mic resampling \(nativeRate)Hz -> 48000Hz, \(nativeChannels)ch")
+    }
+    output.setSampleBufferDelegate(self, queue: audioWriter.queue)
     guard session.canAddOutput(output) else {
       throw CaptureError.microphoneNotFound
     }
     session.addOutput(output)
 
-    let desc = device.activeFormat.formatDescription
-    let asbd = CMAudioFormatDescriptionGetStreamBasicDescription(desc)?.pointee
-    logger.info("Microphone format: sampleRate=\(asbd?.mSampleRate ?? 0) channels=\(asbd?.mChannelsPerFrame ?? 0)")
+    logger.info("Microphone native format: sampleRate=\(nativeRate) channels=\(nativeChannels)")
 
     session.startRunning()
     self.captureSession = session
@@ -81,6 +96,6 @@ final class MicrophoneCapture: NSObject, AVCaptureAudioDataOutputSampleBufferDel
   }
 
   func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
-    videoWriter.appendMicrophoneAudioSample(sampleBuffer)
+    audioWriter.appendSample(sampleBuffer)
   }
 }

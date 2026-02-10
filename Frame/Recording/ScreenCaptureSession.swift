@@ -5,7 +5,7 @@ import Logging
 
 final class ScreenCaptureSession: NSObject, SCStreamDelegate, SCStreamOutput, @unchecked Sendable {
   private var stream: SCStream?
-  private let videoWriter: VideoWriter
+  private let videoWriter: VideoTrackWriter
   private let logger = Logger(label: "eu.jankuri.frame.capture-session")
   private var totalCallbacks = 0
   private var completeFrames = 0
@@ -13,11 +13,9 @@ final class ScreenCaptureSession: NSObject, SCStreamDelegate, SCStreamOutput, @u
   private var lastLogTime: CFAbsoluteTime = 0
   private var nextTargetPTS: CMTime = .invalid
   private var targetFrameInterval: CMTime = .invalid
-  private let captureSystemAudio: Bool
 
-  init(videoWriter: VideoWriter, captureSystemAudio: Bool = false) {
+  init(videoWriter: VideoTrackWriter) {
     self.videoWriter = videoWriter
-    self.captureSystemAudio = captureSystemAudio
     super.init()
   }
 
@@ -38,7 +36,7 @@ final class ScreenCaptureSession: NSObject, SCStreamDelegate, SCStreamOutput, @u
       filter = SCContentFilter(desktopIndependentWindow: window)
       sourceRect = CGRect(origin: .zero, size: CGSize(width: CGFloat(window.frame.width), height: CGFloat(window.frame.height)))
 
-    case .screen(let screen):
+    case .screen:
       let selfApp = content.applications.first { $0.bundleIdentifier == Bundle.main.bundleIdentifier }
       let excludedApps = [selfApp].compactMap { $0 }
       filter = SCContentFilter(display: display, excludingApplications: excludedApps, exceptingWindows: [])
@@ -58,22 +56,13 @@ final class ScreenCaptureSession: NSObject, SCStreamDelegate, SCStreamOutput, @u
     config.minimumFrameInterval = CMTime(value: 1, timescale: CMTimeScale(captureFps))
     config.pixelFormat = kCVPixelFormatType_32BGRA
     config.showsCursor = true
-    config.capturesAudio = captureSystemAudio
+    config.capturesAudio = false
     config.queueDepth = 8
     config.scalesToFit = false
     config.colorSpaceName = CGColorSpace.sRGB as CFString
 
-    if captureSystemAudio {
-      config.sampleRate = 48000
-      config.channelCount = 2
-    }
-
     let stream = SCStream(filter: filter, configuration: config, delegate: self)
     try stream.addStreamOutput(self, type: .screen, sampleHandlerQueue: videoWriter.queue)
-
-    if captureSystemAudio {
-      try stream.addStreamOutput(self, type: .audio, sampleHandlerQueue: videoWriter.queue)
-    }
 
     try await stream.startCapture()
 
@@ -87,7 +76,6 @@ final class ScreenCaptureSession: NSObject, SCStreamDelegate, SCStreamOutput, @u
         "targetFps": "\(fps)",
         "captureFps": "\(captureFps)",
         "output_size": "\(config.width)x\(config.height)",
-        "systemAudio": "\(captureSystemAudio)",
       ]
     )
   }
@@ -100,16 +88,8 @@ final class ScreenCaptureSession: NSObject, SCStreamDelegate, SCStreamOutput, @u
   }
 
   func stream(_ stream: SCStream, didOutputSampleBuffer sampleBuffer: CMSampleBuffer, of type: SCStreamOutputType) {
-    guard sampleBuffer.isValid else { return }
-
-    switch type {
-    case .screen:
-      handleVideoSample(sampleBuffer)
-    case .audio:
-      videoWriter.appendSystemAudioSample(sampleBuffer)
-    @unknown default:
-      break
-    }
+    guard sampleBuffer.isValid, type == .screen else { return }
+    handleVideoSample(sampleBuffer)
   }
 
   private func handleVideoSample(_ sampleBuffer: CMSampleBuffer) {

@@ -1,13 +1,29 @@
 import Foundation
 
 extension FileManager {
-  func tempRecordingURL() -> URL {
-    let tempDir = temporaryDirectory.appendingPathComponent("Frame", isDirectory: true)
+  private func frameTempDir() -> URL {
+    let home = homeDirectoryForCurrentUser
+    let tempDir = home.appendingPathComponent(".frame/tmp", isDirectory: true)
     try? createDirectory(at: tempDir, withIntermediateDirectories: true)
+    return tempDir
+  }
+
+  private func timestamp() -> String {
     let formatter = DateFormatter()
     formatter.dateFormat = "yyyy-MM-dd-HHmmss"
-    let filename = "frame-\(formatter.string(from: Date())).mp4"
-    return tempDir.appendingPathComponent(filename)
+    return formatter.string(from: Date())
+  }
+
+  func tempRecordingURL() -> URL {
+    frameTempDir().appendingPathComponent("frame-\(timestamp()).mp4")
+  }
+
+  func tempVideoURL() -> URL {
+    frameTempDir().appendingPathComponent("video-\(timestamp()).mp4")
+  }
+
+  func tempAudioURL(label: String) -> URL {
+    frameTempDir().appendingPathComponent("\(label)-\(timestamp()).m4a")
   }
 
   @MainActor

@@ -50,8 +50,7 @@ final class ConfigService {
   }
 
   private init() {
-    let dir = FileManager.default.homeDirectoryForCurrentUser
-      .appendingPathComponent(".frame", isDirectory: true)
+    let dir = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".frame", isDirectory: true)
     try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
     fileURL = dir.appendingPathComponent("frame.json")
     data = ConfigData()
