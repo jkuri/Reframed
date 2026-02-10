@@ -53,6 +53,7 @@
 		A10000000000000000000029 /* ToolbarBackdropWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000029 /* ToolbarBackdropWindow.swift */; };
 		A1000000000000000000002A /* StartRecordingOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000002A /* StartRecordingOverlay.swift */; };
 		ED4608FB0AB34BC3B7BEDB94 /* WindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC41BA6DF5654C57AC930549; };
+		A1000000000000000000002B /* PermissionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000002B /* PermissionsView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -103,6 +104,7 @@
 		B10000000000000000000029 /* ToolbarBackdropWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ToolbarBackdropWindow.swift; sourceTree = "<group>"; };
 		B1000000000000000000002A /* StartRecordingOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartRecordingOverlay.swift; sourceTree = "<group>"; };
 		EC41BA6DF5654C57AC930549 /* WindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowController.swift; sourceTree = "<group>"; };
+		B1000000000000000000002B /* PermissionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -161,6 +163,7 @@
 				B10000000000000000000027 /* CaptureToolbar.swift */,
 				B10000000000000000000028 /* CaptureToolbarWindow.swift */,
 				B10000000000000000000029 /* ToolbarBackdropWindow.swift */,
+			B1000000000000000000002B /* PermissionsView.swift */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -407,6 +410,7 @@
 				A10000000000000000000029 /* ToolbarBackdropWindow.swift in Sources */,
 				A1000000000000000000002A /* StartRecordingOverlay.swift in Sources */,
 							ED4608FB0AB34BC3B7BEDB94 /* WindowController.swift in Sources */,
+				A1000000000000000000002B /* PermissionsView.swift in Sources */,
 );
 		};
 /* End PBXSourcesBuildPhase section */

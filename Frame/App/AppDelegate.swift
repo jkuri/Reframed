@@ -2,10 +2,11 @@ import AppKit
 import SwiftUI
 
 @MainActor
-final class AppDelegate: NSObject, NSApplicationDelegate {
+final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
   let session = SessionState()
   private var statusItem: NSStatusItem!
   private var popover: NSPopover?
+  private var permissionsWindow: NSWindow?
 
   func applicationDidFinishLaunching(_ notification: Notification) {
     NSApp.setActivationPolicy(.accessory)
@@ -26,10 +27,64 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
 
   @objc private func statusItemClicked() {
     if session.state == .idle {
-      session.toggleToolbar()
+      if Permissions.allPermissionsGranted {
+        session.toggleToolbar()
+      } else {
+        showPermissionsWindow()
+      }
     } else {
       togglePopover()
     }
+  }
+
+  private func showPermissionsWindow() {
+    if let permissionsWindow, permissionsWindow.isVisible {
+      permissionsWindow.makeKeyAndOrderFront(nil)
+      NSApp.activate(ignoringOtherApps: true)
+      return
+    }
+
+    let window = NSWindow(
+      contentRect: NSRect(x: 0, y: 0, width: 800, height: 400),
+      styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
+      backing: .buffered,
+      defer: false
+    )
+    window.isReleasedWhenClosed = false
+    window.titlebarAppearsTransparent = true
+    window.isMovableByWindowBackground = true
+    window.backgroundColor = NSColor(FrameColors.panelBackground)
+    window.center()
+
+    window.collectionBehavior.insert(.moveToActiveSpace)
+
+    window.delegate = self
+    window.contentViewController = NSHostingController(
+      rootView: PermissionsView { [weak self] in
+        MainActor.assumeIsolated {
+          self?.dismissPermissionsWindow()
+        }
+      }
+    )
+
+    let min = NSSize(width: 800, height: 400)
+    window.contentMinSize = min
+    window.minSize = min
+
+    permissionsWindow = window
+    window.makeKeyAndOrderFront(nil)
+    NSApp.activate(ignoringOtherApps: true)
+  }
+
+  func windowWillClose(_ notification: Notification) {
+    if (notification.object as? NSWindow) === permissionsWindow {
+      permissionsWindow = nil
+    }
+  }
+
+  private func dismissPermissionsWindow() {
+    permissionsWindow?.close()
+    permissionsWindow = nil
   }
 
   private func togglePopover() {
