@@ -31,6 +31,9 @@ final class EditorState {
     trimEnd = playerController.duration
     playerController.trimEnd = trimEnd
     playerController.setupTimeObserver()
+    if hasWebcam {
+      setPipCorner(.bottomRight)
+    }
   }
 
   func play() { playerController.play() }

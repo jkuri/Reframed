@@ -131,14 +131,23 @@ final class VideoPreviewContainer: NSView {
       let dy = -(loc.y - coord.dragStart.y) / videoRect.height
       var newX = coord.startLayout.relativeX + dx
       var newY = coord.startLayout.relativeY + dy
-      newX = max(0, min(1 - coord.pipLayout.wrappedValue.relativeWidth, newX))
-      newY = max(0, min(1, newY))
 
-      let snapDist: CGFloat = 20 / videoRect.width
-      if newX < snapDist { newX = 0.02 }
-      if newX > 1 - coord.pipLayout.wrappedValue.relativeWidth - snapDist {
-        newX = 1 - coord.pipLayout.wrappedValue.relativeWidth - 0.02
-      }
+      let relW = coord.pipLayout.wrappedValue.relativeWidth
+      let relH: CGFloat = {
+        guard let ws = coord.webcamSize else { return relW * 0.75 }
+        let aspect = ws.height / max(ws.width, 1)
+        return relW * aspect * (coord.screenSize.width / max(coord.screenSize.height, 1))
+      }()
+
+      newX = max(0, min(1 - relW, newX))
+      newY = max(0, min(1 - relH, newY))
+
+      let snapDistX: CGFloat = 20 / videoRect.width
+      let snapDistY: CGFloat = 20 / videoRect.height
+      if newX < snapDistX { newX = 0.02 }
+      if newX > 1 - relW - snapDistX { newX = 1 - relW - 0.02 }
+      if newY < snapDistY { newY = 0.02 }
+      if newY > 1 - relH - snapDistY { newY = 1 - relH - 0.02 }
 
       coord.pipLayout.wrappedValue.relativeX = newX
       coord.pipLayout.wrappedValue.relativeY = newY
