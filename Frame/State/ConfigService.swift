@@ -50,6 +50,11 @@ final class ConfigService {
     set { data.captureSystemAudio = newValue; save() }
   }
 
+  var cameraDeviceId: String? {
+    get { data.cameraDeviceId }
+    set { data.cameraDeviceId = newValue; save() }
+  }
+
   var appearance: String {
     get { data.appearance }
     set { data.appearance = newValue; save(); applyAppearance() }
@@ -101,5 +106,6 @@ private struct ConfigData: Codable {
   var showMouseClicks: Bool = false
   var fps: Int = 60
   var captureSystemAudio: Bool = false
+  var cameraDeviceId: String? = nil
   var appearance: String = "system"
 }

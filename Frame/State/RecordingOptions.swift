@@ -20,6 +20,11 @@ struct AudioDevice: Identifiable, Hashable, Sendable {
   let name: String
 }
 
+struct CaptureDevice: Identifiable, Hashable, Sendable {
+  let id: String
+  let name: String
+}
+
 @MainActor
 @Observable
 final class RecordingOptions {
@@ -49,6 +54,19 @@ final class RecordingOptions {
 
   var captureSystemAudio: Bool {
     didSet { ConfigService.shared.captureSystemAudio = captureSystemAudio }
+  }
+
+  var selectedCamera: CaptureDevice? {
+    didSet { ConfigService.shared.cameraDeviceId = selectedCamera?.id }
+  }
+
+  var availableCameras: [CaptureDevice] {
+    let discovery = AVCaptureDevice.DiscoverySession(
+      deviceTypes: [.builtInWideAngleCamera, .external],
+      mediaType: .video,
+      position: .unspecified
+    )
+    return discovery.devices.map { CaptureDevice(id: $0.uniqueID, name: $0.localizedName) }
   }
 
   var availableMicrophones: [AudioDevice] {
@@ -81,6 +99,19 @@ final class RecordingOptions {
         .map { AudioDevice(id: $0.uniqueID, name: $0.localizedName) }
     } else {
       selectedMicrophone = nil
+    }
+
+    if let cameraId = config.cameraDeviceId {
+      let discovery = AVCaptureDevice.DiscoverySession(
+        deviceTypes: [.builtInWideAngleCamera, .external],
+        mediaType: .video,
+        position: .unspecified
+      )
+      selectedCamera = discovery.devices
+        .first { $0.uniqueID == cameraId }
+        .map { CaptureDevice(id: $0.uniqueID, name: $0.localizedName) }
+    } else {
+      selectedCamera = nil
     }
   }
 }

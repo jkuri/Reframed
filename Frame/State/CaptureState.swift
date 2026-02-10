@@ -16,6 +16,7 @@ enum CaptureError: LocalizedError {
   case permissionDenied
   case recordingFailed(String)
   case microphoneNotFound
+  case cameraNotFound
 
   var errorDescription: String? {
     switch self {
@@ -31,6 +32,8 @@ enum CaptureError: LocalizedError {
       return "Recording failed: \(reason)"
     case .microphoneNotFound:
       return "Could not find the selected microphone"
+    case .cameraNotFound:
+      return "Could not find the selected camera"
     }
   }
 }

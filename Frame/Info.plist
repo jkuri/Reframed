@@ -14,5 +14,7 @@
 	<string>Frame needs screen recording access to capture your screen.</string>
 	<key>NSMicrophoneUsageDescription</key>
 	<string>Frame needs microphone access to record audio with your screen capture.</string>
+	<key>NSCameraUsageDescription</key>
+	<string>Frame needs camera access to record webcam video alongside your screen capture.</string>
 </dict>
 </plist>

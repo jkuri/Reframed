@@ -21,6 +21,10 @@ extension FileManager {
     frameTempDir().appendingPathComponent("video-\(timestamp()).mp4")
   }
 
+  func tempWebcamURL() -> URL {
+    frameTempDir().appendingPathComponent("webcam-\(timestamp()).mp4")
+  }
+
   func tempAudioURL(label: String) -> URL {
     frameTempDir().appendingPathComponent("\(label)-\(timestamp()).m4a")
   }

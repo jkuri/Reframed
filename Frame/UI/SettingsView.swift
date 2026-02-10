@@ -10,6 +10,7 @@ struct SettingsView: View {
   @State private var rememberLastSelection: Bool = ConfigService.shared.rememberLastSelection
   @State private var showMouseClicks: Bool = ConfigService.shared.showMouseClicks
   @State private var captureSystemAudio: Bool = ConfigService.shared.captureSystemAudio
+  @State private var cameraDeviceId: String? = ConfigService.shared.cameraDeviceId
   @State private var appearance: String = ConfigService.shared.appearance
 
   private let fpsOptions = [24, 30, 60]
@@ -23,6 +24,15 @@ struct SettingsView: View {
     return discovery.devices.map { AudioDevice(id: $0.uniqueID, name: $0.localizedName) }
   }
 
+  private var availableCameras: [CaptureDevice] {
+    let discovery = AVCaptureDevice.DiscoverySession(
+      deviceTypes: [.builtInWideAngleCamera, .external],
+      mediaType: .video,
+      position: .unspecified
+    )
+    return discovery.devices.map { CaptureDevice(id: $0.uniqueID, name: $0.localizedName) }
+  }
+
   var body: some View {
     VStack(spacing: 0) {
       header
@@ -33,6 +43,7 @@ struct SettingsView: View {
           outputSection
           recordingSection
           audioSection
+          cameraSection
           optionsSection
         }
         .padding(24)
@@ -174,6 +185,26 @@ struct SettingsView: View {
           settingsRow(mic.name, isSelected: audioDeviceId == mic.id) {
             audioDeviceId = mic.id
             ConfigService.shared.audioDeviceId = mic.id
+          }
+        }
+      }
+    }
+  }
+
+  private var cameraSection: some View {
+    VStack(alignment: .leading, spacing: 8) {
+      sectionLabel("Camera")
+
+      let cameras = availableCameras
+      VStack(spacing: 2) {
+        settingsRow("None", isSelected: cameraDeviceId == nil) {
+          cameraDeviceId = nil
+          ConfigService.shared.cameraDeviceId = nil
+        }
+        ForEach(cameras) { cam in
+          settingsRow(cam.name, isSelected: cameraDeviceId == cam.id) {
+            cameraDeviceId = cam.id
+            ConfigService.shared.cameraDeviceId = cam.id
           }
         }
       }

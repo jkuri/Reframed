@@ -55,6 +55,28 @@ struct OptionsPopover: View {
         .background(FrameColors.divider)
         .padding(.vertical, 4)
 
+      SectionHeader(title: "Camera")
+
+      CheckmarkRow(
+        title: "None",
+        isSelected: options.selectedCamera == nil
+      ) {
+        options.selectedCamera = nil
+      }
+
+      ForEach(options.availableCameras) { cam in
+        CheckmarkRow(
+          title: cam.name,
+          isSelected: options.selectedCamera?.id == cam.id
+        ) {
+          options.selectedCamera = cam
+        }
+      }
+
+      Divider()
+        .background(FrameColors.divider)
+        .padding(.vertical, 4)
+
       SectionHeader(title: "Options")
 
       CheckmarkRow(

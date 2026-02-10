@@ -61,6 +61,23 @@
 		ED4608FB0AB34BC3B7BEDB94 /* WindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC41BA6DF5654C57AC930549 /* WindowController.swift */; };
 		F93F2FF47E12481595833E3E /* WindowSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4146D517F5E493F943D90D0 /* WindowSelectionView.swift */; };
 		FE1324E865074398BCC4317D /* WindowSelectionOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = A435021272D7425AB77F93DF /* WindowSelectionOverlay.swift */; };
+		A20000000000000000000001 /* WebcamCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000001 /* WebcamCapture.swift */; };
+		A20000000000000000000002 /* WebcamPreviewWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000002 /* WebcamPreviewWindow.swift */; };
+		A20000000000000000000003 /* RecordingResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000003 /* RecordingResult.swift */; };
+		A20000000000000000000004 /* PiPLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000004 /* PiPLayout.swift */; };
+		A20000000000000000000005 /* SyncedPlayerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000005 /* SyncedPlayerController.swift */; };
+		A20000000000000000000006 /* EditorState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000006 /* EditorState.swift */; };
+		A20000000000000000000007 /* ThumbnailGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000007 /* ThumbnailGenerator.swift */; };
+		A20000000000000000000008 /* VideoPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000008 /* VideoPreviewView.swift */; };
+		A20000000000000000000009 /* TimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000009 /* TimelineView.swift */; };
+		A2000000000000000000000A /* TrimHandle.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000A /* TrimHandle.swift */; };
+		A2000000000000000000000B /* EditorToolbar.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000B /* EditorToolbar.swift */; };
+		A2000000000000000000000C /* EditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000C /* EditorView.swift */; };
+		A2000000000000000000000D /* EditorWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000D /* EditorWindow.swift */; };
+		A2000000000000000000000E /* PiPCompositionInstruction.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000E /* PiPCompositionInstruction.swift */; };
+		A2000000000000000000000F /* PiPVideoCompositor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000F /* PiPVideoCompositor.swift */; };
+		A20000000000000000000010 /* VideoCompositor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000010 /* VideoCompositor.swift */; };
+		A20000000000000000000011 /* SendableBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000011 /* SendableBox.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -119,6 +136,23 @@
 		BDB41C1253D94BEF960FD7D2 /* WindowSelectionCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowSelectionCoordinator.swift; sourceTree = "<group>"; };
 		C4146D517F5E493F943D90D0 /* WindowSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowSelectionView.swift; sourceTree = "<group>"; };
 		EC41BA6DF5654C57AC930549 /* WindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowController.swift; sourceTree = "<group>"; };
+		B20000000000000000000001 /* WebcamCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebcamCapture.swift; sourceTree = "<group>"; };
+		B20000000000000000000002 /* WebcamPreviewWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebcamPreviewWindow.swift; sourceTree = "<group>"; };
+		B20000000000000000000003 /* RecordingResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingResult.swift; sourceTree = "<group>"; };
+		B20000000000000000000004 /* PiPLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiPLayout.swift; sourceTree = "<group>"; };
+		B20000000000000000000005 /* SyncedPlayerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncedPlayerController.swift; sourceTree = "<group>"; };
+		B20000000000000000000006 /* EditorState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorState.swift; sourceTree = "<group>"; };
+		B20000000000000000000007 /* ThumbnailGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailGenerator.swift; sourceTree = "<group>"; };
+		B20000000000000000000008 /* VideoPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPreviewView.swift; sourceTree = "<group>"; };
+		B20000000000000000000009 /* TimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineView.swift; sourceTree = "<group>"; };
+		B2000000000000000000000A /* TrimHandle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrimHandle.swift; sourceTree = "<group>"; };
+		B2000000000000000000000B /* EditorToolbar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorToolbar.swift; sourceTree = "<group>"; };
+		B2000000000000000000000C /* EditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorView.swift; sourceTree = "<group>"; };
+		B2000000000000000000000D /* EditorWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorWindow.swift; sourceTree = "<group>"; };
+		B2000000000000000000000E /* PiPCompositionInstruction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiPCompositionInstruction.swift; sourceTree = "<group>"; };
+		B2000000000000000000000F /* PiPVideoCompositor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PiPVideoCompositor.swift; sourceTree = "<group>"; };
+		B20000000000000000000010 /* VideoCompositor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCompositor.swift; sourceTree = "<group>"; };
+		B20000000000000000000011 /* SendableBox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendableBox.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -157,6 +191,7 @@
 				D10000000000000000000005 /* State */,
 				D1000000000000000000000D /* CaptureModes */,
 				D10000000000000000000008 /* Recording */,
+				D20000000000000000000001 /* Editor */,
 				D10000000000000000000009 /* Utilities */,
 				D1000000000000000000000C /* UI */,
 				3DCA03E02F3B511C003FE309 /* Assets.xcassets */,
@@ -210,6 +245,9 @@
 				B10000000000000000000032 /* MicrophoneCapture.swift */,
 				B10000000000000000000034 /* SystemAudioCapture.swift */,
 				B10000000000000000000035 /* SharedRecordingClock.swift */,
+				B20000000000000000000001 /* WebcamCapture.swift */,
+				B20000000000000000000002 /* WebcamPreviewWindow.swift */,
+				B20000000000000000000003 /* RecordingResult.swift */,
 			);
 			path = Recording;
 			sourceTree = "<group>";
@@ -219,6 +257,7 @@
 			children = (
 				B10000000000000000000014 /* NSScreen+Extensions.swift */,
 				B10000000000000000000015 /* CGRect+Extensions.swift */,
+				B20000000000000000000011 /* SendableBox.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -308,6 +347,26 @@
 				C4146D517F5E493F943D90D0 /* WindowSelectionView.swift */,
 			);
 			path = CaptureWindow;
+			sourceTree = "<group>";
+		};
+		D20000000000000000000001 /* Editor */ = {
+			isa = PBXGroup;
+			children = (
+				B20000000000000000000004 /* PiPLayout.swift */,
+				B20000000000000000000005 /* SyncedPlayerController.swift */,
+				B20000000000000000000006 /* EditorState.swift */,
+				B20000000000000000000007 /* ThumbnailGenerator.swift */,
+				B20000000000000000000008 /* VideoPreviewView.swift */,
+				B20000000000000000000009 /* TimelineView.swift */,
+				B2000000000000000000000A /* TrimHandle.swift */,
+				B2000000000000000000000B /* EditorToolbar.swift */,
+				B2000000000000000000000C /* EditorView.swift */,
+				B2000000000000000000000D /* EditorWindow.swift */,
+				B2000000000000000000000E /* PiPCompositionInstruction.swift */,
+				B2000000000000000000000F /* PiPVideoCompositor.swift */,
+				B20000000000000000000010 /* VideoCompositor.swift */,
+			);
+			path = Editor;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -431,6 +490,23 @@
 				A1000000000000000000002C /* StartRecordingButton.swift in Sources */,
 				A1000000000000000000002D /* SettingsView.swift in Sources */,
 				A1000000000000000000002E /* SettingsWindow.swift in Sources */,
+				A20000000000000000000001 /* WebcamCapture.swift in Sources */,
+				A20000000000000000000002 /* WebcamPreviewWindow.swift in Sources */,
+				A20000000000000000000003 /* RecordingResult.swift in Sources */,
+				A20000000000000000000004 /* PiPLayout.swift in Sources */,
+				A20000000000000000000005 /* SyncedPlayerController.swift in Sources */,
+				A20000000000000000000006 /* EditorState.swift in Sources */,
+				A20000000000000000000007 /* ThumbnailGenerator.swift in Sources */,
+				A20000000000000000000008 /* VideoPreviewView.swift in Sources */,
+				A20000000000000000000009 /* TimelineView.swift in Sources */,
+				A2000000000000000000000A /* TrimHandle.swift in Sources */,
+				A2000000000000000000000B /* EditorToolbar.swift in Sources */,
+				A2000000000000000000000C /* EditorView.swift in Sources */,
+				A2000000000000000000000D /* EditorWindow.swift in Sources */,
+				A2000000000000000000000E /* PiPCompositionInstruction.swift in Sources */,
+				A2000000000000000000000F /* PiPVideoCompositor.swift in Sources */,
+				A20000000000000000000010 /* VideoCompositor.swift in Sources */,
+				A20000000000000000000011 /* SendableBox.swift in Sources */,
 			);
 		};
 /* End PBXSourcesBuildPhase section */
@@ -575,7 +651,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = YES;
 				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
-				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = YES;
 				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
 				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
 				ENABLE_RESOURCE_ACCESS_PHOTO_LIBRARY = NO;
@@ -618,7 +694,7 @@
 				ENABLE_HARDENED_RUNTIME = YES;
 				ENABLE_RESOURCE_ACCESS_AUDIO_INPUT = YES;
 				ENABLE_RESOURCE_ACCESS_CALENDARS = NO;
-				ENABLE_RESOURCE_ACCESS_CAMERA = NO;
+				ENABLE_RESOURCE_ACCESS_CAMERA = YES;
 				ENABLE_RESOURCE_ACCESS_CONTACTS = NO;
 				ENABLE_RESOURCE_ACCESS_LOCATION = NO;
 				ENABLE_RESOURCE_ACCESS_PHOTO_LIBRARY = NO;

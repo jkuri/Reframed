@@ -123,7 +123,7 @@ struct CaptureToolbar: View {
       CompactTimerView(startedAt: startedAt, frozen: isPaused)
         .padding(.horizontal, 10)
 
-      if session.options.captureSystemAudio || session.options.selectedMicrophone != nil {
+      if session.options.captureSystemAudio || session.options.selectedMicrophone != nil || session.options.selectedCamera != nil {
         HStack(spacing: 6) {
           if session.options.captureSystemAudio {
             Image(systemName: "speaker.wave.2.fill")
@@ -132,6 +132,11 @@ struct CaptureToolbar: View {
           }
           if session.options.selectedMicrophone != nil {
             Image(systemName: "mic.fill")
+              .font(.system(size: 11))
+              .foregroundStyle(FrameColors.tertiaryText)
+          }
+          if session.options.selectedCamera != nil {
+            Image(systemName: "web.camera.fill")
               .font(.system(size: 11))
               .foregroundStyle(FrameColors.tertiaryText)
           }

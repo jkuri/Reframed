@@ -23,6 +23,8 @@ final class SessionState {
   private var toolbarWindow: CaptureToolbarWindow?
   private var backdropWindow: ToolbarBackdropWindow?
   private var startRecordingWindow: StartRecordingWindow?
+  private var editorWindow: EditorWindow?
+  private var webcamPreviewWindow: WebcamPreviewWindow?
 
   weak var overlayView: SelectionOverlayView?
 
@@ -41,7 +43,7 @@ final class SessionState {
       MainActor.assumeIsolated {
         guard let self else { return }
         switch self.state {
-        case .recording, .paused, .processing:
+        case .recording, .paused, .processing, .editing:
           return
         default:
           self.hideToolbar()
@@ -167,8 +169,6 @@ final class SessionState {
     windowSelectionCoordinator?.destroyOverlay()
     windowSelectionCoordinator = nil
 
-    // We could show a border around the window here if desired,
-    // but for now let's just start recording.
     captureTarget = .window(window)
     logger.info("Window selection confirmed: \(window.title ?? "Unknown")")
 
@@ -221,8 +221,19 @@ final class SessionState {
       target: target,
       fps: options.fps,
       captureSystemAudio: options.captureSystemAudio,
-      microphoneDeviceId: options.selectedMicrophone?.id
+      microphoneDeviceId: options.selectedMicrophone?.id,
+      cameraDeviceId: options.selectedCamera?.id
     )
+
+    if options.selectedCamera != nil {
+      let box = await coordinator.getWebcamCaptureSessionBox()
+      if let camSession = box?.session {
+        let previewWindow = WebcamPreviewWindow()
+        previewWindow.show(captureSession: camSession)
+        self.webcamPreviewWindow = previewWindow
+      }
+    }
+
     transition(to: .recording(startedAt: startedAt))
   }
 
@@ -237,15 +248,49 @@ final class SessionState {
     transition(to: .processing)
     selectionCoordinator?.destroyAll()
     selectionCoordinator = nil
+    webcamPreviewWindow?.close()
+    webcamPreviewWindow = nil
 
-    if let url = try await recordingCoordinator?.stopRecording() {
-      lastRecordingURL = url
-      StateService.shared.lastRecordingPath = url.path
-      logger.info("Recording saved to \(url.path)")
+    guard let result = try await recordingCoordinator?.stopRecordingRaw() else {
+      recordingCoordinator = nil
+      captureTarget = nil
+      captureMode = .none
+      transition(to: .idle)
+      showToolbar()
+      return
     }
 
     recordingCoordinator = nil
     captureTarget = nil
+
+    openEditor(result: result)
+  }
+
+  private func openEditor(result: RecordingResult) {
+    transition(to: .editing)
+
+    let editor = EditorWindow()
+    editor.onSave = { [weak self] url in
+      MainActor.assumeIsolated {
+        guard let self else { return }
+        self.lastRecordingURL = url
+        StateService.shared.lastRecordingPath = url.path
+        self.logger.info("Editor save: \(url.path)")
+        self.closeEditor()
+      }
+    }
+    editor.onCancel = { [weak self] in
+      MainActor.assumeIsolated {
+        self?.closeEditor()
+        FileManager.default.cleanupTempDir()
+      }
+    }
+    editor.show(result: result)
+    self.editorWindow = editor
+  }
+
+  private func closeEditor() {
+    editorWindow = nil
     captureMode = .none
     transition(to: .idle)
     showToolbar()
@@ -283,6 +328,10 @@ final class SessionState {
     Task {
       selectionCoordinator?.destroyAll()
       selectionCoordinator = nil
+      webcamPreviewWindow?.close()
+      webcamPreviewWindow = nil
+      editorWindow?.close()
+      editorWindow = nil
 
       if let url = try? await recordingCoordinator?.stopRecording() {
         try? FileManager.default.removeItem(at: url)
@@ -291,6 +340,7 @@ final class SessionState {
       recordingCoordinator = nil
       captureTarget = nil
       captureMode = .none
+      FileManager.default.cleanupTempDir()
       transition(to: .idle)
     }
   }
