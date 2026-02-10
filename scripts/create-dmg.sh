@@ -2,10 +2,9 @@
 set -e
 
 APP_NAME="Frame"
-VERSION="1.0.0"
-DMG_NAME="${APP_NAME}-${VERSION}.dmg"
-# Xcode build output path when using -derivedDataPath .build
 BUILD_DIR=".build/Build/Products/Release"
+VERSION=$(/usr/libexec/PlistBuddy -c "Print CFBundleShortVersionString" "${BUILD_DIR}/${APP_NAME}.app/Contents/Info.plist" 2>/dev/null || echo "0.0.0")
+DMG_NAME="${APP_NAME}-${VERSION}.dmg"
 APP_BUNDLE="${BUILD_DIR}/${APP_NAME}.app"
 # Use /tmp for temporary files
 DMG_TEMP="/tmp/${APP_NAME}_dmg_temp"
@@ -113,7 +112,7 @@ info "Finalizing DMG..."
 # Unmount
 hdiutil detach "${MOUNT_DIR}" -quiet
 
-# Convert to compressed, read-only DMG
+rm -f "${DMG_FINAL}"
 hdiutil convert "${DMG_TEMP_IMG}" \
     -format UDZO \
     -imagekey zlib-level=9 \
