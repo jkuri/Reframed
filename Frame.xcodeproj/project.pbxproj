@@ -9,6 +9,7 @@
 /* Begin PBXBuildFile section */
 		0255AD69477B42D2B028628B /* CaptureTarget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CFD921258364EA6A604537F /* CaptureTarget.swift */; };
 		3DCA03E12F3B511C003FE309 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 3DCA03E02F3B511C003FE309 /* Assets.xcassets */; };
+		AA0000000000000000000001 /* Credits.html in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000002 /* Credits.html */; };
 		A10000000000000000000001 /* FrameApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000001 /* FrameApp.swift */; };
 		A10000000000000000000002 /* AppDelegate.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000002 /* AppDelegate.swift */; };
 		A10000000000000000000003 /* Permissions.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000003 /* Permissions.swift */; };
@@ -64,6 +65,7 @@
 /* Begin PBXFileReference section */
 		3CFD921258364EA6A604537F /* CaptureTarget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureTarget.swift; sourceTree = "<group>"; };
 		3DCA03E02F3B511C003FE309 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		AA0000000000000000000002 /* Credits.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = Credits.html; sourceTree = "<group>"; };
 		A435021272D7425AB77F93DF /* WindowSelectionOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowSelectionOverlay.swift; sourceTree = "<group>"; };
 		B10000000000000000000001 /* FrameApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameApp.swift; sourceTree = "<group>"; };
 		B10000000000000000000002 /* AppDelegate.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AppDelegate.swift; sourceTree = "<group>"; };
@@ -156,6 +158,7 @@
 				D10000000000000000000009 /* Utilities */,
 				D1000000000000000000000C /* UI */,
 				3DCA03E02F3B511C003FE309 /* Assets.xcassets */,
+				AA0000000000000000000002 /* Credits.html */,
 			);
 			path = Frame;
 			sourceTree = "<group>";
@@ -368,6 +371,7 @@
 			isa = PBXResourcesBuildPhase;
 			files = (
 				3DCA03E12F3B511C003FE309 /* Assets.xcassets in Resources */,
+				AA0000000000000000000001 /* Credits.html in Resources */,
 			);
 		};
 /* End PBXResourcesBuildPhase section */
@@ -574,12 +578,12 @@
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Frame/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Frame;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Jan Kuri <jkuri88@gmail.com>";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = eu.jkuri.frame;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				RUNTIME_EXCEPTION_ALLOW_DYLD_ENVIRONMENT_VARIABLES = NO;
@@ -617,12 +621,12 @@
 				GENERATE_INFOPLIST_FILE = NO;
 				INFOPLIST_FILE = Frame/Info.plist;
 				INFOPLIST_KEY_CFBundleDisplayName = Frame;
-				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				INFOPLIST_KEY_NSHumanReadableCopyright = "Jan Kuri <jkuri88@gmail.com>";
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 1.0;
+				MARKETING_VERSION = 0.1.0;
 				PRODUCT_BUNDLE_IDENTIFIER = eu.jkuri.frame;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				RUNTIME_EXCEPTION_ALLOW_DYLD_ENVIRONMENT_VARIABLES = NO;
