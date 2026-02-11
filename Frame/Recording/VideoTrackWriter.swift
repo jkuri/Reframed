@@ -23,7 +23,7 @@ final class VideoTrackWriter: @unchecked Sendable {
     droppedFrames = 0
   }
 
-  init(outputURL: URL, width: Int, height: Int, clock: SharedRecordingClock) throws {
+  init(outputURL: URL, width: Int, height: Int, fps: Int = 60, clock: SharedRecordingClock) throws {
     self.outputURL = outputURL
     self.clock = clock
 
@@ -45,7 +45,7 @@ final class VideoTrackWriter: @unchecked Sendable {
       AVVideoCompressionPropertiesKey: [
         AVVideoAverageBitRateKey: width * height * 12,
         AVVideoProfileLevelKey: AVVideoProfileLevelH264MainAutoLevel,
-        AVVideoExpectedSourceFrameRateKey: 60,
+        AVVideoExpectedSourceFrameRateKey: fps,
         AVVideoAllowFrameReorderingKey: false,
       ] as [String: Any],
     ]

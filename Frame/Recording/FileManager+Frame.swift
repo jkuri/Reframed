@@ -30,6 +30,15 @@ extension FileManager {
   }
 
   @MainActor
+  func projectSaveDirectory() -> URL {
+    let folderPath = ConfigService.shared.projectFolder
+    let expanded = NSString(string: folderPath).expandingTildeInPath
+    let url = URL(fileURLWithPath: expanded, isDirectory: true)
+    try? createDirectory(at: url, withIntermediateDirectories: true)
+    return url
+  }
+
+  @MainActor
   func defaultSaveDirectory() -> URL {
     let folderPath = ConfigService.shared.outputFolder
     let expanded = NSString(string: folderPath).expandingTildeInPath
@@ -39,8 +48,12 @@ extension FileManager {
   }
 
   @MainActor
-  func defaultSaveURL(for tempURL: URL) -> URL {
-    defaultSaveDirectory().appendingPathComponent(tempURL.lastPathComponent)
+  func defaultSaveURL(for tempURL: URL, extension ext: String? = nil) -> URL {
+    if let ext {
+      let baseName = tempURL.deletingPathExtension().lastPathComponent
+      return defaultSaveDirectory().appendingPathComponent("\(baseName).\(ext)")
+    }
+    return defaultSaveDirectory().appendingPathComponent(tempURL.lastPathComponent)
   }
 
   func moveToFinal(from source: URL, to destination: URL) throws {
@@ -48,6 +61,10 @@ extension FileManager {
       try removeItem(at: destination)
     }
     try moveItem(at: source, to: destination)
+  }
+
+  func frameBundleURL(in directory: URL) -> URL {
+    directory.appendingPathComponent("recording-\(timestamp()).frm")
   }
 
   func cleanupTempDir() {

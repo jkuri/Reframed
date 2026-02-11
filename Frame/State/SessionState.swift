@@ -23,7 +23,7 @@ final class SessionState {
   private var toolbarWindow: CaptureToolbarWindow?
   private var backdropWindow: ToolbarBackdropWindow?
   private var startRecordingWindow: StartRecordingWindow?
-  private var editorWindow: EditorWindow?
+  private var editorWindows: [EditorWindow] = []
   private var webcamPreviewWindow: WebcamPreviewWindow?
   private var countdownOverlayWindow: CountdownOverlayWindow?
   private var countdownTask: Task<Void, Never>?
@@ -33,6 +33,8 @@ final class SessionState {
   func toggleToolbar() {
     if toolbarWindow != nil {
       hideToolbar()
+    } else if case .editing = state {
+      editorWindows.last?.bringToFront()
     } else {
       showToolbar()
     }
@@ -315,51 +317,77 @@ final class SessionState {
     recordingCoordinator = nil
     captureTarget = nil
 
-    openEditor(result: result)
+    let saveDir = FileManager.default.projectSaveDirectory()
+    do {
+      let project = try FrameProject.create(from: result, fps: result.fps, in: saveDir)
+      openEditor(project: project)
+    } catch {
+      logger.error("Failed to create project bundle: \(error)")
+      openEditor(project: nil, result: result)
+    }
   }
 
-  private func openEditor(result: RecordingResult) {
+  private func openEditor(project: FrameProject?, result: RecordingResult? = nil) {
     hideToolbar()
     transition(to: .editing)
 
     let editor = EditorWindow()
-    editor.onSave = { [weak self] url in
+    editor.onSave = { [weak self, weak editor] url in
       MainActor.assumeIsolated {
         guard let self else { return }
         self.lastRecordingURL = url
         StateService.shared.lastRecordingPath = url.path
         self.logger.info("Editor save: \(url.path)")
-        self.closeEditor()
+        if let editor { self.removeEditor(editor) }
       }
     }
-    editor.onCancel = { [weak self] in
+    editor.onCancel = { [weak self, weak editor] in
       MainActor.assumeIsolated {
-        self?.closeEditor()
-        FileManager.default.cleanupTempDir()
+        if let self, let editor { self.removeEditor(editor) }
       }
     }
-    editor.onDelete = { [weak self] in
+    editor.onDelete = { [weak self, weak editor] in
       MainActor.assumeIsolated {
-        self?.closeEditor()
-        FileManager.default.cleanupTempDir()
+        if let self, let editor { self.removeEditor(editor) }
       }
     }
-    editor.show(result: result)
-    self.editorWindow = editor
+    if let project {
+      editor.show(project: project)
+    } else if let result {
+      editor.show(result: result)
+    }
+    editorWindows.append(editor)
   }
 
-  private func closeEditor() {
-    editorWindow = nil
-    captureMode = .none
-    transition(to: .idle)
-    showToolbar()
+  func openProject(at url: URL) {
+    do {
+      let project = try FrameProject.open(at: url)
+      openEditor(project: project)
+    } catch {
+      logger.error("Failed to open project: \(error)")
+      showError("Failed to open project: \(error.localizedDescription)")
+    }
+  }
+
+  private func removeEditor(_ editor: EditorWindow) {
+    editorWindows.removeAll { $0 === editor }
+    if editorWindows.isEmpty {
+      captureMode = .none
+      transition(to: .idle)
+      showToolbar()
+    }
   }
 
   func openSettings() {
     hideToolbar()
     SettingsWindow.shared.onClose = { [weak self] in
       MainActor.assumeIsolated {
-        self?.showToolbar()
+        guard let self else { return }
+        if case .editing = self.state {
+          self.editorWindows.last?.bringToFront()
+        } else {
+          self.showToolbar()
+        }
       }
     }
     SettingsWindow.shared.show()
@@ -393,8 +421,8 @@ final class SessionState {
       selectionCoordinator = nil
       webcamPreviewWindow?.close()
       webcamPreviewWindow = nil
-      editorWindow?.close()
-      editorWindow = nil
+      for editor in editorWindows { editor.close() }
+      editorWindows.removeAll()
 
       if let url = try? await recordingCoordinator?.stopRecording() {
         try? FileManager.default.removeItem(at: url)

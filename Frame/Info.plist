@@ -16,5 +16,40 @@
 	<string>Frame needs microphone access to record audio with your screen capture.</string>
 	<key>NSCameraUsageDescription</key>
 	<string>Frame needs camera access to record webcam video alongside your screen capture.</string>
+	<key>CFBundleDocumentTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleTypeName</key>
+			<string>Frame Project</string>
+			<key>CFBundleTypeRole</key>
+			<string>Editor</string>
+			<key>LSHandlerRank</key>
+			<string>Owner</string>
+			<key>LSItemContentTypes</key>
+			<array>
+				<string>eu.jankuri.frame.project</string>
+			</array>
+		</dict>
+	</array>
+	<key>UTExportedTypeDeclarations</key>
+	<array>
+		<dict>
+			<key>UTTypeConformsTo</key>
+			<array>
+				<string>com.apple.package</string>
+			</array>
+			<key>UTTypeDescription</key>
+			<string>Frame Project</string>
+			<key>UTTypeIdentifier</key>
+			<string>eu.jankuri.frame.project</string>
+			<key>UTTypeTagSpecification</key>
+			<dict>
+				<key>public.filename-extension</key>
+				<array>
+					<string>frm</string>
+				</array>
+			</dict>
+		</dict>
+	</array>
 </dict>
 </plist>

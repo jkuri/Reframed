@@ -4,8 +4,10 @@ struct EditorTopBar: View {
   @Bindable var editorState: EditorState
   let onOpenFolder: () -> Void
   let onDelete: () -> Void
+  @Environment(\.colorScheme) private var colorScheme
 
   var body: some View {
+    let _ = colorScheme
     HStack(spacing: 12) {
       HStack(spacing: 6) {
         Button(action: onOpenFolder) {
@@ -28,7 +30,7 @@ struct EditorTopBar: View {
       Spacer()
 
       HStack(spacing: 8) {
-        Text("Frame Editor")
+        Text(editorState.projectName)
           .font(.system(size: 14, weight: .semibold))
           .foregroundStyle(FrameColors.primaryText)
 

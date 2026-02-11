@@ -9,9 +9,21 @@ final class EditorWindow: NSObject, NSWindowDelegate {
   var onCancel: (() -> Void)?
   var onDelete: (() -> Void)?
 
+  func show(project: FrameProject) {
+    let state = EditorState(project: project)
+    self.editorState = state
+
+    showWindow(state: state)
+  }
+
   func show(result: RecordingResult) {
     let state = EditorState(result: result)
     self.editorState = state
+
+    showWindow(state: state)
+  }
+
+  private func showWindow(state: EditorState) {
 
     let editorView = EditorView(
       editorState: state,
@@ -55,8 +67,14 @@ final class EditorWindow: NSObject, NSWindowDelegate {
     self.window = window
   }
 
+  func bringToFront() {
+    window?.makeKeyAndOrderFront(nil)
+    NSApp.activate(ignoringOtherApps: true)
+  }
+
   func close() {
     editorState?.teardown()
+    window?.delegate = nil
     window?.close()
     window = nil
     editorState = nil

@@ -13,6 +13,8 @@ enum VideoCompositor {
     backgroundStyle: BackgroundStyle = .none,
     padding: CGFloat = 0,
     videoCornerRadius: CGFloat = 0,
+    pipCornerRadius: CGFloat = 12,
+    pipBorderWidth: CGFloat = 0,
     exportSettings: ExportSettings = ExportSettings(),
     progressHandler: (@MainActor @Sendable (Double) -> Void)? = nil
   ) async throws -> URL {
@@ -123,7 +125,8 @@ enum VideoCompositor {
             height: rect.height * scaleY
           )
         },
-        pipCornerRadius: 12 * (renderSize.width / canvasSize.width),
+        pipCornerRadius: pipCornerRadius * (renderSize.width / canvasSize.width),
+        pipBorderWidth: pipBorderWidth * (renderSize.width / canvasSize.width),
         outputSize: renderSize,
         backgroundColors: bgColors,
         backgroundStartPoint: bgStartPoint,
@@ -154,11 +157,13 @@ enum VideoCompositor {
 
       exportSession.videoComposition = videoComposition
       exportSession.timeRange = CMTimeRange(start: .zero, duration: effectiveTrim.duration)
-      try await runExport(exportSession, to: outputURL, progressHandler: progressHandler)
+      try await runExport(exportSession, to: outputURL, fileType: exportSettings.format.fileType, progressHandler: progressHandler)
 
-      let destination = await MainActor.run { FileManager.default.defaultSaveURL(for: outputURL) }
+      let destination = await MainActor.run { FileManager.default.defaultSaveURL(for: outputURL, extension: exportSettings.format.fileExtension) }
       try FileManager.default.moveToFinal(from: outputURL, to: destination)
-      FileManager.default.cleanupTempDir()
+      if let mixURL = mixedAudioURL, mixURL.lastPathComponent == "mixed-audio.m4a" {
+        try? FileManager.default.removeItem(at: mixURL)
+      }
 
       logger.info("Composited export saved: \(destination.path)")
       return destination
@@ -177,11 +182,13 @@ enum VideoCompositor {
     }
 
     exportSession.timeRange = CMTimeRange(start: .zero, duration: effectiveTrim.duration)
-    try await runExport(exportSession, to: outputURL, progressHandler: progressHandler)
+    try await runExport(exportSession, to: outputURL, fileType: exportSettings.format.fileType, progressHandler: progressHandler)
 
-    let destination = await MainActor.run { FileManager.default.defaultSaveURL(for: outputURL) }
+    let destination = await MainActor.run { FileManager.default.defaultSaveURL(for: outputURL, extension: exportSettings.format.fileExtension) }
     try FileManager.default.moveToFinal(from: outputURL, to: destination)
-    FileManager.default.cleanupTempDir()
+    if let mixURL = mixedAudioURL, mixURL.lastPathComponent == "mixed-audio.m4a" {
+      try? FileManager.default.removeItem(at: mixURL)
+    }
 
     logger.info("Passthrough export saved: \(destination.path)")
     return destination
@@ -196,6 +203,7 @@ enum VideoCompositor {
   private static func runExport(
     _ session: AVAssetExportSession,
     to url: URL,
+    fileType: AVFileType = .mp4,
     progressHandler: (@MainActor @Sendable (Double) -> Void)?
   ) async throws {
     let progressTask: Task<Void, Never>?
@@ -210,7 +218,7 @@ enum VideoCompositor {
     } else {
       progressTask = nil
     }
-    try await session.export(to: url, as: .mp4)
+    try await session.export(to: url, as: fileType)
     progressTask?.cancel()
   }
 

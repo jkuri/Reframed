@@ -16,14 +16,12 @@ struct ExportSheet: View {
 
       VStack(alignment: .leading, spacing: 18) {
         settingsRow(label: "Format") {
-          Text("MP4")
-            .font(.system(size: 13))
-            .foregroundStyle(FrameColors.primaryText)
-            .padding(.horizontal, 12)
-            .padding(.vertical, 6)
-            .frame(maxWidth: .infinity, alignment: .leading)
-            .background(FrameColors.fieldBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 6))
+          Picker("", selection: $settings.format) {
+            ForEach(ExportFormat.allCases) { format in
+              Text(format.label).tag(format)
+            }
+          }
+          .pickerStyle(.segmented)
         }
 
         settingsRow(label: "Codec") {

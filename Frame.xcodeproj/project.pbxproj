@@ -85,6 +85,8 @@
 		A20000000000000000000010 /* VideoCompositor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000010 /* VideoCompositor.swift */; };
 		A20000000000000000000011 /* SendableBox.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000011 /* SendableBox.swift */; };
 		A20000000000000000000012 /* CountdownOverlayWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000012 /* CountdownOverlayWindow.swift */; };
+		A3000000000000000000001B /* FrameProject.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3000000000000000000001B /* FrameProject.swift */; };
+		A3000000000000000000001C /* ProjectMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3000000000000000000001C /* ProjectMetadata.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -167,6 +169,8 @@
 		B20000000000000000000010 /* VideoCompositor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoCompositor.swift; sourceTree = "<group>"; };
 		B20000000000000000000011 /* SendableBox.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SendableBox.swift; sourceTree = "<group>"; };
 		B20000000000000000000012 /* CountdownOverlayWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CountdownOverlayWindow.swift; sourceTree = "<group>"; };
+		B3000000000000000000001B /* FrameProject.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = FrameProject.swift; sourceTree = "<group>"; };
+		B3000000000000000000001C /* ProjectMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectMetadata.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -206,6 +210,7 @@
 				D1000000000000000000000D /* CaptureModes */,
 				D10000000000000000000008 /* Recording */,
 				D20000000000000000000001 /* Editor */,
+				D30000000000000000000001 /* Project */,
 				D10000000000000000000009 /* Utilities */,
 				D1000000000000000000000C /* UI */,
 				3DCA03E02F3B511C003FE309 /* Assets.xcassets */,
@@ -362,6 +367,15 @@
 				C4146D517F5E493F943D90D0 /* WindowSelectionView.swift */,
 			);
 			path = CaptureWindow;
+			sourceTree = "<group>";
+		};
+		D30000000000000000000001 /* Project */ = {
+			isa = PBXGroup;
+			children = (
+				B3000000000000000000001B /* FrameProject.swift */,
+				B3000000000000000000001C /* ProjectMetadata.swift */,
+			);
+			path = Project;
 			sourceTree = "<group>";
 		};
 		D20000000000000000000001 /* Editor */ = {
@@ -535,6 +549,8 @@
 				A20000000000000000000010 /* VideoCompositor.swift in Sources */,
 				A20000000000000000000011 /* SendableBox.swift in Sources */,
 				A20000000000000000000012 /* CountdownOverlayWindow.swift in Sources */,
+				A3000000000000000000001B /* FrameProject.swift in Sources */,
+				A3000000000000000000001C /* ProjectMetadata.swift in Sources */,
 			);
 		};
 /* End PBXSourcesBuildPhase section */

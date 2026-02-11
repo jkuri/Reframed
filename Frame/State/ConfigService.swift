@@ -55,6 +55,11 @@ final class ConfigService {
     set { data.cameraDeviceId = newValue; save() }
   }
 
+  var projectFolder: String {
+    get { data.projectFolder }
+    set { data.projectFolder = newValue; save() }
+  }
+
   var appearance: String {
     get { data.appearance }
     set { data.appearance = newValue; save(); applyAppearance() }
@@ -107,5 +112,6 @@ private struct ConfigData: Codable {
   var fps: Int = 60
   var captureSystemAudio: Bool = false
   var cameraDeviceId: String? = nil
+  var projectFolder: String = "~/Frame"
   var appearance: String = "system"
 }

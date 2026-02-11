@@ -3,16 +3,18 @@ import SwiftUI
 struct EditorView: View {
   @Bindable var editorState: EditorState
   @State private var thumbnailGenerator = ThumbnailGenerator()
+  @Environment(\.colorScheme) private var colorScheme
 
   let onSave: (URL) -> Void
   let onCancel: () -> Void
   let onDelete: () -> Void
 
   var body: some View {
+    let _ = colorScheme
     VStack(spacing: 0) {
       EditorTopBar(
         editorState: editorState,
-        onOpenFolder: { editorState.openSaveFolder() },
+        onOpenFolder: { editorState.openExportFolder() },
         onDelete: { editorState.showDeleteConfirmation = true }
       )
       Divider().background(FrameColors.divider)
@@ -49,7 +51,7 @@ struct EditorView: View {
       Button("OK") {}
       if !editorState.exportResultIsError {
         Button("Show in Finder") {
-          editorState.openSaveFolder()
+          editorState.openExportFolder()
         }
       }
     } message: {
@@ -88,7 +90,9 @@ struct EditorView: View {
           webcamPlayer: editorState.playerController.webcamPlayer,
           pipLayout: $editorState.pipLayout,
           webcamSize: editorState.result.webcamSize,
-          screenSize: screenSize
+          screenSize: screenSize,
+          pipCornerRadius: editorState.pipCornerRadius,
+          pipBorderWidth: editorState.pipBorderWidth
         )
         .clipShape(RoundedRectangle(cornerRadius: scaledCornerRadius(in: geo.size)))
         .padding(.horizontal, scaledHPadding(in: geo.size))

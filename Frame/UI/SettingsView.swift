@@ -11,9 +11,10 @@ struct SettingsView: View {
   @State private var showMouseClicks: Bool = ConfigService.shared.showMouseClicks
   @State private var captureSystemAudio: Bool = ConfigService.shared.captureSystemAudio
   @State private var cameraDeviceId: String? = ConfigService.shared.cameraDeviceId
+  @State private var projectFolder: String = ConfigService.shared.projectFolder
   @State private var appearance: String = ConfigService.shared.appearance
 
-  private let fpsOptions = [24, 30, 60]
+  private let fpsOptions = [24, 30, 40, 50, 60]
 
   private var availableMicrophones: [AudioDevice] {
     let discovery = AVCaptureDevice.DiscoverySession(
@@ -40,6 +41,7 @@ struct SettingsView: View {
       ScrollView {
         VStack(alignment: .leading, spacing: 20) {
           appearanceSection
+          projectFolderSection
           outputSection
           recordingSection
           audioSection
@@ -83,6 +85,29 @@ struct SettingsView: View {
           }
           .buttonStyle(.plain)
         }
+      }
+    }
+  }
+
+  private var projectFolderSection: some View {
+    VStack(alignment: .leading, spacing: 8) {
+      sectionLabel("Project Folder")
+      HStack(spacing: 8) {
+        Text(projectFolder)
+          .font(.system(size: 12))
+          .foregroundStyle(FrameColors.primaryText)
+          .lineLimit(1)
+          .truncationMode(.middle)
+          .frame(maxWidth: .infinity, alignment: .leading)
+          .padding(.horizontal, 10)
+          .padding(.vertical, 7)
+          .background(FrameColors.fieldBackground)
+          .clipShape(RoundedRectangle(cornerRadius: 6))
+
+        Button("Browse") {
+          chooseProjectFolder()
+        }
+        .buttonStyle(SettingsButtonStyle())
       }
     }
   }
@@ -279,6 +304,24 @@ struct SettingsView: View {
       if window.titlebarAppearsTransparent {
         window.backgroundColor = bg
       }
+    }
+  }
+
+  private func chooseProjectFolder() {
+    let panel = NSOpenPanel()
+    panel.canChooseDirectories = true
+    panel.canChooseFiles = false
+    panel.canCreateDirectories = true
+    panel.allowsMultipleSelection = false
+    panel.prompt = "Select"
+
+    if panel.runModal() == .OK, let url = panel.url {
+      let path = url.path.replacingOccurrences(
+        of: FileManager.default.homeDirectoryForCurrentUser.path,
+        with: "~"
+      )
+      projectFolder = path
+      ConfigService.shared.projectFolder = path
     }
   }
 

@@ -2,15 +2,46 @@ import AVFoundation
 import Foundation
 
 struct ExportSettings: Sendable {
+  var format: ExportFormat = .mp4
   var fps: ExportFPS = .original
   var resolution: ExportResolution = .original
   var codec: ExportCodec = .h264
+}
+
+enum ExportFormat: Sendable, CaseIterable, Identifiable {
+  case mp4
+  case mov
+
+  var id: Self { self }
+
+  var label: String {
+    switch self {
+    case .mp4: "MP4"
+    case .mov: "MOV"
+    }
+  }
+
+  var fileType: AVFileType {
+    switch self {
+    case .mp4: .mp4
+    case .mov: .mov
+    }
+  }
+
+  var fileExtension: String {
+    switch self {
+    case .mp4: "mp4"
+    case .mov: "mov"
+    }
+  }
 }
 
 enum ExportFPS: Sendable, CaseIterable, Identifiable {
   case original
   case fps24
   case fps30
+  case fps40
+  case fps50
   case fps60
 
   var id: Self { self }
@@ -18,9 +49,11 @@ enum ExportFPS: Sendable, CaseIterable, Identifiable {
   var label: String {
     switch self {
     case .original: "Original"
-    case .fps24: "24 fps"
-    case .fps30: "30 fps"
-    case .fps60: "60 fps"
+    case .fps24: "24"
+    case .fps30: "30"
+    case .fps40: "40"
+    case .fps50: "50"
+    case .fps60: "60"
     }
   }
 
@@ -29,6 +62,8 @@ enum ExportFPS: Sendable, CaseIterable, Identifiable {
     case .original: fallback
     case .fps24: 24
     case .fps30: 30
+    case .fps40: 40
+    case .fps50: 50
     case .fps60: 60
     }
   }
@@ -38,6 +73,8 @@ enum ExportFPS: Sendable, CaseIterable, Identifiable {
     case .original: nil
     case .fps24: 24
     case .fps30: 30
+    case .fps40: 40
+    case .fps50: 50
     case .fps60: 60
     }
   }

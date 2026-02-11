@@ -3,8 +3,10 @@ import SwiftUI
 
 struct EditorBottomBar: View {
   @Bindable var editorState: EditorState
+  @Environment(\.colorScheme) private var colorScheme
 
   var body: some View {
+    let _ = colorScheme
     HStack(spacing: 12) {
       Button(action: {
         if editorState.isPlaying {

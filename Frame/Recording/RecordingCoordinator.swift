@@ -68,6 +68,7 @@ actor RecordingCoordinator {
       outputURL: FileManager.default.tempVideoURL(),
       width: pixelW,
       height: pixelH,
+      fps: fps,
       clock: clock
     )
     self.videoWriter = vidWriter
@@ -81,6 +82,7 @@ actor RecordingCoordinator {
         outputURL: FileManager.default.tempWebcamURL(),
         width: 1280,
         height: 720,
+        fps: fps,
         clock: clock
       )
       self.webcamWriter = camWriter

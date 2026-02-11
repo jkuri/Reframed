@@ -2,6 +2,7 @@ import SwiftUI
 
 struct PropertiesPanel: View {
   @Bindable var editorState: EditorState
+  @Environment(\.colorScheme) private var colorScheme
 
   private enum BackgroundMode: Int, CaseIterable {
     case none, gradient, color
@@ -18,10 +19,14 @@ struct PropertiesPanel: View {
   @State private var backgroundMode: BackgroundMode = .none
   @State private var selectedGradientId: Int = 0
   @State private var solidColor: Color = .blue
+  @State private var editingProjectName: String = ""
+  @FocusState private var projectNameFocused: Bool
 
   var body: some View {
+    let _ = colorScheme
     ScrollView {
       VStack(alignment: .leading, spacing: 20) {
+        projectSection
         backgroundSection
         paddingSection
         cornerRadiusSection
@@ -45,6 +50,27 @@ struct PropertiesPanel: View {
       if backgroundMode == .color {
         editorState.backgroundStyle = .solidColor(CodableColor(cgColor: NSColor(newValue).cgColor))
       }
+    }
+  }
+
+  private var projectSection: some View {
+    VStack(alignment: .leading, spacing: 10) {
+      sectionHeader(icon: "doc.text", title: "Project")
+
+      TextField("Project Name", text: $editingProjectName)
+        .font(.system(size: 12))
+        .foregroundStyle(FrameColors.primaryText)
+        .textFieldStyle(.plain)
+        .padding(.horizontal, 8)
+        .padding(.vertical, 6)
+        .background(FrameColors.fieldBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 6))
+        .focused($projectNameFocused)
+        .onSubmit { commitProjectRename() }
+        .onChange(of: projectNameFocused) { _, focused in
+          if !focused { commitProjectRename() }
+        }
+        .onAppear { editingProjectName = editorState.projectName }
     }
   }
 
@@ -182,6 +208,28 @@ struct PropertiesPanel: View {
           .foregroundStyle(FrameColors.secondaryText)
         Slider(value: $editorState.pipLayout.relativeWidth, in: 0.1...0.5, step: 0.01)
       }
+
+      HStack(spacing: 8) {
+        Text("Radius")
+          .font(.system(size: 12))
+          .foregroundStyle(FrameColors.secondaryText)
+        Slider(value: $editorState.pipCornerRadius, in: 0...40, step: 1)
+        Text("\(Int(editorState.pipCornerRadius))px")
+          .font(.system(size: 12, design: .monospaced))
+          .foregroundStyle(FrameColors.secondaryText)
+          .frame(width: 36, alignment: .trailing)
+      }
+
+      HStack(spacing: 8) {
+        Text("Border")
+          .font(.system(size: 12))
+          .foregroundStyle(FrameColors.secondaryText)
+        Slider(value: $editorState.pipBorderWidth, in: 0...10, step: 0.5)
+        Text(String(format: "%.1f", editorState.pipBorderWidth))
+          .font(.system(size: 12, design: .monospaced))
+          .foregroundStyle(FrameColors.secondaryText)
+          .frame(width: 36, alignment: .trailing)
+      }
     }
   }
 
@@ -194,6 +242,16 @@ struct PropertiesPanel: View {
         .font(.system(size: 12, weight: .semibold))
         .foregroundStyle(FrameColors.primaryText)
     }
+  }
+
+  private func commitProjectRename() {
+    let trimmed = editingProjectName.trimmingCharacters(in: .whitespacesAndNewlines)
+    guard !trimmed.isEmpty, trimmed != editorState.projectName else {
+      editingProjectName = editorState.projectName
+      return
+    }
+    editorState.renameProject(trimmed)
+    editingProjectName = editorState.projectName
   }
 
   private func updateBackgroundStyle(mode: BackgroundMode) {

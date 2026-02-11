@@ -13,6 +13,8 @@ struct VideoPreviewView: NSViewRepresentable {
   @Binding var pipLayout: PiPLayout
   let webcamSize: CGSize?
   let screenSize: CGSize
+  var pipCornerRadius: CGFloat = 12
+  var pipBorderWidth: CGFloat = 0
 
   func makeNSView(context: Context) -> VideoPreviewContainer {
     let container = VideoPreviewContainer()
@@ -26,7 +28,13 @@ struct VideoPreviewView: NSViewRepresentable {
   }
 
   func updateNSView(_ nsView: VideoPreviewContainer, context: Context) {
-    nsView.updatePiPLayout(pipLayout, webcamSize: webcamSize, screenSize: screenSize)
+    nsView.updatePiPLayout(
+      pipLayout,
+      webcamSize: webcamSize,
+      screenSize: screenSize,
+      pipCornerRadius: pipCornerRadius,
+      pipBorderWidth: pipBorderWidth
+    )
   }
 
   func makeCoordinator() -> Coordinator {
@@ -61,6 +69,8 @@ final class VideoPreviewContainer: NSView {
   private var currentLayout = PiPLayout()
   private var currentWebcamSize: CGSize?
   private var currentScreenSize: CGSize = .zero
+  private var currentPipCornerRadius: CGFloat = 12
+  private var currentPipBorderWidth: CGFloat = 0
   private var trackingArea: NSTrackingArea?
 
   override init(frame: NSRect) {
@@ -72,10 +82,10 @@ final class VideoPreviewContainer: NSView {
     layer?.addSublayer(screenPlayerLayer)
 
     webcamView.wantsLayer = true
-    webcamView.layer?.cornerRadius = 8
+    webcamView.layer?.cornerRadius = 12
     webcamView.layer?.masksToBounds = true
-    webcamView.layer?.borderWidth = 1
-    webcamView.layer?.borderColor = NSColor.white.withAlphaComponent(0.3).cgColor
+    webcamView.layer?.borderWidth = 0
+    webcamView.layer?.borderColor = NSColor.clear.cgColor
     webcamPlayerLayer.videoGravity = .resizeAspectFill
     webcamView.layer?.addSublayer(webcamPlayerLayer)
     webcamPlayerLayer.isHidden = true
@@ -116,10 +126,18 @@ final class VideoPreviewContainer: NSView {
     trackingArea = area
   }
 
-  func updatePiPLayout(_ layout: PiPLayout, webcamSize: CGSize?, screenSize: CGSize) {
+  func updatePiPLayout(
+    _ layout: PiPLayout,
+    webcamSize: CGSize?,
+    screenSize: CGSize,
+    pipCornerRadius: CGFloat = 12,
+    pipBorderWidth: CGFloat = 0
+  ) {
     currentLayout = layout
     currentWebcamSize = webcamSize
     currentScreenSize = screenSize
+    currentPipCornerRadius = pipCornerRadius
+    currentPipBorderWidth = pipBorderWidth
     layoutWebcamView()
   }
 
@@ -138,7 +156,16 @@ final class VideoPreviewContainer: NSView {
     let x = videoRect.origin.x + videoRect.width * currentLayout.relativeX
     let y = videoRect.origin.y + videoRect.height * currentLayout.relativeY
 
+    let scale = videoRect.width / max(currentScreenSize.width, 1)
+    let scaledRadius = currentPipCornerRadius * scale
+    let scaledBorder = currentPipBorderWidth * scale
+
     webcamView.frame = CGRect(x: x, y: bounds.height - y - h, width: w, height: h)
+    webcamView.layer?.cornerRadius = scaledRadius
+    webcamView.layer?.borderWidth = scaledBorder
+    webcamView.layer?.borderColor = scaledBorder > 0
+      ? NSColor.white.withAlphaComponent(0.3).cgColor
+      : NSColor.clear.cgColor
     webcamPlayerLayer.frame = webcamView.bounds
 
     let gripSize: CGFloat = 16

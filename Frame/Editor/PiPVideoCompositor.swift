@@ -106,17 +106,46 @@ final class PiPVideoCompositor: NSObject, AVVideoCompositing, @unchecked Sendabl
           height: adjustedPipRect.height
         )
 
-        let path = CGPath(
-          roundedRect: drawRect,
-          cornerWidth: instruction.pipCornerRadius,
-          cornerHeight: instruction.pipCornerRadius,
-          transform: nil
-        )
-        context.saveGState()
-        context.addPath(path)
-        context.clip()
-        context.draw(webcamImage, in: drawRect)
-        context.restoreGState()
+        let bw = instruction.pipBorderWidth
+        if bw > 0 {
+          let borderPath = CGPath(
+            roundedRect: drawRect,
+            cornerWidth: instruction.pipCornerRadius,
+            cornerHeight: instruction.pipCornerRadius,
+            transform: nil
+          )
+          context.saveGState()
+          context.addPath(borderPath)
+          context.setFillColor(CGColor(red: 1, green: 1, blue: 1, alpha: 0.3))
+          context.fillPath()
+          context.restoreGState()
+
+          let insetRect = drawRect.insetBy(dx: bw, dy: bw)
+          let innerRadius = max(0, instruction.pipCornerRadius - bw)
+          let innerPath = CGPath(
+            roundedRect: insetRect,
+            cornerWidth: innerRadius,
+            cornerHeight: innerRadius,
+            transform: nil
+          )
+          context.saveGState()
+          context.addPath(innerPath)
+          context.clip()
+          context.draw(webcamImage, in: insetRect)
+          context.restoreGState()
+        } else {
+          let path = CGPath(
+            roundedRect: drawRect,
+            cornerWidth: instruction.pipCornerRadius,
+            cornerHeight: instruction.pipCornerRadius,
+            transform: nil
+          )
+          context.saveGState()
+          context.addPath(path)
+          context.clip()
+          context.draw(webcamImage, in: drawRect)
+          context.restoreGState()
+        }
       }
     }
 

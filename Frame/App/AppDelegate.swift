@@ -86,6 +86,12 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     }
   }
 
+  func application(_ application: NSApplication, open urls: [URL]) {
+    for url in urls where url.pathExtension == "frm" {
+      session.openProject(at: url)
+    }
+  }
+
   private func dismissPermissionsWindow() {
     permissionsWindow?.close()
     permissionsWindow = nil
