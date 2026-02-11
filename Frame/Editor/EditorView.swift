@@ -72,7 +72,8 @@ struct EditorView: View {
 
   private var videoPreview: some View {
     let screenSize = editorState.result.screenSize
-    let hasEffects = editorState.backgroundStyle != .none || editorState.padding > 0
+    let hasEffects =
+      editorState.backgroundStyle != .none || editorState.padding > 0
       || editorState.videoCornerRadius > 0
     let canvasAspect: CGFloat = {
       let canvas = editorState.canvasSize(for: screenSize)

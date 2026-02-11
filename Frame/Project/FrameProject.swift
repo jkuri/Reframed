@@ -109,7 +109,8 @@ struct FrameProject: Sendable {
   mutating func rename(to newName: String) throws {
     metadata.name = newName
 
-    let sanitized = newName
+    let sanitized =
+      newName
       .components(separatedBy: CharacterSet.alphanumerics.union(CharacterSet(charactersIn: " -_")).inverted)
       .joined()
     let dirName = sanitized.isEmpty ? newName : sanitized

@@ -163,7 +163,8 @@ final class VideoPreviewContainer: NSView {
     webcamView.frame = CGRect(x: x, y: bounds.height - y - h, width: w, height: h)
     webcamView.layer?.cornerRadius = scaledRadius
     webcamView.layer?.borderWidth = scaledBorder
-    webcamView.layer?.borderColor = scaledBorder > 0
+    webcamView.layer?.borderColor =
+      scaledBorder > 0
       ? NSColor.white.withAlphaComponent(0.3).cgColor
       : NSColor.clear.cgColor
     webcamPlayerLayer.frame = webcamView.bounds

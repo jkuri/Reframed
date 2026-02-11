@@ -1,5 +1,5 @@
-import AppKit
 import AVFoundation
+import AppKit
 import CoreMedia
 import Foundation
 import Logging

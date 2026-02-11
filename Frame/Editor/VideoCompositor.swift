@@ -159,7 +159,9 @@ enum VideoCompositor {
       exportSession.timeRange = CMTimeRange(start: .zero, duration: effectiveTrim.duration)
       try await runExport(exportSession, to: outputURL, fileType: exportSettings.format.fileType, progressHandler: progressHandler)
 
-      let destination = await MainActor.run { FileManager.default.defaultSaveURL(for: outputURL, extension: exportSettings.format.fileExtension) }
+      let destination = await MainActor.run {
+        FileManager.default.defaultSaveURL(for: outputURL, extension: exportSettings.format.fileExtension)
+      }
       try FileManager.default.moveToFinal(from: outputURL, to: destination)
       if let mixURL = mixedAudioURL, mixURL.lastPathComponent == "mixed-audio.m4a" {
         try? FileManager.default.removeItem(at: mixURL)
@@ -184,7 +186,9 @@ enum VideoCompositor {
     exportSession.timeRange = CMTimeRange(start: .zero, duration: effectiveTrim.duration)
     try await runExport(exportSession, to: outputURL, fileType: exportSettings.format.fileType, progressHandler: progressHandler)
 
-    let destination = await MainActor.run { FileManager.default.defaultSaveURL(for: outputURL, extension: exportSettings.format.fileExtension) }
+    let destination = await MainActor.run {
+      FileManager.default.defaultSaveURL(for: outputURL, extension: exportSettings.format.fileExtension)
+    }
     try FileManager.default.moveToFinal(from: outputURL, to: destination)
     if let mixURL = mixedAudioURL, mixURL.lastPathComponent == "mixed-audio.m4a" {
       try? FileManager.default.removeItem(at: mixURL)
