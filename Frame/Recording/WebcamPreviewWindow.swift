@@ -6,6 +6,8 @@ final class WebcamPreviewWindow {
   private var panel: NSPanel?
   private var previewLayer: AVCaptureVideoPreviewLayer?
   private var loadingView: NSView?
+  nonisolated(unsafe) private var moveObserver: NSObjectProtocol?
+  private var appearanceObserver: NSKeyValueObservation?
 
   private let padding: CGFloat = 6
   private let videoWidth: CGFloat = 180
@@ -14,6 +16,7 @@ final class WebcamPreviewWindow {
 
   private var totalWidth: CGFloat { videoWidth + padding * 2 }
   private var totalHeight: CGFloat { videoHeight + padding * 2 }
+
 
   func showLoading() {
     if panel == nil {
@@ -30,17 +33,18 @@ final class WebcamPreviewWindow {
     container.wantsLayer = true
     container.layer?.cornerRadius = cornerRadius - 3
     container.layer?.masksToBounds = true
-    container.layer?.backgroundColor = NSColor(white: 0.1, alpha: 1).cgColor
+    container.layer?.backgroundColor = FrameColors.panelBackgroundNS.cgColor
 
     let spinner = NSProgressIndicator(frame: NSRect(x: (videoWidth - 24) / 2, y: (videoHeight - 24) / 2 + 10, width: 24, height: 24))
     spinner.style = .spinning
     spinner.controlSize = .small
+    spinner.appearance = NSAppearance(named: FrameColors.isDark ? .darkAqua : .aqua)
     spinner.startAnimation(nil)
     container.addSubview(spinner)
 
     let label = NSTextField(labelWithString: "Camera is starting...")
     label.font = NSFont.systemFont(ofSize: 11, weight: .medium)
-    label.textColor = NSColor.white.withAlphaComponent(0.6)
+    label.textColor = FrameColors.secondaryTextNS
     label.alignment = .center
     label.frame = NSRect(x: 0, y: (videoHeight - 24) / 2 - 18, width: videoWidth, height: 16)
     container.addSubview(label)
@@ -95,7 +99,7 @@ final class WebcamPreviewWindow {
     container.wantsLayer = true
     container.layer?.cornerRadius = cornerRadius - 3
     container.layer?.masksToBounds = true
-    container.layer?.backgroundColor = NSColor(white: 0.1, alpha: 1).cgColor
+    container.layer?.backgroundColor = FrameColors.panelBackgroundNS.cgColor
 
     let icon = NSImageView(frame: NSRect(x: (videoWidth - 24) / 2, y: (videoHeight - 24) / 2 + 10, width: 24, height: 24))
     icon.image = NSImage(systemSymbolName: "exclamationmark.triangle", accessibilityDescription: "Error")
@@ -104,7 +108,7 @@ final class WebcamPreviewWindow {
 
     let label = NSTextField(labelWithString: message)
     label.font = NSFont.systemFont(ofSize: 11, weight: .medium)
-    label.textColor = NSColor.white.withAlphaComponent(0.6)
+    label.textColor = FrameColors.secondaryTextNS
     label.alignment = .center
     label.lineBreakMode = .byTruncatingTail
     label.frame = NSRect(x: 4, y: (videoHeight - 24) / 2 - 18, width: videoWidth - 8, height: 16)
@@ -117,6 +121,13 @@ final class WebcamPreviewWindow {
   }
 
   func close() {
+    savePosition()
+    if let observer = moveObserver {
+      NotificationCenter.default.removeObserver(observer)
+      moveObserver = nil
+    }
+    appearanceObserver?.invalidate()
+    appearanceObserver = nil
     previewLayer?.removeFromSuperlayer()
     previewLayer = nil
     loadingView?.removeFromSuperview()
@@ -127,12 +138,7 @@ final class WebcamPreviewWindow {
   }
 
   private func createPanel() {
-    guard let screen = NSScreen.main else { return }
-    let screenFrame = screen.visibleFrame
-    let origin = CGPoint(
-      x: screenFrame.maxX - totalWidth - 20,
-      y: screenFrame.minY + 20
-    )
+    let origin = resolvedOrigin()
 
     let panel = NSPanel(
       contentRect: NSRect(origin: origin, size: NSSize(width: totalWidth, height: totalHeight)),
@@ -152,11 +158,72 @@ final class WebcamPreviewWindow {
     contentView.wantsLayer = true
     contentView.layer?.cornerRadius = cornerRadius
     contentView.layer?.masksToBounds = true
-    contentView.layer?.backgroundColor = NSColor(white: 0.15, alpha: 1).cgColor
+    contentView.layer?.backgroundColor = FrameColors.panelBackgroundNS.cgColor
     contentView.layer?.borderWidth = 1
-    contentView.layer?.borderColor = NSColor.white.withAlphaComponent(0.15).cgColor
+    contentView.layer?.borderColor = FrameColors.subtleBorderNS.cgColor
 
     panel.contentView = contentView
     self.panel = panel
+
+    moveObserver = NotificationCenter.default.addObserver(
+      forName: NSWindow.didMoveNotification,
+      object: panel,
+      queue: .main
+    ) { [weak self] _ in
+      MainActor.assumeIsolated {
+        self?.savePosition()
+      }
+    }
+
+    appearanceObserver = NSApp.observe(\.effectiveAppearance) { [weak self] _, _ in
+      MainActor.assumeIsolated {
+        self?.updateColors()
+      }
+    }
+  }
+
+  private func updateColors() {
+    guard let contentView = panel?.contentView else { return }
+    contentView.layer?.backgroundColor = FrameColors.panelBackgroundNS.cgColor
+    contentView.layer?.borderColor = FrameColors.subtleBorderNS.cgColor
+
+    if let container = loadingView {
+      container.layer?.backgroundColor = FrameColors.panelBackgroundNS.cgColor
+      for subview in container.subviews {
+        if let label = subview as? NSTextField {
+          label.textColor = FrameColors.secondaryTextNS
+        }
+        if let spinner = subview as? NSProgressIndicator {
+          spinner.appearance = NSAppearance(named: FrameColors.isDark ? .darkAqua : .aqua)
+        }
+      }
+    }
+  }
+
+  private func resolvedOrigin() -> CGPoint {
+    if let saved = StateService.shared.webcamPreviewPosition {
+      let panelRect = NSRect(origin: saved, size: NSSize(width: totalWidth, height: totalHeight))
+      for screen in NSScreen.screens {
+        if screen.visibleFrame.intersects(panelRect) {
+          return saved
+        }
+      }
+    }
+
+    return defaultOrigin()
+  }
+
+  private func defaultOrigin() -> CGPoint {
+    guard let screen = NSScreen.main else { return .zero }
+    let screenFrame = screen.visibleFrame
+    return CGPoint(
+      x: screenFrame.maxX - totalWidth - 20,
+      y: screenFrame.minY + 20
+    )
+  }
+
+  private func savePosition() {
+    guard let frame = panel?.frame else { return }
+    StateService.shared.webcamPreviewPosition = frame.origin
   }
 }

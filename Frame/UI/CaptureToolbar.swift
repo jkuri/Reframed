@@ -46,7 +46,7 @@ struct CaptureToolbar: View {
       } label: {
         Image(systemName: "xmark.circle.fill")
           .font(.system(size: 20))
-          .foregroundStyle(FrameColors.tertiaryText)
+          .foregroundStyle(FrameColors.primaryText)
           .frame(width: 36, height: 52)
       }
       .buttonStyle(.plain)
@@ -141,7 +141,7 @@ struct CaptureToolbar: View {
       } label: {
         Image(systemName: "gearshape")
           .font(.system(size: 16))
-          .foregroundStyle(FrameColors.secondaryText)
+          .foregroundStyle(FrameColors.primaryText)
           .frame(width: 36, height: 52)
           .contentShape(Rectangle())
       }

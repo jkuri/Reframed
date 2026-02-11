@@ -1,4 +1,4 @@
-import AVFoundation
+@preconcurrency import AVFoundation
 import CoreMedia
 import CoreVideo
 import Foundation
@@ -85,9 +85,10 @@ final class WebcamCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
       connection.videoRotationAngle = 0
     }
 
+    nonisolated(unsafe) let unsafeSession = session
     let startQueue = DispatchQueue(label: "eu.jankuri.frame.webcam-start")
     startQueue.async {
-      session.startRunning()
+      unsafeSession.startRunning()
     }
     self.captureSession = session
 
@@ -96,11 +97,13 @@ final class WebcamCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
         self.firstFrameContinuation = continuation
       }
       DispatchQueue.global().asyncAfter(deadline: .now() + 3.0) { [weak self] in
-        self?.verifyQueue.async {
-          if let cont = self?.firstFrameContinuation {
-            self?.firstFrameContinuation = nil
-            session.stopRunning()
-            self?.captureSession = nil
+        guard let weakSelf = self else { return }
+        nonisolated(unsafe) let sess = session
+        weakSelf.verifyQueue.async {
+          if let cont = weakSelf.firstFrameContinuation {
+            weakSelf.firstFrameContinuation = nil
+            sess.stopRunning()
+            weakSelf.captureSession = nil
             cont.resume(throwing: CaptureError.cameraStreamFailed)
           }
         }

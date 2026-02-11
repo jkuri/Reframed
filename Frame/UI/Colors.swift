@@ -22,6 +22,14 @@ enum FrameColors {
     isDark ? NSColor(white: 0.1, alpha: 1) : NSColor(white: 1, alpha: 1)
   }
 
+  static var secondaryTextNS: NSColor {
+    isDark ? NSColor.white.withAlphaComponent(0.7) : NSColor.black.withAlphaComponent(0.6)
+  }
+
+  static var subtleBorderNS: NSColor {
+    isDark ? NSColor.white.withAlphaComponent(0.1) : NSColor.black.withAlphaComponent(0.1)
+  }
+
   static var fieldBackground: Color {
     isDark ? Color.white.opacity(0.08) : Color.black.opacity(0.06)
   }

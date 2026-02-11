@@ -1,4 +1,4 @@
-import AVFoundation
+@preconcurrency import AVFoundation
 import Foundation
 import Logging
 
@@ -94,9 +94,10 @@ final class MicrophoneCapture: NSObject, AVCaptureAudioDataOutputSampleBufferDel
         self.firstSampleContinuation = continuation
       }
       DispatchQueue.global().asyncAfter(deadline: .now() + 5.0) { [weak self] in
-        self?.verifyQueue.async {
-          if let cont = self?.firstSampleContinuation {
-            self?.firstSampleContinuation = nil
+        guard let weakSelf = self else { return }
+        weakSelf.verifyQueue.async {
+          if let cont = weakSelf.firstSampleContinuation {
+            weakSelf.firstSampleContinuation = nil
             cont.resume(throwing: CaptureError.microphoneStreamFailed)
           }
         }

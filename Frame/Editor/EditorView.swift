@@ -14,7 +14,7 @@ struct EditorView: View {
     VStack(spacing: 0) {
       EditorTopBar(
         editorState: editorState,
-        onOpenFolder: { editorState.openExportFolder() },
+        onOpenFolder: { editorState.openProjectFolder() },
         onDelete: { editorState.showDeleteConfirmation = true }
       )
       Divider().background(FrameColors.divider)
@@ -51,7 +51,7 @@ struct EditorView: View {
       Button("OK") {}
       if !editorState.exportResultIsError {
         Button("Show in Finder") {
-          editorState.openExportFolder()
+          editorState.openExportedFile()
         }
       }
     } message: {

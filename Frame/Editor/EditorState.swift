@@ -171,7 +171,16 @@ final class EditorState {
     }
   }
 
-  func openExportFolder() {
+  func openProjectFolder() {
+    if let bundleURL = project?.bundleURL {
+      NSWorkspace.shared.activateFileViewerSelecting([bundleURL])
+    } else {
+      let dir = FileManager.default.projectSaveDirectory()
+      NSWorkspace.shared.open(dir)
+    }
+  }
+
+  func openExportedFile() {
     if let lastExportedURL {
       NSWorkspace.shared.activateFileViewerSelecting([lastExportedURL])
     } else {

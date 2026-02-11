@@ -9,16 +9,6 @@ final class StateService {
   private let fileURL: URL
   private var data: StateData
 
-  var lastCaptureMode: CaptureMode {
-    get {
-      CaptureMode(rawValue: data.lastCaptureMode) ?? .none
-    }
-    set {
-      data.lastCaptureMode = newValue.rawValue
-      save()
-    }
-  }
-
   var lastSelectionRect: CGRect? {
     get {
       guard let r = data.lastSelectionRect else { return nil }
@@ -39,9 +29,19 @@ final class StateService {
     set { data.lastDisplayID = newValue; save() }
   }
 
-  var lastRecordingPath: String? {
-    get { data.lastRecordingPath }
-    set { data.lastRecordingPath = newValue; save() }
+  var webcamPreviewPosition: CGPoint? {
+    get {
+      guard let p = data.webcamPreviewPosition else { return nil }
+      return CGPoint(x: p.x, y: p.y)
+    }
+    set {
+      if let p = newValue {
+        data.webcamPreviewPosition = PointData(x: p.x, y: p.y)
+      } else {
+        data.webcamPreviewPosition = nil
+      }
+      save()
+    }
   }
 
   private init() {
@@ -77,9 +77,13 @@ private struct RectData: Codable {
   var height: Double
 }
 
+private struct PointData: Codable {
+  var x: Double
+  var y: Double
+}
+
 private struct StateData: Codable {
-  var lastCaptureMode: String = "none"
   var lastSelectionRect: RectData? = nil
   var lastDisplayID: UInt32 = 1
-  var lastRecordingPath: String? = nil
+  var webcamPreviewPosition: PointData? = nil
 }

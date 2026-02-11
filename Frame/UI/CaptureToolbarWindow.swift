@@ -69,11 +69,14 @@ final class CaptureToolbarWindow: NSPanel {
       return
     case .countdown:
       session.cancelCountdown()
-      session.hideToolbar()
     case .selecting:
       session.cancelSelection()
     default:
-      session.hideToolbar()
+      if session.captureMode != .none {
+        session.selectMode(.none)
+      } else {
+        session.hideToolbar()
+      }
     }
   }
 

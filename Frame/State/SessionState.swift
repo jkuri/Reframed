@@ -148,7 +148,6 @@ final class SessionState {
 
   func selectMode(_ mode: CaptureMode) {
     captureMode = mode
-    StateService.shared.lastCaptureMode = mode
     hideStartRecordingOverlay()
 
     switch mode {
@@ -378,6 +377,7 @@ final class SessionState {
       }
     }
 
+    SoundEffect.startRecording.play()
     transition(to: .recording(startedAt: startedAt))
   }
 
@@ -389,6 +389,7 @@ final class SessionState {
       throw CaptureError.invalidTransition(from: "\(state)", to: "processing")
     }
 
+    SoundEffect.stopRecording.play()
     transition(to: .processing)
     selectionCoordinator?.destroyAll()
     selectionCoordinator = nil
@@ -430,7 +431,6 @@ final class SessionState {
       MainActor.assumeIsolated {
         guard let self else { return }
         self.lastRecordingURL = url
-        StateService.shared.lastRecordingPath = url.path
         self.logger.info("Editor save: \(url.path)")
         if let editor { self.removeEditor(editor) }
       }
@@ -490,6 +490,7 @@ final class SessionState {
   func pauseRecording() {
     guard case .recording(let startedAt) = state else { return }
     let elapsed = Date().timeIntervalSince(startedAt)
+    SoundEffect.pauseRecording.play()
     Task {
       await recordingCoordinator?.pause()
     }
@@ -499,6 +500,7 @@ final class SessionState {
   func resumeRecording() {
     guard case .paused(let elapsed) = state else { return }
     let resumedAt = Date().addingTimeInterval(-elapsed)
+    SoundEffect.resumeRecording.play()
     Task {
       await recordingCoordinator?.resume()
     }
