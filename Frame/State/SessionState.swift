@@ -493,6 +493,8 @@ final class SessionState {
     countdownTask = nil
     dismissCountdownOverlay()
 
+    let savedTarget = captureTarget
+    let savedMode = captureMode
     let keepWebcam = persistentWebcam != nil
 
     Task {
@@ -510,10 +512,35 @@ final class SessionState {
         logger.info("Discarded recording: \(url.path)")
       }
       recordingCoordinator = nil
-      captureTarget = nil
-      captureMode = .none
       FileManager.default.cleanupTempDir()
+
+      captureTarget = savedTarget
+      captureMode = savedMode
       transition(to: .idle)
+
+      guard savedTarget != nil else { return }
+
+      if case .region(let sel) = savedTarget {
+        let coordinator = SelectionCoordinator()
+        selectionCoordinator = coordinator
+        coordinator.showRecordingBorder(screenRect: sel.rect)
+      } else if case .window(let win) = savedTarget {
+        if let screen = NSScreen.main {
+          let scFrame = win.frame
+          let screenHeight = screen.frame.height
+          let appKitRect = CGRect(
+            x: scFrame.origin.x,
+            y: screenHeight - scFrame.origin.y - scFrame.height,
+            width: scFrame.width,
+            height: scFrame.height
+          )
+          let coordinator = SelectionCoordinator()
+          selectionCoordinator = coordinator
+          coordinator.showRecordingBorder(screenRect: appKitRect)
+        }
+      }
+
+      beginRecordingWithCountdown()
     }
   }
 
