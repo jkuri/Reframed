@@ -10,6 +10,8 @@ actor RecordingCoordinator {
   private var systemAudioCapture: SystemAudioCapture?
   private var microphoneCapture: MicrophoneCapture?
   private var webcamCapture: WebcamCapture?
+  private var deviceCapture: DeviceCapture?
+  private var deviceAudioWriter: AudioTrackWriter?
   private var videoWriter: VideoTrackWriter?
   private var webcamWriter: VideoTrackWriter?
   private var systemAudioWriter: AudioTrackWriter?
@@ -181,16 +183,161 @@ actor RecordingCoordinator {
     return startedAt
   }
 
+  func startDeviceRecording(
+    deviceCapture: DeviceCapture,
+    fps: Int = 60,
+    microphoneDeviceId: String? = nil,
+    cameraDeviceId: String? = nil,
+    cameraResolution: String = "1080p",
+    existingWebcam: (WebcamCapture, VerifiedCamera)? = nil
+  ) async throws -> Date {
+    var verifiedCam: (capture: WebcamCapture, info: VerifiedCamera)?
+    var verifiedMic: MicrophoneCapture?
+
+    if let existing = existingWebcam {
+      verifiedCam = (existing.0, existing.1)
+      logger.info("Using pre-existing camera for device recording: \(existing.1.width)x\(existing.1.height)")
+    } else if let camId = cameraDeviceId {
+      let (maxW, maxH) = cameraMaxDimensions(for: cameraResolution)
+      let cam = WebcamCapture()
+      let info = try await cam.startAndVerify(deviceId: camId, fps: fps, maxWidth: maxW, maxHeight: maxH)
+      verifiedCam = (cam, info)
+      logger.info("Camera ready for device recording: \(info.width)x\(info.height)")
+    }
+
+    if let micId = microphoneDeviceId {
+      let mic = MicrophoneCapture()
+      do {
+        try await mic.startAndVerify(deviceId: micId)
+      } catch {
+        if existingWebcam == nil { verifiedCam?.capture.stop() }
+        throw error
+      }
+      verifiedMic = mic
+      logger.info("Microphone ready for device recording")
+    }
+
+    guard let session = deviceCapture.captureSession,
+      let videoOutput = session.outputs.first(where: { $0 is AVCaptureVideoDataOutput }),
+      let connection = videoOutput.connection(with: .video)
+    else {
+      verifiedMic?.stop()
+      if existingWebcam == nil { verifiedCam?.capture.stop() }
+      throw CaptureError.deviceStreamFailed
+    }
+
+    var rawW = 0
+    var rawH = 0
+    if let port = connection.inputPorts.first(where: { $0.mediaType == .video }),
+      let desc = port.formatDescription
+    {
+      let d = CMVideoFormatDescriptionGetDimensions(desc)
+      rawW = Int(d.width)
+      rawH = Int(d.height)
+    }
+    let angle = connection.videoRotationAngle
+    let isRotated = angle == 90 || angle == 270
+    var pW = (isRotated ? rawH : rawW) & ~1
+    var pH = (isRotated ? rawW : rawH) & ~1
+    if pW == 0 || pH == 0 {
+      pW = 1920
+      pH = 1080
+    }
+
+    pixelW = pW
+    pixelH = pH
+    recordingFPS = fps
+
+    var streamCount = 1
+    if verifiedMic != nil { streamCount += 1 }
+    if verifiedCam != nil { streamCount += 1 }
+    let hasDeviceAudio = session.outputs.contains(where: { $0 is AVCaptureAudioDataOutput })
+    if hasDeviceAudio { streamCount += 1 }
+
+    let clock = SharedRecordingClock(streamCount: streamCount)
+    self.recordingClock = clock
+
+    let vidWriter = try VideoTrackWriter(
+      outputURL: FileManager.default.tempVideoURL(),
+      width: pW,
+      height: pH,
+      fps: fps,
+      clock: clock
+    )
+    self.videoWriter = vidWriter
+    deviceCapture.attachVideoWriter(vidWriter)
+
+    if hasDeviceAudio {
+      let devAudioWriter = try AudioTrackWriter(
+        outputURL: FileManager.default.tempAudioURL(label: "device-audio"),
+        label: "device-audio",
+        sampleRate: 48000,
+        channelCount: 2,
+        clock: clock
+      )
+      self.deviceAudioWriter = devAudioWriter
+      deviceCapture.attachAudioWriter(devAudioWriter)
+    }
+
+    self.deviceCapture = deviceCapture
+
+    if let (cam, info) = verifiedCam {
+      let camW = info.width & ~1
+      let camH = info.height & ~1
+      webcamPixelW = camW
+      webcamPixelH = camH
+
+      let camWriter = try VideoTrackWriter(
+        outputURL: FileManager.default.tempWebcamURL(),
+        width: camW,
+        height: camH,
+        fps: fps,
+        clock: clock
+      )
+      self.webcamWriter = camWriter
+      cam.attachWriter(camWriter)
+      self.webcamCapture = cam
+    }
+
+    if let mic = verifiedMic, let micId = microphoneDeviceId {
+      let micFmt = MicrophoneCapture.targetFormat(deviceId: micId)
+      let micWriter = try AudioTrackWriter(
+        outputURL: FileManager.default.tempAudioURL(label: "mic"),
+        label: "mic",
+        sampleRate: micFmt?.sampleRate ?? 48000,
+        channelCount: micFmt?.channelCount ?? 1,
+        clock: clock
+      )
+      self.micAudioWriter = micWriter
+      mic.attachWriter(micWriter)
+      self.microphoneCapture = mic
+    }
+
+    let startedAt = Date()
+    logger.info(
+      "Device recording started",
+      metadata: [
+        "width": "\(pW)",
+        "height": "\(pH)",
+        "microphone": "\(microphoneDeviceId ?? "none")",
+        "camera": "\(cameraDeviceId ?? "none")",
+      ]
+    )
+    return startedAt
+  }
+
   func pause() {
     pauseStartTime = CMClockGetTime(CMClockGetHostTimeClock())
     captureSession?.pause()
     systemAudioCapture?.pause()
     microphoneCapture?.pause()
     webcamCapture?.pause()
+    deviceCapture?.pause()
     videoWriter?.pause()
     webcamWriter?.pause()
     systemAudioWriter?.pause()
     micAudioWriter?.pause()
+    deviceAudioWriter?.pause()
     logger.info("Recording paused")
   }
 
@@ -205,10 +352,12 @@ actor RecordingCoordinator {
     webcamWriter?.resume(withOffset: totalPauseOffset)
     systemAudioWriter?.resume(withOffset: totalPauseOffset)
     micAudioWriter?.resume(withOffset: totalPauseOffset)
+    deviceAudioWriter?.resume(withOffset: totalPauseOffset)
     captureSession?.resume()
     systemAudioCapture?.resume()
     microphoneCapture?.resume()
     webcamCapture?.resume()
+    deviceCapture?.resume()
     logger.info("Recording resumed, total offset: \(CMTimeGetSeconds(totalPauseOffset))s")
   }
 
@@ -223,6 +372,9 @@ actor RecordingCoordinator {
       webcamCapture = nil
     }
 
+    deviceCapture?.stop()
+    deviceCapture = nil
+
     try await systemAudioCapture?.stop()
     systemAudioCapture = nil
 
@@ -233,11 +385,13 @@ actor RecordingCoordinator {
     async let webcamResult = webcamWriter?.finish()
     async let sysAudioResult = systemAudioWriter?.finish()
     async let micResult = micAudioWriter?.finish()
+    async let deviceAudioResult = deviceAudioWriter?.finish()
 
     let videoURL = await videoResult
     let webcamURL = await webcamResult
     let sysAudioURL = await sysAudioResult
     let micURL = await micResult
+    let deviceAudioURL = await deviceAudioResult
 
     let screenW = pixelW
     let screenH = pixelH
@@ -249,6 +403,7 @@ actor RecordingCoordinator {
     webcamWriter = nil
     systemAudioWriter = nil
     micAudioWriter = nil
+    deviceAudioWriter = nil
     recordingClock = nil
 
     guard let videoFile = videoURL else {
@@ -259,7 +414,7 @@ actor RecordingCoordinator {
     return RecordingResult(
       screenVideoURL: videoFile,
       webcamVideoURL: webcamURL,
-      systemAudioURL: sysAudioURL,
+      systemAudioURL: sysAudioURL ?? deviceAudioURL,
       microphoneAudioURL: micURL,
       screenSize: CGSize(width: screenW, height: screenH),
       webcamSize: webcamURL != nil ? CGSize(width: camW, height: camH) : nil,
@@ -278,6 +433,9 @@ actor RecordingCoordinator {
       webcamCapture = nil
     }
 
+    deviceCapture?.stop()
+    deviceCapture = nil
+
     try await systemAudioCapture?.stop()
     systemAudioCapture = nil
 
@@ -288,16 +446,19 @@ actor RecordingCoordinator {
     async let webcamResult = webcamWriter?.finish()
     async let sysAudioResult = systemAudioWriter?.finish()
     async let micResult = micAudioWriter?.finish()
+    async let deviceAudioResult = deviceAudioWriter?.finish()
 
     let videoURL = await videoResult
     _ = await webcamResult
     let sysAudioURL = await sysAudioResult
     let micURL = await micResult
+    let deviceAudioURL = await deviceAudioResult
 
     videoWriter = nil
     webcamWriter = nil
     systemAudioWriter = nil
     micAudioWriter = nil
+    deviceAudioWriter = nil
     recordingClock = nil
 
     guard let videoFile = videoURL else {
@@ -307,6 +468,7 @@ actor RecordingCoordinator {
 
     var audioFiles: [URL] = []
     if let sysURL = sysAudioURL { audioFiles.append(sysURL) }
+    if let devURL = deviceAudioURL { audioFiles.append(devURL) }
     if let micFile = micURL { audioFiles.append(micFile) }
 
     let outputURL: URL

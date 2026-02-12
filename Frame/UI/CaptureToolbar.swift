@@ -78,6 +78,7 @@ struct CaptureToolbar: View {
   @State private var showOptions = false
   @State private var showSettings = false
   @State private var showRestartAlert = false
+  @State private var showDevicePopover = false
 
   @Environment(\.colorScheme) private var colorScheme
 
@@ -171,9 +172,17 @@ struct CaptureToolbar: View {
             label: "Device",
             isSelected: session.captureMode == .device
           ) {
-            session.selectMode(.device)
+            showDevicePopover.toggle()
           }
           .hoverEffect(id: "mode.device")
+          .popover(isPresented: $showDevicePopover, arrowEdge: .bottom) {
+            DevicePopover { deviceId in
+              showDevicePopover = false
+              session.selectMode(.device)
+              session.startDeviceRecordingWith(deviceId: deviceId)
+            }
+            .presentationBackground(FrameColors.panelBackground)
+          }
         }
 
         ToolbarDivider()
@@ -395,6 +404,7 @@ private struct ToolbarActionButton: View {
         .frame(width: 36, height: 36)
         .background(isHovered ? FrameColors.hoverBackground : Color.clear)
         .clipShape(RoundedRectangle(cornerRadius: 6))
+        .contentShape(Rectangle())
     }
     .buttonStyle(.plain)
     .onHover { isHovered = $0 }
@@ -424,6 +434,7 @@ private struct ToolbarToggleButton: View {
       .frame(width: 56, height: 52)
       .background(background)
       .clipShape(RoundedRectangle(cornerRadius: 6))
+      .contentShape(Rectangle())
     }
     .buttonStyle(.plain)
     .disabled(!isAvailable)

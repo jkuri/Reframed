@@ -3,4 +3,5 @@ enum CaptureMode: String, Sendable, Equatable, Codable {
   case entireScreen = "entireScreen"
   case selectedWindow = "selectedWindow"
   case selectedArea = "selectedArea"
+  case device = "device"
 }

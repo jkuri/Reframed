@@ -20,6 +20,8 @@ enum CaptureError: LocalizedError {
   case cameraNotFound
   case cameraStreamFailed
   case microphoneStreamFailed
+  case deviceNotFound
+  case deviceStreamFailed
 
   var errorDescription: String? {
     switch self {
@@ -41,6 +43,10 @@ enum CaptureError: LocalizedError {
       return "Camera failed to start streaming. Make sure no other app is using the camera."
     case .microphoneStreamFailed:
       return "Microphone failed to start streaming. Make sure no other app is using the microphone."
+    case .deviceNotFound:
+      return "No iOS device found. Connect an iPhone or iPad via USB and trust this Mac."
+    case .deviceStreamFailed:
+      return "Device failed to start streaming. Make sure the device is unlocked and trusted."
     }
   }
 }

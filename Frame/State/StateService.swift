@@ -44,6 +44,21 @@ final class StateService {
     }
   }
 
+  var devicePreviewPosition: CGPoint? {
+    get {
+      guard let p = data.devicePreviewPosition else { return nil }
+      return CGPoint(x: p.x, y: p.y)
+    }
+    set {
+      if let p = newValue {
+        data.devicePreviewPosition = PointData(x: p.x, y: p.y)
+      } else {
+        data.devicePreviewPosition = nil
+      }
+      save()
+    }
+  }
+
   var toolbarPosition: CGPoint? {
     get {
       guard let p = data.toolbarPosition else { return nil }
@@ -101,5 +116,6 @@ private struct StateData: Codable {
   var lastSelectionRect: RectData? = nil
   var lastDisplayID: UInt32 = 1
   var webcamPreviewPosition: PointData? = nil
+  var devicePreviewPosition: PointData? = nil
   var toolbarPosition: PointData? = nil
 }

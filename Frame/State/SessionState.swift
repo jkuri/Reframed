@@ -39,6 +39,8 @@ final class SessionState {
   private var persistentWebcam: WebcamCapture?
   private var verifiedCameraInfo: VerifiedCamera?
   private var mouseClickMonitor: MouseClickMonitor?
+  private var devicePreviewWindow: DevicePreviewWindow?
+  private var deviceCapture: DeviceCapture?
 
   weak var overlayView: SelectionOverlayView?
 
@@ -166,6 +168,8 @@ final class SessionState {
       } catch {
         logger.error("Failed to begin selection: \(error)")
       }
+    case .device:
+      break
     }
   }
 
@@ -330,6 +334,10 @@ final class SessionState {
     selectionCoordinator = nil
     windowSelectionCoordinator?.destroyOverlay()
     windowSelectionCoordinator = nil
+    devicePreviewWindow?.close()
+    devicePreviewWindow = nil
+    deviceCapture?.stop()
+    deviceCapture = nil
     captureTarget = nil
     transition(to: .idle)
   }
@@ -341,6 +349,43 @@ final class SessionState {
     default:
       throw CaptureError.invalidTransition(from: "\(state)", to: "recording")
     }
+
+    if captureMode == .device, let capture = deviceCapture {
+      let coordinator = RecordingCoordinator()
+      self.recordingCoordinator = coordinator
+      overlayView = nil
+
+      let useCam = isCameraOn && options.selectedCamera != nil
+      let useMic = isMicrophoneOn && options.selectedMicrophone != nil
+
+      var existingWebcam: (WebcamCapture, VerifiedCamera)?
+      if useCam, let webcam = persistentWebcam, let info = verifiedCameraInfo {
+        existingWebcam = (webcam, info)
+      }
+
+      let startedAt = try await coordinator.startDeviceRecording(
+        deviceCapture: capture,
+        fps: options.fps,
+        microphoneDeviceId: useMic ? options.selectedMicrophone?.id : nil,
+        cameraDeviceId: useCam ? options.selectedCamera?.id : nil,
+        cameraResolution: ConfigService.shared.cameraMaximumResolution,
+        existingWebcam: existingWebcam
+      )
+
+      if existingWebcam == nil, useCam {
+        let box = await coordinator.getWebcamCaptureSessionBox()
+        if let camSession = box?.session {
+          let previewWindow = WebcamPreviewWindow()
+          previewWindow.show(captureSession: camSession)
+          self.webcamPreviewWindow = previewWindow
+        }
+      }
+
+      SoundEffect.startRecording.play()
+      transition(to: .recording(startedAt: startedAt))
+      return
+    }
+
     guard let target = captureTarget else {
       throw CaptureError.noSelectionStored
     }
@@ -421,6 +466,9 @@ final class SessionState {
     recordingCoordinator = nil
     captureTarget = nil
     stopCameraPreview()
+    devicePreviewWindow?.close()
+    devicePreviewWindow = nil
+    deviceCapture = nil
 
     let saveDir = FileManager.default.projectSaveDirectory()
     do {
@@ -616,6 +664,44 @@ final class SessionState {
   private func startRecordingFromOverlay() {
     hideStartRecordingOverlay()
     recordEntireScreen()
+  }
+
+  func startDeviceRecordingWith(deviceId: String) {
+    guard case .idle = state else { return }
+
+    let devices = DeviceDiscovery.shared.availableDevices
+    guard let device = devices.first(where: { $0.id == deviceId }) else {
+      showError(CaptureError.deviceNotFound.localizedDescription)
+      return
+    }
+
+    let capture = DeviceCapture()
+    deviceCapture = capture
+
+    Task {
+      do {
+        let info = try await capture.startAndVerify(deviceId: device.id)
+        guard captureMode == .device else {
+          capture.stop()
+          deviceCapture = nil
+          return
+        }
+
+        if let session = capture.captureSession {
+          let previewWindow = DevicePreviewWindow()
+          previewWindow.show(captureSession: session, deviceName: device.name)
+          devicePreviewWindow = previewWindow
+        }
+
+        logger.info("Device preview started: \(device.name) at \(info.width)x\(info.height)")
+        beginRecordingWithCountdown()
+      } catch {
+        logger.error("Device recording failed: \(error)")
+        deviceCapture?.stop()
+        deviceCapture = nil
+        showError(error.localizedDescription)
+      }
+    }
   }
 
   private func recordEntireScreen() {

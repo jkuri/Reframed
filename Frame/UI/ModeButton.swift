@@ -19,6 +19,7 @@ struct ModeButton: View {
       .frame(width: 56, height: 52)
       .background(isSelected ? FrameColors.selectedBackground : Color.clear)
       .clipShape(RoundedRectangle(cornerRadius: 6))
+      .contentShape(Rectangle())
     }
     .buttonStyle(.plain)
   }
