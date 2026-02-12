@@ -33,7 +33,8 @@ actor RecordingCoordinator {
     microphoneDeviceId: String? = nil,
     cameraDeviceId: String? = nil,
     cameraResolution: String = "1080p",
-    existingWebcam: (WebcamCapture, VerifiedCamera)? = nil
+    existingWebcam: (WebcamCapture, VerifiedCamera)? = nil,
+    clickRenderer: MouseClickRenderer? = nil
   ) async throws -> Date {
     var verifiedCam: (capture: WebcamCapture, info: VerifiedCamera)?
     var verifiedMic: MicrophoneCapture?
@@ -113,6 +114,24 @@ actor RecordingCoordinator {
       clock: clock
     )
     self.videoWriter = vidWriter
+
+    if let clickRenderer {
+      let captureOrigin: CGPoint
+      switch target {
+      case .region(let selection):
+        captureOrigin = selection.screenCaptureKitRect.origin
+      case .window(let window):
+        captureOrigin = window.frame.origin
+      case .screen:
+        captureOrigin = display.frame.origin
+      }
+      clickRenderer.configure(
+        captureOrigin: captureOrigin,
+        displayScale: displayScale,
+        displayHeight: CGFloat(CGDisplayPixelsHigh(display.displayID))
+      )
+      vidWriter.clickRenderer = clickRenderer
+    }
 
     let session = ScreenCaptureSession(videoWriter: vidWriter)
     do {

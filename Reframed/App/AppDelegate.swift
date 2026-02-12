@@ -50,8 +50,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     }
 
     let window = NSWindow(
-      contentRect: NSRect(x: 0, y: 0, width: 800, height: 400),
-      styleMask: [.titled, .closable, .miniaturizable, .resizable, .fullSizeContentView],
+      contentRect: NSRect(x: 0, y: 0, width: 800, height: 500),
+      styleMask: [.titled, .closable, .fullSizeContentView],
       backing: .buffered,
       defer: false
     )
@@ -72,13 +72,18 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
       }
     )
 
-    let min = NSSize(width: 800, height: 400)
+    let min = NSSize(width: 800, height: 500)
     window.contentMinSize = min
     window.minSize = min
 
     permissionsWindow = window
+    window.level = .floating
     window.makeKeyAndOrderFront(nil)
     NSApp.activate(ignoringOtherApps: true)
+
+    DispatchQueue.main.async {
+      window.level = .normal
+    }
   }
 
   func windowWillClose(_ notification: Notification) {

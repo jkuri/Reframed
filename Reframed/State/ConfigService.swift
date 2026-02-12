@@ -113,7 +113,7 @@ final class ConfigService {
 }
 
 private struct ConfigData: Codable {
-  var outputFolder: String = "~/Movies/Frame"
+  var outputFolder: String = "~/Movies/Reframe"
   var timerDelay: Int = 0
   var audioDeviceId: String? = nil
   var rememberLastSelection: Bool = true
@@ -122,7 +122,7 @@ private struct ConfigData: Codable {
   var captureSystemAudio: Bool = false
   var cameraDeviceId: String? = nil
   var cameraMaximumResolution: String = "1080p"
-  var projectFolder: String = "~/Frame"
+  var projectFolder: String = "~/Reframed"
   var appearance: String = "system"
   var mouseClickColor: CodableColor? = nil
   var mouseClickSize: Int = 36

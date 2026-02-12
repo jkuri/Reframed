@@ -17,7 +17,7 @@ struct RotatingFileLogHandler: LogHandler {
 
   private static var logDirectory: URL {
     let home = FileManager.default.homeDirectoryForCurrentUser
-    return home.appendingPathComponent("Library/Logs/Frame", isDirectory: true)
+    return home.appendingPathComponent("Library/Logs/Reframe", isDirectory: true)
   }
 
   private static var logFile: URL {

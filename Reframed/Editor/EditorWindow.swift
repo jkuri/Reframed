@@ -61,8 +61,13 @@ final class EditorWindow: NSObject, NSWindowDelegate {
     window.isReleasedWhenClosed = false
     window.delegate = self
     window.title = "Reframed Editor"
+    window.level = .floating
     window.makeKeyAndOrderFront(nil)
     NSApp.activate(ignoringOtherApps: true)
+
+    DispatchQueue.main.async {
+      window.level = .normal
+    }
 
     self.window = window
   }

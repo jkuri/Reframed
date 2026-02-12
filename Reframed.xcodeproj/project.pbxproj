@@ -91,6 +91,7 @@
 		A40000000000000000000002 /* TimeFormatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40000000000000000000002 /* TimeFormatting.swift */; };
 		A50000000000000000000001 /* MouseClickMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50000000000000000000001 /* MouseClickMonitor.swift */; };
 		A50000000000000000000002 /* MouseClickWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50000000000000000000002 /* MouseClickWindow.swift */; };
+		A50000000000000000000003 /* MouseClickRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50000000000000000000003 /* MouseClickRenderer.swift */; };
 		A70000000000000000000001 /* DeviceDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70000000000000000000001 /* DeviceDiscovery.swift */; };
 		A70000000000000000000002 /* DeviceCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70000000000000000000002 /* DeviceCapture.swift */; };
 		A70000000000000000000003 /* DevicePreviewWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70000000000000000000003 /* DevicePreviewWindow.swift */; };
@@ -184,6 +185,7 @@
 		B40000000000000000000002 /* TimeFormatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeFormatting.swift; sourceTree = "<group>"; };
 		B50000000000000000000001 /* MouseClickMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MouseClickMonitor.swift; sourceTree = "<group>"; };
 		B50000000000000000000002 /* MouseClickWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MouseClickWindow.swift; sourceTree = "<group>"; };
+		B50000000000000000000003 /* MouseClickRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MouseClickRenderer.swift; sourceTree = "<group>"; };
 		B70000000000000000000001 /* DeviceDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceDiscovery.swift; sourceTree = "<group>"; };
 		B70000000000000000000002 /* DeviceCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceCapture.swift; sourceTree = "<group>"; };
 		B70000000000000000000003 /* DevicePreviewWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevicePreviewWindow.swift; sourceTree = "<group>"; };
@@ -284,6 +286,7 @@
 				B10000000000000000000035 /* SharedRecordingClock.swift */,
 				B50000000000000000000001 /* MouseClickMonitor.swift */,
 				B50000000000000000000002 /* MouseClickWindow.swift */,
+				B50000000000000000000003 /* MouseClickRenderer.swift */,
 				B20000000000000000000001 /* WebcamCapture.swift */,
 				B20000000000000000000002 /* WebcamPreviewWindow.swift */,
 				B20000000000000000000003 /* RecordingResult.swift */,
@@ -580,6 +583,7 @@
 				A40000000000000000000002 /* TimeFormatting.swift in Sources */,
 				A50000000000000000000001 /* MouseClickMonitor.swift in Sources */,
 				A50000000000000000000002 /* MouseClickWindow.swift in Sources */,
+				A50000000000000000000003 /* MouseClickRenderer.swift in Sources */,
 				A60000000000000000000001 /* CodableColor.swift in Sources */,
 				A70000000000000000000001 /* DeviceDiscovery.swift in Sources */,
 				A70000000000000000000002 /* DeviceCapture.swift in Sources */,

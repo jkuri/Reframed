@@ -9,29 +9,36 @@ struct PermissionsView: View {
   private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
   var body: some View {
-    VStack(alignment: .leading, spacing: 32) {
-      PermissionRow(
-        title: "Screen Recording Permission",
-        description: "Reframed needs to capture video of your screen. You might need to restart the app after granting it.",
-        granted: screenRecordingGranted,
-        grantedLabel: "Screen Recording enabled",
-        requestLabel: "Allow Screen Recording"
-      ) {
-        Permissions.requestScreenRecordingPermission()
-      }
+    VStack(spacing: 32) {
+      Image(nsImage: NSApp.applicationIconImage)
+        .resizable()
+        .frame(width: 128, height: 128)
+        .padding(.top, -100)
 
-      PermissionRow(
-        title: "Accessibility Permission",
-        description: "Reframed needs to capture mouse movements and shortcut keystrokes while you are recording your screen.",
-        granted: accessibilityGranted,
-        grantedLabel: "Accessibility access enabled",
-        requestLabel: "Allow Accessibility Access"
-      ) {
-        Permissions.requestAccessibilityPermission()
+      VStack(alignment: .leading, spacing: 32) {
+        PermissionRow(
+          title: "Screen Recording Permission",
+          description: "Reframed needs to capture video of your screen. You might need to restart the app after granting it.",
+          granted: screenRecordingGranted,
+          grantedLabel: "Screen Recording enabled",
+          requestLabel: "Allow Screen Recording"
+        ) {
+          Permissions.requestScreenRecordingPermission()
+        }
+
+        PermissionRow(
+          title: "Accessibility Permission",
+          description: "Reframed needs to capture mouse movements and shortcut keystrokes while you are recording your screen.",
+          granted: accessibilityGranted,
+          grantedLabel: "Accessibility access enabled",
+          requestLabel: "Allow Accessibility Access"
+        ) {
+          Permissions.requestAccessibilityPermission()
+        }
       }
     }
     .padding(80)
-    .frame(minWidth: 800, minHeight: 400)
+    .frame(minWidth: 800, minHeight: 500)
     .onReceive(timer) { _ in
       screenRecordingGranted = Permissions.hasScreenRecordingPermission
       accessibilityGranted = Permissions.hasAccessibilityPermission

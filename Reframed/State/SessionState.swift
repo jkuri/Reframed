@@ -402,6 +402,22 @@ final class SessionState {
       existingWebcam = (webcam, info)
     }
 
+    let clickColor: NSColor?
+    let clickRenderer: MouseClickRenderer?
+    if options.showMouseClicks {
+      let cc: NSColor
+      if let mc = options.mouseClickColor {
+        cc = NSColor(cgColor: mc.cgColor) ?? .controlAccentColor
+      } else {
+        cc = .controlAccentColor
+      }
+      clickColor = cc
+      clickRenderer = MouseClickRenderer(color: cc, size: CGFloat(options.mouseClickSize))
+    } else {
+      clickColor = nil
+      clickRenderer = nil
+    }
+
     let startedAt = try await coordinator.startRecording(
       target: target,
       fps: options.fps,
@@ -409,7 +425,8 @@ final class SessionState {
       microphoneDeviceId: useMic ? options.selectedMicrophone?.id : nil,
       cameraDeviceId: useCam ? options.selectedCamera?.id : nil,
       cameraResolution: ConfigService.shared.cameraMaximumResolution,
-      existingWebcam: existingWebcam
+      existingWebcam: existingWebcam,
+      clickRenderer: clickRenderer
     )
 
     if existingWebcam == nil, useCam {
@@ -421,14 +438,8 @@ final class SessionState {
       }
     }
 
-    if options.showMouseClicks {
-      let clickColor: NSColor
-      if let cc = options.mouseClickColor {
-        clickColor = NSColor(cgColor: cc.cgColor) ?? .controlAccentColor
-      } else {
-        clickColor = .controlAccentColor
-      }
-      let monitor = MouseClickMonitor(color: clickColor, size: CGFloat(options.mouseClickSize))
+    if options.showMouseClicks, let clickColor {
+      let monitor = MouseClickMonitor(color: clickColor, size: CGFloat(options.mouseClickSize), renderer: clickRenderer)
       monitor.start()
       mouseClickMonitor = monitor
     }
