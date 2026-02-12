@@ -15,7 +15,8 @@ final class WebcamCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
   private let logger = Logger(label: "eu.jankuri.frame.webcam-capture")
   private var isPaused = false
   private let verifyQueue = DispatchQueue(label: "eu.jankuri.frame.webcam-verify", qos: .userInteractive)
-  private var firstFrameContinuation: CheckedContinuation<VerifiedCamera, any Error>?
+  private var firstFrameContinuation: CheckedContinuation<Void, any Error>?
+  private var selectedDims: (width: Int, height: Int) = (1280, 720)
 
   override init() {
     super.init()
@@ -57,23 +58,38 @@ final class WebcamCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
     }
 
     let dims = CMVideoFormatDescriptionGetDimensions(bestFormat.formatDescription)
-    logger.info("Selected camera format: \(dims.width)x\(dims.height)")
+    let formatW = Int(dims.width)
+    let formatH = Int(dims.height)
+    selectedDims = (formatW, formatH)
+    logger.info("Selected camera format: \(formatW)x\(formatH)")
 
     let targetFPS = Double(fps)
     let bestRange = bestFormat.videoSupportedFrameRateRanges
-      .sorted { abs($0.maxFrameRate - targetFPS) < abs($1.maxFrameRate - targetFPS) }
+      .filter { $0.minFrameRate <= targetFPS && $0.maxFrameRate >= targetFPS }
       .first
-    let frameDuration = bestRange?.minFrameDuration ?? CMTime(value: 1, timescale: CMTimeScale(fps))
+      ?? bestFormat.videoSupportedFrameRateRanges
+        .sorted { $0.maxFrameRate > $1.maxFrameRate }
+        .first
+    let frameDuration: CMTime
+    if let range = bestRange, targetFPS >= range.minFrameRate && targetFPS <= range.maxFrameRate {
+      frameDuration = CMTime(value: 1, timescale: CMTimeScale(fps))
+    } else {
+      frameDuration = bestRange?.minFrameDuration ?? CMTime(value: 1, timescale: CMTimeScale(fps))
+    }
 
+    session.beginConfiguration()
     try device.lockForConfiguration()
     device.activeFormat = bestFormat
     device.activeVideoMinFrameDuration = frameDuration
     device.activeVideoMaxFrameDuration = frameDuration
     device.unlockForConfiguration()
+    session.commitConfiguration()
 
     let output = AVCaptureVideoDataOutput()
     output.videoSettings = [
-      kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
+      kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA,
+      kCVPixelBufferWidthKey as String: formatW,
+      kCVPixelBufferHeightKey as String: formatH,
     ]
     output.setSampleBufferDelegate(self, queue: verifyQueue)
     guard session.canAddOutput(output) else {
@@ -92,7 +108,7 @@ final class WebcamCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
     }
     self.captureSession = session
 
-    let result = try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<VerifiedCamera, any Error>) in
+    try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, any Error>) in
       self.verifyQueue.async {
         self.firstFrameContinuation = continuation
       }
@@ -110,8 +126,9 @@ final class WebcamCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
       }
     }
 
-    logger.info("Webcam verified: \(device.localizedName) at \(result.width)x\(result.height)")
-    return result
+    let verified = VerifiedCamera(width: formatW, height: formatH)
+    logger.info("Webcam verified: \(device.localizedName) at \(formatW)x\(formatH)")
+    return verified
   }
 
   func attachWriter(_ writer: VideoTrackWriter) {
@@ -155,13 +172,7 @@ final class WebcamCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
   func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
     if let cont = firstFrameContinuation {
       firstFrameContinuation = nil
-      var w = 1280
-      var h = 720
-      if let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) {
-        w = CVPixelBufferGetWidth(imageBuffer)
-        h = CVPixelBufferGetHeight(imageBuffer)
-      }
-      cont.resume(returning: VerifiedCamera(width: w, height: h))
+      cont.resume()
       return
     }
     if isPaused { return }
@@ -183,23 +194,29 @@ final class WebcamCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
     maxHeight: Int,
     fps: Int
   ) -> AVCaptureDevice.Format? {
+    let targetFPS = Double(fps)
     let validFormats = device.formats.filter { format in
       let mediaType = CMFormatDescriptionGetMediaType(format.formatDescription)
       guard mediaType == kCMMediaType_Video else { return false }
       let dims = CMVideoFormatDescriptionGetDimensions(format.formatDescription)
-      let w = Int(dims.width)
-      let h = Int(dims.height)
-      return w <= maxWidth && h <= maxHeight
+      return Int(dims.width) <= maxWidth && Int(dims.height) <= maxHeight
     }
-    return validFormats.sorted { a, b in
+
+    let fpsCapable = validFormats.filter { format in
+      format.videoSupportedFrameRateRanges.contains { $0.maxFrameRate >= targetFPS }
+    }
+
+    let candidates = fpsCapable.isEmpty ? validFormats : fpsCapable
+
+    return candidates.sorted { a, b in
       let da = CMVideoFormatDescriptionGetDimensions(a.formatDescription)
       let db = CMVideoFormatDescriptionGetDimensions(b.formatDescription)
       let areaA = Int(da.width) * Int(da.height)
       let areaB = Int(db.width) * Int(db.height)
       if areaA != areaB { return areaA > areaB }
-      let fpsA = a.videoSupportedFrameRateRanges.map(\.maxFrameRate).max() ?? 0
-      let fpsB = b.videoSupportedFrameRateRanges.map(\.maxFrameRate).max() ?? 0
-      return fpsA > fpsB
+      let bestFpsA = a.videoSupportedFrameRateRanges.map(\.maxFrameRate).max() ?? 0
+      let bestFpsB = b.videoSupportedFrameRateRanges.map(\.maxFrameRate).max() ?? 0
+      return abs(bestFpsA - targetFPS) < abs(bestFpsB - targetFPS)
     }.first
   }
 }
