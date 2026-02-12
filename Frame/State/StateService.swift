@@ -44,6 +44,21 @@ final class StateService {
     }
   }
 
+  var toolbarPosition: CGPoint? {
+    get {
+      guard let p = data.toolbarPosition else { return nil }
+      return CGPoint(x: p.x, y: p.y)
+    }
+    set {
+      if let p = newValue {
+        data.toolbarPosition = PointData(x: p.x, y: p.y)
+      } else {
+        data.toolbarPosition = nil
+      }
+      save()
+    }
+  }
+
   private init() {
     let dir = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".frame", isDirectory: true)
     try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
@@ -86,4 +101,5 @@ private struct StateData: Codable {
   var lastSelectionRect: RectData? = nil
   var lastDisplayID: UInt32 = 1
   var webcamPreviewPosition: PointData? = nil
+  var toolbarPosition: PointData? = nil
 }
