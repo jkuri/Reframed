@@ -17,7 +17,6 @@ final class WebcamPreviewWindow {
   private var totalWidth: CGFloat { videoWidth + padding * 2 }
   private var totalHeight: CGFloat { videoHeight + padding * 2 }
 
-
   func showLoading() {
     if panel == nil {
       createPanel()

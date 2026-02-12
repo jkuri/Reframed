@@ -21,16 +21,12 @@ final class ScreenCaptureSession: NSObject, SCStreamDelegate, SCStreamOutput, @u
   }
 
   func start(target: CaptureTarget, display: SCDisplay, displayScale: CGFloat, fps: Int = 60) async throws {
-    let content = try await Permissions.fetchShareableContent()
-
     let filter: SCContentFilter
     let sourceRect: CGRect
 
     switch target {
     case .region(let selection):
-      let selfApp = content.applications.first { $0.bundleIdentifier == Bundle.main.bundleIdentifier }
-      let excludedApps = [selfApp].compactMap { $0 }
-      filter = SCContentFilter(display: display, excludingApplications: excludedApps, exceptingWindows: [])
+      filter = SCContentFilter(display: display, excludingApplications: [], exceptingWindows: [])
       sourceRect = selection.screenCaptureKitRect
 
     case .window(let window):
@@ -38,9 +34,7 @@ final class ScreenCaptureSession: NSObject, SCStreamDelegate, SCStreamOutput, @u
       sourceRect = CGRect(origin: .zero, size: CGSize(width: CGFloat(window.frame.width), height: CGFloat(window.frame.height)))
 
     case .screen:
-      let selfApp = content.applications.first { $0.bundleIdentifier == Bundle.main.bundleIdentifier }
-      let excludedApps = [selfApp].compactMap { $0 }
-      filter = SCContentFilter(display: display, excludingApplications: excludedApps, exceptingWindows: [])
+      filter = SCContentFilter(display: display, excludingApplications: [], exceptingWindows: [])
       sourceRect = CGRect(origin: .zero, size: display.frame.size)
     }
     let pixelW = Int(sourceRect.width * displayScale) & ~1

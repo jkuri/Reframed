@@ -38,6 +38,7 @@ final class SessionState {
   private var countdownTask: Task<Void, Never>?
   private var persistentWebcam: WebcamCapture?
   private var verifiedCameraInfo: VerifiedCamera?
+  private var mouseClickMonitor: MouseClickMonitor?
 
   weak var overlayView: SelectionOverlayView?
 
@@ -323,6 +324,8 @@ final class SessionState {
   }
 
   private func cleanupAfterRecordingFailure() {
+    mouseClickMonitor?.stop()
+    mouseClickMonitor = nil
     selectionCoordinator?.destroyAll()
     selectionCoordinator = nil
     windowSelectionCoordinator?.destroyOverlay()
@@ -373,6 +376,12 @@ final class SessionState {
       }
     }
 
+    if options.showMouseClicks {
+      let monitor = MouseClickMonitor()
+      monitor.start()
+      mouseClickMonitor = monitor
+    }
+
     SoundEffect.startRecording.play()
     transition(to: .recording(startedAt: startedAt))
   }
@@ -384,6 +393,9 @@ final class SessionState {
     default:
       throw CaptureError.invalidTransition(from: "\(state)", to: "processing")
     }
+
+    mouseClickMonitor?.stop()
+    mouseClickMonitor = nil
 
     SoundEffect.stopRecording.play()
     transition(to: .processing)
@@ -467,6 +479,7 @@ final class SessionState {
   func pauseRecording() {
     guard case .recording(let startedAt) = state else { return }
     let elapsed = Date().timeIntervalSince(startedAt)
+    mouseClickMonitor?.stop()
     SoundEffect.pauseRecording.play()
     Task {
       await recordingCoordinator?.pause()
@@ -477,6 +490,7 @@ final class SessionState {
   func resumeRecording() {
     guard case .paused(let elapsed) = state else { return }
     let resumedAt = Date().addingTimeInterval(-elapsed)
+    mouseClickMonitor?.start()
     SoundEffect.resumeRecording.play()
     Task {
       await recordingCoordinator?.resume()
@@ -488,6 +502,8 @@ final class SessionState {
     countdownTask?.cancel()
     countdownTask = nil
     dismissCountdownOverlay()
+    mouseClickMonitor?.stop()
+    mouseClickMonitor = nil
 
     let savedTarget = captureTarget
     let savedMode = captureMode

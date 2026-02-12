@@ -25,6 +25,7 @@ final class CaptureToolbarWindow: NSPanel {
     isMovableByWindowBackground = true
     collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
     hidesOnDeactivate = false
+    sharingType = .none
 
     let toolbar = CaptureToolbar(session: session)
     let hostingView = NSHostingView(rootView: toolbar)

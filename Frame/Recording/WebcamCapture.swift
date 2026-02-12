@@ -64,12 +64,13 @@ final class WebcamCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
     logger.info("Selected camera format: \(formatW)x\(formatH)")
 
     let targetFPS = Double(fps)
-    let bestRange = bestFormat.videoSupportedFrameRateRanges
+    let bestRange =
+      bestFormat.videoSupportedFrameRateRanges
       .filter { $0.minFrameRate <= targetFPS && $0.maxFrameRate >= targetFPS }
       .first
       ?? bestFormat.videoSupportedFrameRateRanges
-        .sorted { $0.maxFrameRate > $1.maxFrameRate }
-        .first
+      .sorted { $0.maxFrameRate > $1.maxFrameRate }
+      .first
     let frameDuration: CMTime
     if let range = bestRange, targetFPS >= range.minFrameRate && targetFPS <= range.maxFrameRate {
       frameDuration = CMTime(value: 1, timescale: CMTimeScale(fps))

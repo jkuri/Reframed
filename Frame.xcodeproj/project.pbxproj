@@ -88,6 +88,8 @@
 		A3000000000000000000001C /* ProjectMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3000000000000000000001C /* ProjectMetadata.swift */; };
 		A40000000000000000000001 /* SoundEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40000000000000000000001 /* SoundEffect.swift */; };
 		A40000000000000000000002 /* TimeFormatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40000000000000000000002 /* TimeFormatting.swift */; };
+		A50000000000000000000001 /* MouseClickMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50000000000000000000001 /* MouseClickMonitor.swift */; };
+		A50000000000000000000002 /* MouseClickWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50000000000000000000002 /* MouseClickWindow.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -174,6 +176,8 @@
 		B3000000000000000000001C /* ProjectMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ProjectMetadata.swift; sourceTree = "<group>"; };
 		B40000000000000000000001 /* SoundEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SoundEffect.swift; sourceTree = "<group>"; };
 		B40000000000000000000002 /* TimeFormatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeFormatting.swift; sourceTree = "<group>"; };
+		B50000000000000000000001 /* MouseClickMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MouseClickMonitor.swift; sourceTree = "<group>"; };
+		B50000000000000000000002 /* MouseClickWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MouseClickWindow.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -268,6 +272,8 @@
 				B10000000000000000000032 /* MicrophoneCapture.swift */,
 				B10000000000000000000034 /* SystemAudioCapture.swift */,
 				B10000000000000000000035 /* SharedRecordingClock.swift */,
+				B50000000000000000000001 /* MouseClickMonitor.swift */,
+				B50000000000000000000002 /* MouseClickWindow.swift */,
 				B20000000000000000000001 /* WebcamCapture.swift */,
 				B20000000000000000000002 /* WebcamPreviewWindow.swift */,
 				B20000000000000000000003 /* RecordingResult.swift */,
@@ -557,6 +563,8 @@
 				A3000000000000000000001C /* ProjectMetadata.swift in Sources */,
 				A40000000000000000000001 /* SoundEffect.swift in Sources */,
 				A40000000000000000000002 /* TimeFormatting.swift in Sources */,
+				A50000000000000000000001 /* MouseClickMonitor.swift in Sources */,
+				A50000000000000000000002 /* MouseClickWindow.swift in Sources */,
 			);
 		};
 /* End PBXSourcesBuildPhase section */

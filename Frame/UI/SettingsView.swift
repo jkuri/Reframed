@@ -194,10 +194,13 @@ struct SettingsView: View {
     VStack(alignment: .leading, spacing: 8) {
       sectionLabel("Audio")
 
-      settingsToggle("Capture System Audio", isOn: Binding(
-        get: { options?.captureSystemAudio ?? false },
-        set: { options?.captureSystemAudio = $0 }
-      ))
+      settingsToggle(
+        "Capture System Audio",
+        isOn: Binding(
+          get: { options?.captureSystemAudio ?? false },
+          set: { options?.captureSystemAudio = $0 }
+        )
+      )
 
       HStack {
         Text("Microphone")
@@ -294,14 +297,20 @@ struct SettingsView: View {
       sectionLabel("Options")
 
       VStack(spacing: 2) {
-        settingsToggle("Remember Last Selection", isOn: Binding(
-          get: { options?.rememberLastSelection ?? false },
-          set: { options?.rememberLastSelection = $0 }
-        ))
-        settingsToggle("Show Mouse Clicks", isOn: Binding(
-          get: { options?.showMouseClicks ?? false },
-          set: { options?.showMouseClicks = $0 }
-        ))
+        settingsToggle(
+          "Remember Last Selection",
+          isOn: Binding(
+            get: { options?.rememberLastSelection ?? false },
+            set: { options?.rememberLastSelection = $0 }
+          )
+        )
+        settingsToggle(
+          "Show Mouse Clicks",
+          isOn: Binding(
+            get: { options?.showMouseClicks ?? false },
+            set: { options?.showMouseClicks = $0 }
+          )
+        )
       }
     }
   }

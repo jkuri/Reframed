@@ -51,6 +51,7 @@ final class CountdownOverlayWindow: NSPanel {
     hasShadow = false
     hidesOnDeactivate = false
     ignoresMouseEvents = true
+    sharingType = .none
 
     updateCountdown(remaining)
     setFrame(screen.frame, display: true)
