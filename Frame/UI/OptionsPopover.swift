@@ -80,13 +80,6 @@ struct OptionsPopover: View {
       SectionHeader(title: "Options")
 
       CheckmarkRow(
-        title: "Show Floating Thumbnail",
-        isSelected: options.showFloatingThumbnail
-      ) {
-        options.showFloatingThumbnail.toggle()
-      }
-
-      CheckmarkRow(
         title: "Remember Last Selection",
         isSelected: options.rememberLastSelection
       ) {

@@ -56,7 +56,6 @@
 		A1000000000000000000002B /* PermissionsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000002B /* PermissionsView.swift */; };
 		A1000000000000000000002C /* StartRecordingButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000002C /* StartRecordingButton.swift */; };
 		A1000000000000000000002D /* SettingsView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000002D /* SettingsView.swift */; };
-		A1000000000000000000002E /* SettingsWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000002E /* SettingsWindow.swift */; };
 		C8CC4187964D4445B613AEEB /* WindowSelectionCoordinator.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDB41C1253D94BEF960FD7D2 /* WindowSelectionCoordinator.swift */; };
 		ED4608FB0AB34BC3B7BEDB94 /* WindowController.swift in Sources */ = {isa = PBXBuildFile; fileRef = EC41BA6DF5654C57AC930549 /* WindowController.swift */; };
 		F93F2FF47E12481595833E3E /* WindowSelectionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = C4146D517F5E493F943D90D0 /* WindowSelectionView.swift */; };
@@ -143,7 +142,6 @@
 		B1000000000000000000002B /* PermissionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsView.swift; sourceTree = "<group>"; };
 		B1000000000000000000002C /* StartRecordingButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartRecordingButton.swift; sourceTree = "<group>"; };
 		B1000000000000000000002D /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
-		B1000000000000000000002E /* SettingsWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsWindow.swift; sourceTree = "<group>"; };
 		BDB41C1253D94BEF960FD7D2 /* WindowSelectionCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowSelectionCoordinator.swift; sourceTree = "<group>"; };
 		C4146D517F5E493F943D90D0 /* WindowSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowSelectionView.swift; sourceTree = "<group>"; };
 		EC41BA6DF5654C57AC930549 /* WindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowController.swift; sourceTree = "<group>"; };
@@ -318,7 +316,6 @@
 				B1000000000000000000002B /* PermissionsView.swift */,
 				B1000000000000000000002C /* StartRecordingButton.swift */,
 				B1000000000000000000002D /* SettingsView.swift */,
-				B1000000000000000000002E /* SettingsWindow.swift */,
 				B20000000000000000000012 /* CountdownOverlayWindow.swift */,
 			);
 			path = UI;
@@ -529,7 +526,6 @@
 				A1000000000000000000002B /* PermissionsView.swift in Sources */,
 				A1000000000000000000002C /* StartRecordingButton.swift in Sources */,
 				A1000000000000000000002D /* SettingsView.swift in Sources */,
-				A1000000000000000000002E /* SettingsWindow.swift in Sources */,
 				A20000000000000000000001 /* WebcamCapture.swift in Sources */,
 				A20000000000000000000002 /* WebcamPreviewWindow.swift in Sources */,
 				A20000000000000000000003 /* RecordingResult.swift in Sources */,

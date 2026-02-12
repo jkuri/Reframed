@@ -3,9 +3,13 @@ import SwiftUI
 struct CaptureToolbar: View {
   let session: SessionState
   @State private var showOptions = false
+  @State private var showSettings = false
   @State private var showRestartAlert = false
 
+  @Environment(\.colorScheme) private var colorScheme
+
   var body: some View {
+    let _ = colorScheme
     HStack(spacing: 0) {
       switch session.state {
       case .countdown(let remaining):
@@ -137,7 +141,7 @@ struct CaptureToolbar: View {
       ToolbarDivider()
 
       Button {
-        session.openSettings()
+        showSettings.toggle()
       } label: {
         Image(systemName: "gearshape")
           .font(.system(size: 16))
@@ -146,6 +150,9 @@ struct CaptureToolbar: View {
           .contentShape(Rectangle())
       }
       .buttonStyle(.plain)
+      .popover(isPresented: $showSettings, arrowEdge: .bottom) {
+        SettingsView(options: session.options)
+      }
     }
   }
 

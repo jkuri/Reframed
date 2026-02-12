@@ -38,10 +38,6 @@ final class RecordingOptions {
     didSet { ConfigService.shared.audioDeviceId = selectedMicrophone?.id }
   }
 
-  var showFloatingThumbnail: Bool {
-    didSet { ConfigService.shared.showFloatingThumbnail = showFloatingThumbnail }
-  }
-
   var rememberLastSelection: Bool {
     didSet { ConfigService.shared.rememberLastSelection = rememberLastSelection }
   }
@@ -83,7 +79,6 @@ final class RecordingOptions {
   init() {
     let config = ConfigService.shared
     timerDelay = TimerDelay(rawValue: config.timerDelay) ?? .none
-    showFloatingThumbnail = config.showFloatingThumbnail
     rememberLastSelection = config.rememberLastSelection
     showMouseClicks = config.showMouseClicks
     fps = config.fps

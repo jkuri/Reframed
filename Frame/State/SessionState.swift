@@ -472,21 +472,6 @@ final class SessionState {
     }
   }
 
-  func openSettings() {
-    hideToolbar()
-    SettingsWindow.shared.onClose = { [weak self] in
-      MainActor.assumeIsolated {
-        guard let self else { return }
-        if case .editing = self.state {
-          self.editorWindows.last?.bringToFront()
-        } else {
-          self.showToolbar()
-        }
-      }
-    }
-    SettingsWindow.shared.show()
-  }
-
   func pauseRecording() {
     guard case .recording(let startedAt) = state else { return }
     let elapsed = Date().timeIntervalSince(startedAt)

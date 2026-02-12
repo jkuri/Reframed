@@ -25,11 +25,6 @@ final class ConfigService {
     set { data.audioDeviceId = newValue; save() }
   }
 
-  var showFloatingThumbnail: Bool {
-    get { data.showFloatingThumbnail }
-    set { data.showFloatingThumbnail = newValue; save() }
-  }
-
   var rememberLastSelection: Bool {
     get { data.rememberLastSelection }
     set { data.rememberLastSelection = newValue; save() }
@@ -111,7 +106,6 @@ private struct ConfigData: Codable {
   var outputFolder: String = "~/Movies/Frame"
   var timerDelay: Int = 0
   var audioDeviceId: String? = nil
-  var showFloatingThumbnail: Bool = true
   var rememberLastSelection: Bool = true
   var showMouseClicks: Bool = false
   var fps: Int = 60

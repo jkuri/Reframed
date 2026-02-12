@@ -2,15 +2,9 @@ import AVFoundation
 import SwiftUI
 
 struct SettingsView: View {
+  var options: RecordingOptions?
+
   @State private var outputFolder: String = ConfigService.shared.outputFolder
-  @State private var fps: Int = ConfigService.shared.fps
-  @State private var timerDelay: Int = ConfigService.shared.timerDelay
-  @State private var audioDeviceId: String? = ConfigService.shared.audioDeviceId
-  @State private var showFloatingThumbnail: Bool = ConfigService.shared.showFloatingThumbnail
-  @State private var rememberLastSelection: Bool = ConfigService.shared.rememberLastSelection
-  @State private var showMouseClicks: Bool = ConfigService.shared.showMouseClicks
-  @State private var captureSystemAudio: Bool = ConfigService.shared.captureSystemAudio
-  @State private var cameraDeviceId: String? = ConfigService.shared.cameraDeviceId
   @State private var cameraMaximumResolution: String = ConfigService.shared.cameraMaximumResolution
   @State private var projectFolder: String = ConfigService.shared.projectFolder
   @State private var appearance: String = ConfigService.shared.appearance
@@ -56,7 +50,7 @@ struct SettingsView: View {
         .padding(24)
       }
     }
-    .frame(width: 700, height: 640)
+    .frame(width: 700, height: 800)
     .background(FrameColors.panelBackground)
   }
 
@@ -152,14 +146,13 @@ struct SettingsView: View {
         HStack(spacing: 4) {
           ForEach(fpsOptions, id: \.self) { option in
             Button {
-              fps = option
-              ConfigService.shared.fps = option
+              options?.fps = option
             } label: {
               Text("\(option)")
                 .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(FrameColors.primaryText)
                 .frame(width: 44, height: 28)
-                .background(fps == option ? FrameColors.selectedActive : FrameColors.fieldBackground)
+                .background(options?.fps == option ? FrameColors.selectedActive : FrameColors.fieldBackground)
                 .clipShape(RoundedRectangle(cornerRadius: 6))
             }
             .buttonStyle(.plain)
@@ -175,15 +168,14 @@ struct SettingsView: View {
         HStack(spacing: 4) {
           ForEach(TimerDelay.allCases, id: \.self) { delay in
             Button {
-              timerDelay = delay.rawValue
-              ConfigService.shared.timerDelay = delay.rawValue
+              options?.timerDelay = delay
             } label: {
               Text(delay.label)
                 .font(.system(size: 12, weight: .medium))
                 .foregroundStyle(FrameColors.primaryText)
                 .padding(.horizontal, 10)
                 .frame(height: 28)
-                .background(timerDelay == delay.rawValue ? FrameColors.selectedActive : FrameColors.fieldBackground)
+                .background(options?.timerDelay == delay ? FrameColors.selectedActive : FrameColors.fieldBackground)
                 .clipShape(RoundedRectangle(cornerRadius: 6))
             }
             .buttonStyle(.plain)
@@ -194,7 +186,7 @@ struct SettingsView: View {
   }
 
   private var microphoneLabel: String {
-    guard let id = audioDeviceId else { return "None" }
+    guard let id = options?.selectedMicrophone?.id else { return "None" }
     return availableMicrophones.first { $0.id == id }?.name ?? "None"
   }
 
@@ -202,9 +194,10 @@ struct SettingsView: View {
     VStack(alignment: .leading, spacing: 8) {
       sectionLabel("Audio")
 
-      settingsToggle("Capture System Audio", isOn: $captureSystemAudio) {
-        ConfigService.shared.captureSystemAudio = captureSystemAudio
-      }
+      settingsToggle("Capture System Audio", isOn: Binding(
+        get: { options?.captureSystemAudio ?? false },
+        set: { options?.captureSystemAudio = $0 }
+      ))
 
       HStack {
         Text("Microphone")
@@ -214,15 +207,13 @@ struct SettingsView: View {
         devicePickerButton(label: microphoneLabel, isActive: $showMicPopover)
           .popover(isPresented: $showMicPopover, arrowEdge: .bottom) {
             VStack(alignment: .leading, spacing: 0) {
-              CheckmarkRow(title: "None", isSelected: audioDeviceId == nil) {
-                audioDeviceId = nil
-                ConfigService.shared.audioDeviceId = nil
+              CheckmarkRow(title: "None", isSelected: options?.selectedMicrophone == nil) {
+                options?.selectedMicrophone = nil
                 showMicPopover = false
               }
               ForEach(availableMicrophones) { mic in
-                CheckmarkRow(title: mic.name, isSelected: audioDeviceId == mic.id) {
-                  audioDeviceId = mic.id
-                  ConfigService.shared.audioDeviceId = mic.id
+                CheckmarkRow(title: mic.name, isSelected: options?.selectedMicrophone?.id == mic.id) {
+                  options?.selectedMicrophone = mic
                   showMicPopover = false
                 }
               }
@@ -237,7 +228,7 @@ struct SettingsView: View {
   }
 
   private var cameraLabel: String {
-    guard let id = cameraDeviceId else { return "None" }
+    guard let id = options?.selectedCamera?.id else { return "None" }
     return availableCameras.first { $0.id == id }?.name ?? "None"
   }
 
@@ -253,15 +244,13 @@ struct SettingsView: View {
         devicePickerButton(label: cameraLabel, isActive: $showCameraPopover)
           .popover(isPresented: $showCameraPopover, arrowEdge: .bottom) {
             VStack(alignment: .leading, spacing: 0) {
-              CheckmarkRow(title: "None", isSelected: cameraDeviceId == nil) {
-                cameraDeviceId = nil
-                ConfigService.shared.cameraDeviceId = nil
+              CheckmarkRow(title: "None", isSelected: options?.selectedCamera == nil) {
+                options?.selectedCamera = nil
                 showCameraPopover = false
               }
               ForEach(availableCameras) { cam in
-                CheckmarkRow(title: cam.name, isSelected: cameraDeviceId == cam.id) {
-                  cameraDeviceId = cam.id
-                  ConfigService.shared.cameraDeviceId = cam.id
+                CheckmarkRow(title: cam.name, isSelected: options?.selectedCamera?.id == cam.id) {
+                  options?.selectedCamera = cam
                   showCameraPopover = false
                 }
               }
@@ -305,15 +294,14 @@ struct SettingsView: View {
       sectionLabel("Options")
 
       VStack(spacing: 2) {
-        settingsToggle("Show Floating Thumbnail", isOn: $showFloatingThumbnail) {
-          ConfigService.shared.showFloatingThumbnail = showFloatingThumbnail
-        }
-        settingsToggle("Remember Last Selection", isOn: $rememberLastSelection) {
-          ConfigService.shared.rememberLastSelection = rememberLastSelection
-        }
-        settingsToggle("Show Mouse Clicks", isOn: $showMouseClicks) {
-          ConfigService.shared.showMouseClicks = showMouseClicks
-        }
+        settingsToggle("Remember Last Selection", isOn: Binding(
+          get: { options?.rememberLastSelection ?? false },
+          set: { options?.rememberLastSelection = $0 }
+        ))
+        settingsToggle("Show Mouse Clicks", isOn: Binding(
+          get: { options?.showMouseClicks ?? false },
+          set: { options?.showMouseClicks = $0 }
+        ))
       }
     }
   }
@@ -345,19 +333,13 @@ struct SettingsView: View {
       .foregroundStyle(FrameColors.dimLabel)
   }
 
-  private func settingsToggle(_ title: String, isOn: Binding<Bool>, onChange: @escaping () -> Void) -> some View {
+  private func settingsToggle(_ title: String, isOn: Binding<Bool>) -> some View {
     HStack {
       Text(title)
         .font(.system(size: 13))
         .foregroundStyle(FrameColors.primaryText)
       Spacer()
-      Toggle("", isOn: isOn)
-        .toggleStyle(.switch)
-        .controlSize(.small)
-        .labelsHidden()
-        .onChange(of: isOn.wrappedValue) { _, _ in
-          onChange()
-        }
+      CustomToggle(isOn: isOn)
     }
     .padding(.horizontal, 10)
     .padding(.vertical, 4)
@@ -409,6 +391,29 @@ struct SettingsView: View {
   }
 }
 
+private struct CustomToggle: View {
+  @Binding var isOn: Bool
+
+  var body: some View {
+    Button {
+      isOn.toggle()
+    } label: {
+      RoundedRectangle(cornerRadius: 8)
+        .fill(isOn ? Color.accentColor : Color.gray.opacity(0.3))
+        .frame(width: 34, height: 20)
+        .overlay(alignment: isOn ? .trailing : .leading) {
+          Circle()
+            .fill(.white)
+            .frame(width: 16, height: 16)
+            .padding(2)
+            .shadow(color: .black.opacity(0.15), radius: 1, y: 1)
+        }
+        .animation(.easeInOut(duration: 0.15), value: isOn)
+    }
+    .buttonStyle(.plain)
+  }
+}
+
 private struct SettingsButtonStyle: ButtonStyle {
   @Environment(\.colorScheme) private var colorScheme
 
@@ -423,4 +428,3 @@ private struct SettingsButtonStyle: ButtonStyle {
       .clipShape(RoundedRectangle(cornerRadius: 6))
   }
 }
-
