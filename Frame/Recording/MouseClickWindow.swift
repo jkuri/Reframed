@@ -3,19 +3,25 @@ import QuartzCore
 
 @MainActor
 final class MouseClickWindow: NSPanel {
-  fileprivate static let startDiameter: CGFloat = 16
-  fileprivate static let endDiameter: CGFloat = 36
   fileprivate static let animationDuration: CFTimeInterval = 0.4
 
-  init(at screenPoint: NSPoint) {
-    let size = Self.endDiameter + 4
+  private let endDiameter: CGFloat
+  private let startDiameter: CGFloat
+  private let clickColor: NSColor
+
+  init(at screenPoint: NSPoint, color: NSColor, size: CGFloat) {
+    endDiameter = size
+    startDiameter = size * 0.44
+    clickColor = color
+
+    let windowSize = size + 4
     let origin = NSPoint(
-      x: screenPoint.x - size / 2,
-      y: screenPoint.y - size / 2
+      x: screenPoint.x - windowSize / 2,
+      y: screenPoint.y - windowSize / 2
     )
 
     super.init(
-      contentRect: NSRect(origin: origin, size: NSSize(width: size, height: size)),
+      contentRect: NSRect(origin: origin, size: NSSize(width: windowSize, height: windowSize)),
       styleMask: [.borderless, .nonactivatingPanel],
       backing: .buffered,
       defer: false
@@ -29,7 +35,12 @@ final class MouseClickWindow: NSPanel {
     hidesOnDeactivate = false
     collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
 
-    let clickView = MouseClickView(frame: NSRect(origin: .zero, size: NSSize(width: size, height: size)))
+    let clickView = MouseClickView(
+      frame: NSRect(origin: .zero, size: NSSize(width: windowSize, height: windowSize)),
+      startDiameter: startDiameter,
+      endDiameter: endDiameter,
+      color: clickColor
+    )
     contentView = clickView
     orderFrontRegardless()
     clickView.animate { [weak self] in
@@ -47,25 +58,31 @@ final class MouseClickWindow: NSPanel {
 private final class MouseClickView: NSView {
   private let ringLayer = CAShapeLayer()
   private let fillLayer = CAShapeLayer()
+  private let startDiameter: CGFloat
+  private let endDiameter: CGFloat
+  private let color: NSColor
 
-  override init(frame: NSRect) {
+  init(frame: NSRect, startDiameter: CGFloat, endDiameter: CGFloat, color: NSColor) {
+    self.startDiameter = startDiameter
+    self.endDiameter = endDiameter
+    self.color = color
     super.init(frame: frame)
     wantsLayer = true
     layer?.masksToBounds = false
 
     let center = CGPoint(x: frame.width / 2, y: frame.height / 2)
-    let startRadius = MouseClickWindow.startDiameter / 2
+    let startRadius = startDiameter / 2
     let startPath = CGPath(
       ellipseIn: CGRect(
         x: center.x - startRadius,
         y: center.y - startRadius,
-        width: MouseClickWindow.startDiameter,
-        height: MouseClickWindow.startDiameter
+        width: startDiameter,
+        height: startDiameter
       ),
       transform: nil
     )
 
-    let accentColor = NSColor.controlAccentColor.cgColor
+    let accentColor = color.cgColor
 
     fillLayer.path = startPath
     fillLayer.fillColor = accentColor.copy(alpha: 0.3)
@@ -84,13 +101,13 @@ private final class MouseClickView: NSView {
 
   func animate(completion: @escaping @Sendable () -> Void) {
     let center = CGPoint(x: bounds.width / 2, y: bounds.height / 2)
-    let endRadius = MouseClickWindow.endDiameter / 2
+    let endRadius = endDiameter / 2
     let endPath = CGPath(
       ellipseIn: CGRect(
         x: center.x - endRadius,
         y: center.y - endRadius,
-        width: MouseClickWindow.endDiameter,
-        height: MouseClickWindow.endDiameter
+        width: endDiameter,
+        height: endDiameter
       ),
       transform: nil
     )

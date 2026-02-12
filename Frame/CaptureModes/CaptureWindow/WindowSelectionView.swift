@@ -80,7 +80,7 @@ struct WindowSelectionView: View {
               .buttonStyle(.plain)
               .popover(isPresented: $showingResize, arrowEdge: .bottom) {
                 ResizePopover(windowController: windowController, window: current)
-                  .presentationBackground(FrameColors.panelBackground)
+                  .background(FrameColors.panelBackground)
               }
             }
 

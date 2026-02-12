@@ -60,6 +60,16 @@ final class ConfigService {
     set { data.projectFolder = newValue; save() }
   }
 
+  var mouseClickColor: CodableColor? {
+    get { data.mouseClickColor }
+    set { data.mouseClickColor = newValue; save() }
+  }
+
+  var mouseClickSize: Int {
+    get { data.mouseClickSize }
+    set { data.mouseClickSize = newValue; save() }
+  }
+
   var appearance: String {
     get { data.appearance }
     set { data.appearance = newValue; save(); applyAppearance() }
@@ -114,4 +124,6 @@ private struct ConfigData: Codable {
   var cameraMaximumResolution: String = "1080p"
   var projectFolder: String = "~/Frame"
   var appearance: String = "system"
+  var mouseClickColor: CodableColor? = nil
+  var mouseClickSize: Int = 36
 }

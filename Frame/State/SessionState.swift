@@ -377,7 +377,13 @@ final class SessionState {
     }
 
     if options.showMouseClicks {
-      let monitor = MouseClickMonitor()
+      let clickColor: NSColor
+      if let cc = options.mouseClickColor {
+        clickColor = NSColor(cgColor: cc.cgColor) ?? .controlAccentColor
+      } else {
+        clickColor = .controlAccentColor
+      }
+      let monitor = MouseClickMonitor(color: clickColor, size: CGFloat(options.mouseClickSize))
       monitor.start()
       mouseClickMonitor = monitor
     }

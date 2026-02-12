@@ -71,6 +71,7 @@
 		A20000000000000000000009 /* TimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000009 /* TimelineView.swift */; };
 		A2000000000000000000000A /* TrimHandle.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000A /* TrimHandle.swift */; };
 		A20000000000000000000013 /* BackgroundStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000013 /* BackgroundStyle.swift */; };
+		A60000000000000000000001 /* CodableColor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B60000000000000000000001 /* CodableColor.swift */; };
 		A20000000000000000000014 /* GradientPresets.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000014 /* GradientPresets.swift */; };
 		A20000000000000000000015 /* ExportSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000015 /* ExportSettings.swift */; };
 		A20000000000000000000016 /* EditorTopBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000016 /* EditorTopBar.swift */; };
@@ -159,6 +160,7 @@
 		B20000000000000000000009 /* TimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineView.swift; sourceTree = "<group>"; };
 		B2000000000000000000000A /* TrimHandle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrimHandle.swift; sourceTree = "<group>"; };
 		B20000000000000000000013 /* BackgroundStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundStyle.swift; sourceTree = "<group>"; };
+		B60000000000000000000001 /* CodableColor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CodableColor.swift; sourceTree = "<group>"; };
 		B20000000000000000000014 /* GradientPresets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientPresets.swift; sourceTree = "<group>"; };
 		B20000000000000000000015 /* ExportSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportSettings.swift; sourceTree = "<group>"; };
 		B20000000000000000000016 /* EditorTopBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorTopBar.swift; sourceTree = "<group>"; };
@@ -289,6 +291,7 @@
 				B20000000000000000000011 /* SendableBox.swift */,
 				B40000000000000000000001 /* SoundEffect.swift */,
 				B40000000000000000000002 /* TimeFormatting.swift */,
+				B60000000000000000000001 /* CodableColor.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -565,6 +568,7 @@
 				A40000000000000000000002 /* TimeFormatting.swift in Sources */,
 				A50000000000000000000001 /* MouseClickMonitor.swift in Sources */,
 				A50000000000000000000002 /* MouseClickWindow.swift in Sources */,
+				A60000000000000000000001 /* CodableColor.swift in Sources */,
 			);
 		};
 /* End PBXSourcesBuildPhase section */

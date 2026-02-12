@@ -1,5 +1,48 @@
 import AppKit
+import CoreGraphics
 import SwiftUI
+
+struct ColorPreset: Identifiable, Sendable {
+  let id: String
+  let name: String
+  let color: CodableColor
+
+  init(_ name: String, r: CGFloat, g: CGFloat, b: CGFloat) {
+    self.id = name
+    self.name = name
+    self.color = CodableColor(r: r, g: g, b: b)
+  }
+
+  var swiftUIColor: Color {
+    Color(cgColor: color.cgColor)
+  }
+}
+
+enum TailwindColors {
+  static let all: [ColorPreset] = [
+    ColorPreset("Amber", r: 0.961, g: 0.620, b: 0.043),
+    ColorPreset("Blue", r: 0.231, g: 0.510, b: 0.965),
+    ColorPreset("Cyan", r: 0.024, g: 0.714, b: 0.831),
+    ColorPreset("Emerald", r: 0.063, g: 0.725, b: 0.506),
+    ColorPreset("Fuchsia", r: 0.851, g: 0.275, b: 0.937),
+    ColorPreset("Gray", r: 0.420, g: 0.447, b: 0.502),
+    ColorPreset("Green", r: 0.133, g: 0.773, b: 0.369),
+    ColorPreset("Indigo", r: 0.388, g: 0.400, b: 0.945),
+    ColorPreset("Lime", r: 0.518, g: 0.800, b: 0.086),
+    ColorPreset("Orange", r: 0.976, g: 0.451, b: 0.086),
+    ColorPreset("Pink", r: 0.925, g: 0.282, b: 0.600),
+    ColorPreset("Purple", r: 0.659, g: 0.333, b: 0.969),
+    ColorPreset("Red", r: 0.937, g: 0.267, b: 0.267),
+    ColorPreset("Rose", r: 0.957, g: 0.247, b: 0.369),
+    ColorPreset("Sky", r: 0.055, g: 0.647, b: 0.914),
+    ColorPreset("Slate", r: 0.392, g: 0.455, b: 0.545),
+    ColorPreset("Stone", r: 0.471, g: 0.443, b: 0.424),
+    ColorPreset("Teal", r: 0.078, g: 0.722, b: 0.651),
+    ColorPreset("Violet", r: 0.545, g: 0.361, b: 0.965),
+    ColorPreset("Yellow", r: 0.918, g: 0.702, b: 0.031),
+    ColorPreset("Zinc", r: 0.443, g: 0.443, b: 0.478),
+  ]
+}
 
 @MainActor
 enum FrameColors {

@@ -10,6 +10,7 @@ struct SettingsView: View {
   @State private var appearance: String = ConfigService.shared.appearance
   @State private var showMicPopover = false
   @State private var showCameraPopover = false
+  @State private var showColorPopover = false
   @Environment(\.colorScheme) private var colorScheme
 
   private let fpsOptions = [24, 30, 40, 50, 60]
@@ -50,7 +51,7 @@ struct SettingsView: View {
         .padding(24)
       }
     }
-    .frame(width: 700, height: 800)
+    .frame(width: 800, height: 900)
     .background(FrameColors.panelBackground)
   }
 
@@ -294,6 +295,25 @@ struct SettingsView: View {
     }
   }
 
+  private var clickColorDisplay: Color {
+    if let cc = options?.mouseClickColor {
+      return Color(cgColor: cc.cgColor)
+    }
+    return Color.accentColor
+  }
+
+  private var clickColorLabel: String {
+    guard let cc = options?.mouseClickColor else { return "Neutral" }
+    return TailwindColors.all.first { $0.color == cc }?.name ?? "Custom"
+  }
+
+  private var mouseClickSize: Binding<Double> {
+    Binding(
+      get: { Double(options?.mouseClickSize ?? 36) },
+      set: { options?.mouseClickSize = Int($0) }
+    )
+  }
+
   private var optionsSection: some View {
     VStack(alignment: .leading, spacing: 8) {
       sectionLabel("Options")
@@ -314,7 +334,89 @@ struct SettingsView: View {
           )
         )
       }
+
+      if options?.showMouseClicks == true {
+        VStack(spacing: 8) {
+          HStack(spacing: 12) {
+            Text("Color")
+              .font(.system(size: 13))
+              .foregroundStyle(FrameColors.primaryText)
+            colorPickerButton
+            Spacer()
+            Text("Size")
+              .font(.system(size: 13))
+              .foregroundStyle(FrameColors.primaryText)
+            Slider(value: mouseClickSize, in: 16...80, step: 1)
+              .frame(width: 160)
+            Text("\(Int(mouseClickSize.wrappedValue))pt")
+              .font(.system(size: 13, weight: .medium).monospacedDigit())
+              .foregroundStyle(FrameColors.dimLabel)
+              .frame(width: 36, alignment: .trailing)
+          }
+          MouseClickPreview(
+            color: clickColorDisplay,
+            size: CGFloat(mouseClickSize.wrappedValue)
+          )
+          .frame(maxWidth: .infinity)
+          .frame(height: 64)
+        }
+        .padding(.horizontal, 10)
+      }
     }
+  }
+
+  private var colorPickerButton: some View {
+    Button {
+      showColorPopover.toggle()
+    } label: {
+      HStack(spacing: 6) {
+        Circle()
+          .fill(clickColorDisplay)
+          .frame(width: 16, height: 16)
+        Text(clickColorLabel)
+          .font(.system(size: 13, weight: .medium))
+          .foregroundStyle(FrameColors.primaryText)
+          .lineLimit(1)
+        Image(systemName: "chevron.up.chevron.down")
+          .font(.system(size: 9, weight: .semibold))
+          .foregroundStyle(FrameColors.dimLabel)
+      }
+      .padding(.horizontal, 10)
+      .frame(height: 30)
+      .background(FrameColors.fieldBackground)
+      .clipShape(RoundedRectangle(cornerRadius: 6))
+    }
+    .buttonStyle(.plain)
+    .popover(isPresented: $showColorPopover, arrowEdge: .bottom) {
+      ScrollView {
+        VStack(alignment: .leading, spacing: 0) {
+          ColorPresetRow(
+            name: "Neutral",
+            subtitle: "Match base color",
+            color: .accentColor,
+            isSelected: options?.mouseClickColor == nil
+          ) {
+            options?.mouseClickColor = nil
+            showColorPopover = false
+          }
+          ForEach(TailwindColors.all) { preset in
+            ColorPresetRow(
+              name: preset.name,
+              color: preset.swiftUIColor,
+              isSelected: options?.mouseClickColor == preset.color
+            ) {
+              options?.mouseClickColor = preset.color
+              showColorPopover = false
+            }
+          }
+        }
+        .padding(.vertical, 8)
+      }
+      .frame(width: 240)
+      .frame(maxHeight: 360)
+      .background(FrameColors.panelBackground)
+    }
+    .presentationBackground(FrameColors.panelBackground)
   }
 
   private func devicePickerButton(label: String, isActive: Binding<Bool>) -> some View {
@@ -422,6 +524,126 @@ private struct CustomToggle: View {
         .animation(.easeInOut(duration: 0.15), value: isOn)
     }
     .buttonStyle(.plain)
+  }
+}
+
+private struct MouseClickPreview: View {
+  let color: Color
+  let size: CGFloat
+
+  @State private var clicks: [ClickRipple] = []
+  @Environment(\.colorScheme) private var colorScheme
+
+  struct ClickRipple: Identifiable {
+    let id = UUID()
+    let position: CGPoint
+  }
+
+  var body: some View {
+    let _ = colorScheme
+    ZStack {
+      RoundedRectangle(cornerRadius: 6)
+        .fill(FrameColors.fieldBackground)
+
+      if clicks.isEmpty {
+        Text("Click to preview")
+          .font(.system(size: 12))
+          .foregroundStyle(FrameColors.dimLabel)
+      }
+
+      ForEach(clicks) { click in
+        ExpandingCircle(color: color, diameter: size)
+          .position(click.position)
+      }
+    }
+    .clipShape(RoundedRectangle(cornerRadius: 6))
+    .contentShape(Rectangle())
+    .onTapGesture { location in
+      let ripple = ClickRipple(position: location)
+      clicks.append(ripple)
+      DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+        clicks.removeAll { $0.id == ripple.id }
+      }
+    }
+  }
+}
+
+private struct ExpandingCircle: View {
+  let color: Color
+  let diameter: CGFloat
+
+  @State private var scale: CGFloat = 0.44
+  @State private var opacity: Double = 1.0
+
+  var body: some View {
+    ZStack {
+      Circle()
+        .fill(color.opacity(0.3))
+        .frame(width: diameter, height: diameter)
+        .scaleEffect(scale)
+        .opacity(opacity)
+      Circle()
+        .strokeBorder(color, lineWidth: 2)
+        .frame(width: diameter, height: diameter)
+        .scaleEffect(scale)
+        .opacity(opacity)
+    }
+    .onAppear {
+      withAnimation(.easeOut(duration: 0.4)) {
+        scale = 1.0
+        opacity = 0.0
+      }
+    }
+  }
+}
+
+private struct ColorPresetRow: View {
+  let name: String
+  var subtitle: String? = nil
+  let color: Color
+  let isSelected: Bool
+  let action: () -> Void
+
+  var body: some View {
+    Button(action: action) {
+      HStack(spacing: 10) {
+        Circle()
+          .fill(color)
+          .frame(width: 18, height: 18)
+        VStack(alignment: .leading, spacing: 1) {
+          Text(name)
+            .font(.system(size: 13))
+            .foregroundStyle(FrameColors.primaryText)
+          if let subtitle {
+            Text(subtitle)
+              .font(.system(size: 11))
+              .foregroundStyle(FrameColors.dimLabel)
+          }
+        }
+        Spacer()
+        if isSelected {
+          Image(systemName: "checkmark")
+            .font(.system(size: 12, weight: .semibold))
+            .foregroundStyle(FrameColors.primaryText)
+        }
+      }
+      .padding(.horizontal, 12)
+      .padding(.vertical, 5)
+      .contentShape(Rectangle())
+    }
+    .buttonStyle(.plain)
+    .background(ColorPresetRowHover())
+  }
+}
+
+private struct ColorPresetRowHover: View {
+  @State private var isHovered = false
+
+  var body: some View {
+    RoundedRectangle(cornerRadius: 4)
+      .fill(isHovered ? FrameColors.hoverBackground : Color.clear)
+      .padding(.horizontal, 4)
+      .onHover { isHovered = $0 }
   }
 }
 
