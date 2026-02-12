@@ -1,14 +1,15 @@
-ARCH := $(shell uname -m)
-DEVELOPMENT_TEAM := $(shell xcodebuild -quiet -scheme Frame -destination "platform=macOS,arch=$(ARCH)" -showBuildSettings 2>/dev/null | awk -F' = ' '/DEVELOPMENT_TEAM =/ {print $$2}' | tail -1)
-
 .PHONY: build run dmg format clean help install uninstall dev
 
-all: release
+all: help
 
 release:
+	$(eval ARCH := $(shell uname -m))
+	$(eval DEVELOPMENT_TEAM := $(shell xcodebuild -quiet -scheme Frame -destination "platform=macOS,arch=$(ARCH)" -showBuildSettings 2>/dev/null | awk -F' = ' '/DEVELOPMENT_TEAM =/ {print $$2}' | tail -1))
 	@xcodebuild -scheme Frame -configuration Release build -quiet CODE_SIGN_STYLE=Automatic DEVELOPMENT_TEAM=$(DEVELOPMENT_TEAM) -derivedDataPath .build -destination 'platform=macOS,arch=$(ARCH)'
 
 build:
+	$(eval ARCH := $(shell uname -m))
+	$(eval DEVELOPMENT_TEAM := $(shell xcodebuild -quiet -scheme Frame -destination "platform=macOS,arch=$(ARCH)" -showBuildSettings 2>/dev/null | awk -F' = ' '/DEVELOPMENT_TEAM =/ {print $$2}' | tail -1))
 	@xcodebuild -scheme Frame -configuration Debug build -quiet CODE_SIGN_STYLE=Automatic DEVELOPMENT_TEAM=$(DEVELOPMENT_TEAM) CODE_SIGN_IDENTITY="Apple Development" -derivedDataPath .build -destination 'platform=macOS,arch=$(ARCH)'
 
 run: release
