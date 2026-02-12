@@ -390,16 +390,11 @@ final class SessionState {
     selectionCoordinator?.destroyAll()
     selectionCoordinator = nil
 
-    let keepWebcam = persistentWebcam != nil
-    if !keepWebcam {
-      webcamPreviewWindow?.close()
-      webcamPreviewWindow = nil
-    }
-
-    guard let result = try await recordingCoordinator?.stopRecordingRaw(keepWebcamAlive: keepWebcam) else {
+    guard let result = try await recordingCoordinator?.stopRecordingRaw(keepWebcamAlive: false) else {
       recordingCoordinator = nil
       captureTarget = nil
       captureMode = .none
+      stopCameraPreview()
       transition(to: .idle)
       showToolbar()
       return
@@ -407,6 +402,7 @@ final class SessionState {
 
     recordingCoordinator = nil
     captureTarget = nil
+    stopCameraPreview()
 
     let saveDir = FileManager.default.projectSaveDirectory()
     do {
