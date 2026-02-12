@@ -91,6 +91,7 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		CC0000000000000000000001 /* Config.xcconfig */ = {isa = PBXFileReference; lastKnownFileType = text.xcconfig; path = Config.xcconfig; sourceTree = "<group>"; };
 		3CFD921258364EA6A604537F /* CaptureTarget.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CaptureTarget.swift; sourceTree = "<group>"; };
 		3DCA03E02F3B511C003FE309 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		AA0000000000000000000002 /* Credits.html */ = {isa = PBXFileReference; lastKnownFileType = text.html; path = Credits.html; sourceTree = "<group>"; };
@@ -191,6 +192,7 @@
 		D10000000000000000000001 = {
 			isa = PBXGroup;
 			children = (
+				CC0000000000000000000001 /* Config.xcconfig */,
 				D10000000000000000000002 /* Frame */,
 				D1000000000000000000000A /* Frameworks */,
 				D1000000000000000000000B /* Products */,
@@ -684,6 +686,7 @@
 		};
 		F10000000000000000000007 /* Debug configuration for PBXNativeTarget "Frame" */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = CC0000000000000000000001 /* Config.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
@@ -693,7 +696,6 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 5A5U3XX696;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -711,7 +713,6 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 0.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = eu.jkuri.frame;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				RUNTIME_EXCEPTION_ALLOW_DYLD_ENVIRONMENT_VARIABLES = NO;
@@ -727,6 +728,7 @@
 		};
 		F10000000000000000000008 /* Release configuration for PBXNativeTarget "Frame" */ = {
 			isa = XCBuildConfiguration;
+			baseConfigurationReference = CC0000000000000000000001 /* Config.xcconfig */;
 			buildSettings = {
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = YES;
@@ -736,7 +738,6 @@
 				"CODE_SIGN_IDENTITY[sdk=macosx*]" = "Apple Development";
 				CODE_SIGN_STYLE = Automatic;
 				COMBINE_HIDPI_IMAGES = YES;
-				CURRENT_PROJECT_VERSION = 1;
 				DEAD_CODE_STRIPPING = YES;
 				DEVELOPMENT_TEAM = 5A5U3XX696;
 				ENABLE_HARDENED_RUNTIME = YES;
@@ -754,7 +755,6 @@
 					"$(inherited)",
 					"@executable_path/../Frameworks",
 				);
-				MARKETING_VERSION = 0.2.0;
 				PRODUCT_BUNDLE_IDENTIFIER = eu.jkuri.frame;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				RUNTIME_EXCEPTION_ALLOW_DYLD_ENVIRONMENT_VARIABLES = NO;

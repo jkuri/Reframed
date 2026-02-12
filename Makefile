@@ -40,7 +40,7 @@ help:
 	@echo ""
 	@echo "Targets:"
 	@echo "  build     - Build debug version"
-	@echo "  release   - Build release version (default)"
+	@echo "  release   - Build release version"
 	@echo "  dmg       - Create .dmg installer"
 	@echo "  install   - Install to /Applications"
 	@echo "  uninstall - Remove from /Applications"
