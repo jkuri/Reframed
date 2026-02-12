@@ -314,7 +314,7 @@ struct SettingsView: View {
             size: CGFloat(mouseClickSize.wrappedValue)
           )
           .frame(maxWidth: .infinity)
-          .frame(height: 64)
+          .frame(height: 100)
         }
         .padding(.horizontal, 10)
       }
