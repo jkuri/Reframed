@@ -8,8 +8,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 # Debug build
 make build
 
-# Release build (archive + export with Developer ID signing)
+# Release build
 make release
+
+# Build and run (debug)
+make dev
 
 # Create DMG installer
 make dmg
@@ -19,7 +22,7 @@ No test target exists yet. No linter is configured.
 
 ## Architecture
 
-Frame is a macOS menu-bar-only screen recording app (macOS 15+, Swift 6 strict concurrency).
+Frame is a macOS screen recording app with a menu bar interface, floating capture toolbar, built-in video editor, and `.frm` project management (macOS 15+, Swift 6 strict concurrency).
 
 ### Concurrency model
 
@@ -28,9 +31,10 @@ Everything is actor-isolated. The core pattern:
 - **`CaptureCoordinator`** (actor) — central state machine that owns the recording and selection coordinators
 - **`StateProjection`** (@MainActor, @Observable) — SwiftUI-bindable projection of coordinator state; held as `@MainActor let ui` on the coordinator
 - **`RecordingCoordinator`** (actor) — owns `VideoWriter` + `ScreenCaptureSession`, drives the capture pipeline
-- **`VideoWriter`** (actor) — AVAssetWriter wrapper (H.264 MP4, 30fps)
+- **`VideoTrackWriter`** / **`AudioTrackWriter`** (actors) — AVAssetWriter track wrappers
 - **`ScreenCaptureSession`** (class, `@unchecked Sendable`) — SCStream wrapper; unchecked because SCStream isn't Sendable yet
 - **`SelectionCoordinator`** (@MainActor) — manages the full-screen overlay window for region selection
+- **`VideoCompositor`** / **`PiPVideoCompositor`** — export-time compositing (background, padding, PiP)
 
 ### State machine
 
@@ -46,7 +50,17 @@ Frame offers three recording options:
 - **Record specific window** — captures a single application window
 - **Record selected area** — full-screen transparent overlay with crosshair cursor; drag to select region (8 resize handles for adjustment)
 
-After selection, ScreenCaptureKit captures the chosen region, window, or screen. CVPixelBuffers flow through VideoWriter to `/tmp/Frame/frame-{timestamp}.mp4`. On stop → finalize → move to `~/Frame/`.
+Optional webcam PiP overlay and configurable countdown timer before recording starts.
+
+After selection, ScreenCaptureKit captures the chosen region, window, or screen. CVPixelBuffers flow through the track writers. On stop, the editor window opens automatically.
+
+### Video editor
+
+Built-in editor with timeline trimming, background styles (solid color, gradients), adjustable padding/corner radius, and webcam PiP repositioning. Export supports MP4/MOV with H.264/H.265, configurable FPS and resolution.
+
+### Project management
+
+Recordings are saved as `.frm` bundles (UTI: `eu.jankuri.frame.project`) containing source video, webcam video, and metadata JSON. Projects can be reopened and re-edited.
 
 ### Coordinate system
 
@@ -76,6 +90,5 @@ Uses `MenuBarExtra(.window)` + MenuBarExtraAccess (1.2.x) for the `isPresented` 
 - Bundle ID: `eu.jkuri.frame`
 - `LSUIElement = false` (app shows in Dock with icon)
 - App sandbox disabled (required for ScreenCaptureKit)
-- Release builds use `xcodebuild archive` + `exportArchive` with `exportOptions.plist` (Developer ID signing)
 - Version is managed in `Config.xcconfig` (`MARKETING_VERSION` + `CURRENT_PROJECT_VERSION`)
 - SPM PBXBuildFile entries need `productRef` only (no `fileRef`)
