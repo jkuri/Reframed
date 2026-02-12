@@ -136,6 +136,7 @@ struct CaptureToolbar: View {
       .buttonStyle(.plain)
       .popover(isPresented: $showOptions, arrowEdge: .bottom) {
         OptionsPopover(options: session.options)
+          .presentationBackground(FrameColors.panelBackground)
       }
 
       ToolbarDivider()
@@ -152,6 +153,7 @@ struct CaptureToolbar: View {
       .buttonStyle(.plain)
       .popover(isPresented: $showSettings, arrowEdge: .bottom) {
         SettingsView(options: session.options)
+          .presentationBackground(FrameColors.panelBackground)
       }
     }
   }

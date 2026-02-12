@@ -36,7 +36,7 @@ struct WindowSelectionView: View {
           context.fill(targetPath, with: .color(.black))
           context.blendMode = .normal
 
-          context.fill(targetPath, with: .color(Color(nsColor: .controlAccentColor).opacity(0.45)))
+          context.fill(targetPath, with: .color(Color(nsColor: .controlAccentColor).opacity(0.3)))
           context.stroke(targetPath, with: .color(Color(nsColor: .controlAccentColor)), lineWidth: 2)
         }
         .edgesIgnoringSafeArea(.all)
@@ -62,8 +62,9 @@ struct WindowSelectionView: View {
 
             HStack(spacing: 8) {
               Text("\(Int(current.frame.width)) \u{00d7} \(Int(current.frame.height))")
-                .font(.callout.monospacedDigit())
-                .foregroundStyle(.white.opacity(0.7))
+                .font(.system(size: 15))
+                .foregroundStyle(.white)
+                .shadow(color: .black.opacity(0.3), radius: 4)
 
               Button {
                 showingResize.toggle()
@@ -71,14 +72,15 @@ struct WindowSelectionView: View {
                 Text("Resize")
                   .font(.system(size: 13))
                   .foregroundStyle(.white)
-                  .padding(.horizontal, 10)
-                  .padding(.vertical, 4)
-                  .background(Color.white.opacity(0.15))
+                  .padding(.horizontal, 12)
+                  .padding(.vertical, 5)
+                  .background(Color(nsColor: .controlAccentColor))
                   .clipShape(RoundedRectangle(cornerRadius: 5))
               }
               .buttonStyle(.plain)
               .popover(isPresented: $showingResize, arrowEdge: .bottom) {
                 ResizePopover(windowController: windowController, window: current)
+                  .presentationBackground(FrameColors.panelBackground)
               }
             }
 

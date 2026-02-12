@@ -225,6 +225,7 @@ struct SettingsView: View {
             .frame(width: 220)
             .background(FrameColors.panelBackground)
           }
+          .presentationBackground(FrameColors.panelBackground)
       }
       .padding(.horizontal, 10)
     }
@@ -262,6 +263,7 @@ struct SettingsView: View {
             .frame(width: 220)
             .background(FrameColors.panelBackground)
           }
+          .presentationBackground(FrameColors.panelBackground)
       }
       .padding(.horizontal, 10)
 
