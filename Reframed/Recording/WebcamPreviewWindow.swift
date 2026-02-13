@@ -9,13 +9,12 @@ final class WebcamPreviewWindow {
   nonisolated(unsafe) private var moveObserver: NSObjectProtocol?
   private var appearanceObserver: NSKeyValueObservation?
 
-  private let padding: CGFloat = 6
-  private let videoWidth: CGFloat = 180
-  private let videoHeight: CGFloat = 135
-  private let cornerRadius: CGFloat = 14
+  private let videoWidth: CGFloat = 270
+  private let videoHeight: CGFloat = 202
+  private let cornerRadius: CGFloat = 60
 
-  private var totalWidth: CGFloat { videoWidth + padding * 2 }
-  private var totalHeight: CGFloat { videoHeight + padding * 2 }
+  private var totalWidth: CGFloat { videoWidth }
+  private var totalHeight: CGFloat { videoHeight }
 
   func showLoading() {
     if panel == nil {
@@ -28,9 +27,9 @@ final class WebcamPreviewWindow {
 
     guard let contentView = panel?.contentView else { return }
 
-    let container = NSView(frame: NSRect(x: padding, y: padding, width: videoWidth, height: videoHeight))
+    let container = NSView(frame: NSRect(origin: .zero, size: NSSize(width: videoWidth, height: videoHeight)))
     container.wantsLayer = true
-    container.layer?.cornerRadius = cornerRadius - 3
+    container.layer?.cornerRadius = cornerRadius
     container.layer?.masksToBounds = true
     container.layer?.backgroundColor = ReframedColors.panelBackgroundNS.cgColor
 
@@ -59,16 +58,14 @@ final class WebcamPreviewWindow {
       createPanel()
     }
 
-    loadingView?.removeFromSuperview()
-    loadingView = nil
     previewLayer?.removeFromSuperlayer()
     previewLayer = nil
 
     guard let contentView = panel?.contentView else { return }
 
-    let videoView = NSView(frame: NSRect(x: padding, y: padding, width: videoWidth, height: videoHeight))
+    let videoView = NSView(frame: NSRect(origin: .zero, size: NSSize(width: videoWidth, height: videoHeight)))
     videoView.wantsLayer = true
-    videoView.layer?.cornerRadius = cornerRadius - 3
+    videoView.layer?.cornerRadius = cornerRadius
     videoView.layer?.masksToBounds = true
 
     let layer = AVCaptureVideoPreviewLayer(session: captureSession)
@@ -78,8 +75,14 @@ final class WebcamPreviewWindow {
     videoView.layer?.addSublayer(layer)
     self.previewLayer = layer
 
-    contentView.addSubview(videoView)
+    contentView.addSubview(videoView, positioned: .below, relativeTo: loadingView)
     panel?.orderFrontRegardless()
+
+    let pendingLoadingView = loadingView
+    loadingView = nil
+    DispatchQueue.main.asyncAfter(deadline: .now() + 0.3) {
+      pendingLoadingView?.removeFromSuperview()
+    }
   }
 
   func showError(_ message: String) {
@@ -94,9 +97,9 @@ final class WebcamPreviewWindow {
 
     guard let contentView = panel?.contentView else { return }
 
-    let container = NSView(frame: NSRect(x: padding, y: padding, width: videoWidth, height: videoHeight))
+    let container = NSView(frame: NSRect(origin: .zero, size: NSSize(width: videoWidth, height: videoHeight)))
     container.wantsLayer = true
-    container.layer?.cornerRadius = cornerRadius - 3
+    container.layer?.cornerRadius = cornerRadius
     container.layer?.masksToBounds = true
     container.layer?.backgroundColor = ReframedColors.panelBackgroundNS.cgColor
 
@@ -157,9 +160,7 @@ final class WebcamPreviewWindow {
     contentView.wantsLayer = true
     contentView.layer?.cornerRadius = cornerRadius
     contentView.layer?.masksToBounds = true
-    contentView.layer?.backgroundColor = ReframedColors.panelBackgroundNS.cgColor
-    contentView.layer?.borderWidth = 1
-    contentView.layer?.borderColor = ReframedColors.subtleBorderNS.cgColor
+    contentView.layer?.backgroundColor = NSColor.clear.cgColor
 
     panel.contentView = contentView
     self.panel = panel
@@ -182,10 +183,6 @@ final class WebcamPreviewWindow {
   }
 
   private func updateColors() {
-    guard let contentView = panel?.contentView else { return }
-    contentView.layer?.backgroundColor = ReframedColors.panelBackgroundNS.cgColor
-    contentView.layer?.borderColor = ReframedColors.subtleBorderNS.cgColor
-
     if let container = loadingView {
       container.layer?.backgroundColor = ReframedColors.panelBackgroundNS.cgColor
       for subview in container.subviews {
