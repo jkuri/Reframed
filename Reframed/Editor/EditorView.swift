@@ -1,3 +1,4 @@
+import CoreMedia
 import SwiftUI
 
 struct EditorView: View {
@@ -123,7 +124,18 @@ struct EditorView: View {
           padding: editorState.padding,
           videoCornerRadius: editorState.videoCornerRadius,
           pipCornerRadius: editorState.pipCornerRadius,
-          pipBorderWidth: editorState.pipBorderWidth
+          pipBorderWidth: editorState.pipBorderWidth,
+          cursorMetadataProvider: editorState.cursorMetadataProvider,
+          showCursor: editorState.showCursor,
+          cursorStyle: editorState.cursorStyle,
+          cursorSize: editorState.cursorSize,
+          cursorSmoothing: editorState.cursorSmoothing,
+          showClickHighlights: editorState.showClickHighlights,
+          clickHighlightColor: editorState.clickHighlightColor.cgColor,
+          clickHighlightSize: editorState.clickHighlightSize,
+          zoomFollowCursor: editorState.zoomFollowCursor,
+          currentTime: CMTimeGetSeconds(editorState.currentTime),
+          zoomTimeline: editorState.zoomTimeline
         )
       }
       .frame(maxWidth: .infinity, maxHeight: .infinity)

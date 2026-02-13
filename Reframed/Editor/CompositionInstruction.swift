@@ -23,6 +23,18 @@ final class CompositionInstruction: NSObject, AVVideoCompositionInstructionProto
   let videoCornerRadius: CGFloat
   let canvasSize: CGSize
 
+  let cursorSnapshot: CursorMetadataSnapshot?
+  let cursorStyle: CursorStyle
+  let cursorSize: CGFloat
+  let cursorSmoothing: CursorSmoothing
+  let showCursor: Bool
+  let showClickHighlights: Bool
+  let clickHighlightColor: CGColor
+  let clickHighlightSize: CGFloat
+  let zoomFollowCursor: Bool
+  let zoomTimeline: ZoomTimeline?
+  let trimStartSeconds: Double
+
   init(
     timeRange: CMTimeRange,
     screenTrackID: CMPersistentTrackID,
@@ -37,7 +49,18 @@ final class CompositionInstruction: NSObject, AVVideoCompositionInstructionProto
     paddingH: CGFloat = 0,
     paddingV: CGFloat = 0,
     videoCornerRadius: CGFloat = 0,
-    canvasSize: CGSize = .zero
+    canvasSize: CGSize = .zero,
+    cursorSnapshot: CursorMetadataSnapshot? = nil,
+    cursorStyle: CursorStyle = .defaultArrow,
+    cursorSize: CGFloat = 24,
+    cursorSmoothing: CursorSmoothing = .standard,
+    showCursor: Bool = false,
+    showClickHighlights: Bool = true,
+    clickHighlightColor: CGColor = CGColor(srgbRed: 0.2, green: 0.5, blue: 1.0, alpha: 1.0),
+    clickHighlightSize: CGFloat = 36,
+    zoomFollowCursor: Bool = true,
+    zoomTimeline: ZoomTimeline? = nil,
+    trimStartSeconds: Double = 0
   ) {
     self.timeRange = timeRange
     self.screenTrackID = screenTrackID
@@ -53,6 +76,17 @@ final class CompositionInstruction: NSObject, AVVideoCompositionInstructionProto
     self.paddingV = paddingV
     self.videoCornerRadius = videoCornerRadius
     self.canvasSize = canvasSize.width > 0 ? canvasSize : outputSize
+    self.cursorSnapshot = cursorSnapshot
+    self.cursorStyle = cursorStyle
+    self.cursorSize = cursorSize
+    self.cursorSmoothing = cursorSmoothing
+    self.showCursor = showCursor
+    self.showClickHighlights = showClickHighlights
+    self.clickHighlightColor = clickHighlightColor
+    self.clickHighlightSize = clickHighlightSize
+    self.zoomFollowCursor = zoomFollowCursor
+    self.zoomTimeline = zoomTimeline
+    self.trimStartSeconds = trimStartSeconds
 
     var trackIDs: [NSValue] = [NSNumber(value: screenTrackID)]
     if let wid = webcamTrackID {

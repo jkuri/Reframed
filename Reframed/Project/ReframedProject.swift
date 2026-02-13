@@ -28,12 +28,18 @@ struct ReframedProject: Sendable {
     return FileManager.default.fileExists(atPath: url.path) ? url : nil
   }
 
+  var cursorMetadataURL: URL? {
+    let url = bundleURL.appendingPathComponent("cursor-metadata.json")
+    return FileManager.default.fileExists(atPath: url.path) ? url : nil
+  }
+
   var recordingResult: RecordingResult {
     RecordingResult(
       screenVideoURL: screenVideoURL,
       webcamVideoURL: webcamVideoURL,
       systemAudioURL: systemAudioURL,
       microphoneAudioURL: microphoneAudioURL,
+      cursorMetadataURL: cursorMetadataURL,
       screenSize: metadata.screenSize.cgSize,
       webcamSize: metadata.webcamSize?.cgSize,
       fps: metadata.fps
@@ -60,6 +66,10 @@ struct ReframedProject: Sendable {
       try fm.moveItem(at: micURL, to: bundleURL.appendingPathComponent("mic-audio.m4a"))
     }
 
+    if let cursorURL = result.cursorMetadataURL {
+      try fm.moveItem(at: cursorURL, to: bundleURL.appendingPathComponent("cursor-metadata.json"))
+    }
+
     fm.cleanupTempDir()
 
     let metadata = ProjectMetadata(
@@ -68,7 +78,8 @@ struct ReframedProject: Sendable {
       screenSize: CodableSize(result.screenSize),
       webcamSize: result.webcamSize.map { CodableSize($0) },
       hasSystemAudio: result.systemAudioURL != nil,
-      hasMicrophoneAudio: result.microphoneAudioURL != nil
+      hasMicrophoneAudio: result.microphoneAudioURL != nil,
+      hasCursorMetadata: result.cursorMetadataURL != nil
     )
 
     let encoder = JSONEncoder()

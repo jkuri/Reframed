@@ -92,13 +92,21 @@
 		A40000000000000000000002 /* TimeFormatting.swift in Sources */ = {isa = PBXBuildFile; fileRef = B40000000000000000000002 /* TimeFormatting.swift */; };
 		A50000000000000000000001 /* MouseClickMonitor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50000000000000000000001 /* MouseClickMonitor.swift */; };
 		A50000000000000000000002 /* MouseClickWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50000000000000000000002 /* MouseClickWindow.swift */; };
-		A50000000000000000000003 /* MouseClickRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B50000000000000000000003 /* MouseClickRenderer.swift */; };
+
 		A70000000000000000000001 /* DeviceDiscovery.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70000000000000000000001 /* DeviceDiscovery.swift */; };
 		A70000000000000000000002 /* DeviceCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70000000000000000000002 /* DeviceCapture.swift */; };
 		A70000000000000000000003 /* DevicePreviewWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70000000000000000000003 /* DevicePreviewWindow.swift */; };
 		A70000000000000000000004 /* DevicePopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70000000000000000000004 /* DevicePopover.swift */; };
 		A80000000000000000000001 /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80000000000000000000001 /* MenuBarView.swift */; };
 		A80000000000000000000002 /* HoverEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80000000000000000000002 /* HoverEffect.swift */; };
+		A90000000000000000000001 /* CursorMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = B90000000000000000000001 /* CursorMetadata.swift */; };
+		A90000000000000000000002 /* CursorMetadataRecorder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B90000000000000000000002 /* CursorMetadataRecorder.swift */; };
+		A90000000000000000000003 /* CursorMetadataProvider.swift in Sources */ = {isa = PBXBuildFile; fileRef = B90000000000000000000003 /* CursorMetadataProvider.swift */; };
+		A90000000000000000000004 /* CursorRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B90000000000000000000004 /* CursorRenderer.swift */; };
+		A90000000000000000000005 /* CursorOverlayLayer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B90000000000000000000005 /* CursorOverlayLayer.swift */; };
+		A90000000000000000000006 /* ZoomTimeline.swift in Sources */ = {isa = PBXBuildFile; fileRef = B90000000000000000000006 /* ZoomTimeline.swift */; };
+		A90000000000000000000007 /* ZoomDetector.swift in Sources */ = {isa = PBXBuildFile; fileRef = B90000000000000000000007 /* ZoomDetector.swift */; };
+		A90000000000000000000008 /* ZoomKeyframeEditor.swift in Sources */ = {isa = PBXBuildFile; fileRef = B90000000000000000000008 /* ZoomKeyframeEditor.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -189,13 +197,21 @@
 		B40000000000000000000002 /* TimeFormatting.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeFormatting.swift; sourceTree = "<group>"; };
 		B50000000000000000000001 /* MouseClickMonitor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MouseClickMonitor.swift; sourceTree = "<group>"; };
 		B50000000000000000000002 /* MouseClickWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MouseClickWindow.swift; sourceTree = "<group>"; };
-		B50000000000000000000003 /* MouseClickRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MouseClickRenderer.swift; sourceTree = "<group>"; };
+
 		B70000000000000000000001 /* DeviceDiscovery.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceDiscovery.swift; sourceTree = "<group>"; };
 		B70000000000000000000002 /* DeviceCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceCapture.swift; sourceTree = "<group>"; };
 		B70000000000000000000003 /* DevicePreviewWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevicePreviewWindow.swift; sourceTree = "<group>"; };
 		B70000000000000000000004 /* DevicePopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevicePopover.swift; sourceTree = "<group>"; };
 		B80000000000000000000001 /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
 		B80000000000000000000002 /* HoverEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoverEffect.swift; sourceTree = "<group>"; };
+		B90000000000000000000001 /* CursorMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CursorMetadata.swift; sourceTree = "<group>"; };
+		B90000000000000000000002 /* CursorMetadataRecorder.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CursorMetadataRecorder.swift; sourceTree = "<group>"; };
+		B90000000000000000000003 /* CursorMetadataProvider.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CursorMetadataProvider.swift; sourceTree = "<group>"; };
+		B90000000000000000000004 /* CursorRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CursorRenderer.swift; sourceTree = "<group>"; };
+		B90000000000000000000005 /* CursorOverlayLayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CursorOverlayLayer.swift; sourceTree = "<group>"; };
+		B90000000000000000000006 /* ZoomTimeline.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoomTimeline.swift; sourceTree = "<group>"; };
+		B90000000000000000000007 /* ZoomDetector.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoomDetector.swift; sourceTree = "<group>"; };
+		B90000000000000000000008 /* ZoomKeyframeEditor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoomKeyframeEditor.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -292,13 +308,14 @@
 				B10000000000000000000035 /* SharedRecordingClock.swift */,
 				B50000000000000000000001 /* MouseClickMonitor.swift */,
 				B50000000000000000000002 /* MouseClickWindow.swift */,
-				B50000000000000000000003 /* MouseClickRenderer.swift */,
+
 				B20000000000000000000001 /* WebcamCapture.swift */,
 				B20000000000000000000002 /* WebcamPreviewWindow.swift */,
 				B20000000000000000000003 /* RecordingResult.swift */,
 				B70000000000000000000001 /* DeviceDiscovery.swift */,
 				B70000000000000000000002 /* DeviceCapture.swift */,
 				B70000000000000000000003 /* DevicePreviewWindow.swift */,
+				B90000000000000000000002 /* CursorMetadataRecorder.swift */,
 			);
 			path = Recording;
 			sourceTree = "<group>";
@@ -438,6 +455,13 @@
 				B2000000000000000000000A /* TrimHandle.swift */,
 				B20000000000000000000010 /* VideoCompositor.swift */,
 				B20000000000000000000008 /* VideoPreviewView.swift */,
+				B90000000000000000000001 /* CursorMetadata.swift */,
+				B90000000000000000000003 /* CursorMetadataProvider.swift */,
+				B90000000000000000000004 /* CursorRenderer.swift */,
+				B90000000000000000000005 /* CursorOverlayLayer.swift */,
+				B90000000000000000000006 /* ZoomTimeline.swift */,
+				B90000000000000000000007 /* ZoomDetector.swift */,
+				B90000000000000000000008 /* ZoomKeyframeEditor.swift */,
 			);
 			path = Editor;
 			sourceTree = "<group>";
@@ -593,7 +617,15 @@
 				A40000000000000000000002 /* TimeFormatting.swift in Sources */,
 				A50000000000000000000001 /* MouseClickMonitor.swift in Sources */,
 				A50000000000000000000002 /* MouseClickWindow.swift in Sources */,
-				A50000000000000000000003 /* MouseClickRenderer.swift in Sources */,
+
+				A90000000000000000000001 /* CursorMetadata.swift in Sources */,
+				A90000000000000000000002 /* CursorMetadataRecorder.swift in Sources */,
+				A90000000000000000000003 /* CursorMetadataProvider.swift in Sources */,
+				A90000000000000000000004 /* CursorRenderer.swift in Sources */,
+				A90000000000000000000005 /* CursorOverlayLayer.swift in Sources */,
+				A90000000000000000000006 /* ZoomTimeline.swift in Sources */,
+				A90000000000000000000007 /* ZoomDetector.swift in Sources */,
+				A90000000000000000000008 /* ZoomKeyframeEditor.swift in Sources */,
 				A60000000000000000000001 /* CodableColor.swift in Sources */,
 				A70000000000000000000001 /* DeviceDiscovery.swift in Sources */,
 				A70000000000000000000002 /* DeviceCapture.swift in Sources */,

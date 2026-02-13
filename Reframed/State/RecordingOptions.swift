@@ -42,18 +42,6 @@ final class RecordingOptions {
     didSet { ConfigService.shared.rememberLastSelection = rememberLastSelection }
   }
 
-  var showMouseClicks: Bool {
-    didSet { ConfigService.shared.showMouseClicks = showMouseClicks }
-  }
-
-  var mouseClickColor: CodableColor? {
-    didSet { ConfigService.shared.mouseClickColor = mouseClickColor }
-  }
-
-  var mouseClickSize: Int {
-    didSet { ConfigService.shared.mouseClickSize = mouseClickSize }
-  }
-
   var fps: Int {
     didSet { ConfigService.shared.fps = fps }
   }
@@ -88,9 +76,6 @@ final class RecordingOptions {
     let config = ConfigService.shared
     timerDelay = TimerDelay(rawValue: config.timerDelay) ?? .none
     rememberLastSelection = config.rememberLastSelection
-    showMouseClicks = config.showMouseClicks
-    mouseClickColor = config.mouseClickColor
-    mouseClickSize = config.mouseClickSize
     fps = config.fps
     captureSystemAudio = config.captureSystemAudio
 

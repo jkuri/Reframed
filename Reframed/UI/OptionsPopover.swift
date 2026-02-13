@@ -85,13 +85,6 @@ struct OptionsPopover: View {
       ) {
         options.rememberLastSelection.toggle()
       }
-
-      CheckmarkRow(
-        title: "Show Mouse Clicks",
-        isSelected: options.showMouseClicks
-      ) {
-        options.showMouseClicks.toggle()
-      }
     }
     .padding(.vertical, 8)
     .frame(width: 220)

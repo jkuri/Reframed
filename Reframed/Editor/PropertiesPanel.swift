@@ -21,6 +21,7 @@ struct PropertiesPanel: View {
   @State private var selectedColorId: String? = "Blue"
   @State private var editingProjectName: String = ""
   @State private var showColorPopover = false
+  @State private var showClickColorPopover = false
   @FocusState private var projectNameFocused: Bool
 
   var body: some View {
@@ -31,6 +32,12 @@ struct PropertiesPanel: View {
         backgroundSection
         paddingSection
         cornerRadiusSection
+        if editorState.cursorMetadataProvider != nil {
+          cursorSection
+        }
+        if editorState.cursorMetadataProvider != nil {
+          zoomSection
+        }
         if editorState.hasWebcam {
           pipSection
         }
@@ -298,6 +305,224 @@ struct PropertiesPanel: View {
           .font(.system(size: 12, design: .monospaced))
           .foregroundStyle(ReframedColors.secondaryText)
           .frame(width: 36, alignment: .trailing)
+      }
+    }
+  }
+
+  private var cursorSection: some View {
+    VStack(alignment: .leading, spacing: 10) {
+      sectionHeader(icon: "cursorarrow", title: "Cursor")
+
+      Toggle(isOn: $editorState.showCursor) {
+        Text("Show Cursor")
+          .font(.system(size: 12))
+          .foregroundStyle(ReframedColors.primaryText)
+      }
+      .toggleStyle(.switch)
+      .controlSize(.mini)
+
+      if editorState.showCursor {
+        HStack(spacing: 8) {
+          Text("Style")
+            .font(.system(size: 12))
+            .foregroundStyle(ReframedColors.secondaryText)
+          Picker("", selection: $editorState.cursorStyle) {
+            ForEach(CursorStyle.allCases, id: \.rawValue) { style in
+              Text(style.label).tag(style)
+            }
+          }
+          .pickerStyle(.segmented)
+        }
+
+        HStack(spacing: 8) {
+          Text("Size")
+            .font(.system(size: 12))
+            .foregroundStyle(ReframedColors.secondaryText)
+          Slider(value: $editorState.cursorSize, in: 16...64, step: 2)
+          Text("\(Int(editorState.cursorSize))px")
+            .font(.system(size: 12, design: .monospaced))
+            .foregroundStyle(ReframedColors.secondaryText)
+            .frame(width: 36, alignment: .trailing)
+        }
+
+        HStack(spacing: 8) {
+          Text("Smooth")
+            .font(.system(size: 12))
+            .foregroundStyle(ReframedColors.secondaryText)
+          Picker("", selection: $editorState.cursorSmoothing) {
+            ForEach(CursorSmoothing.allCases, id: \.rawValue) { level in
+              Text(level.label).tag(level)
+            }
+          }
+          .pickerStyle(.segmented)
+        }
+      }
+
+      clickHighlightsSubsection
+    }
+  }
+
+  private var clickHighlightsSubsection: some View {
+    VStack(alignment: .leading, spacing: 10) {
+      sectionHeader(icon: "cursorarrow.click.2", title: "Click Highlights")
+
+      Toggle(isOn: $editorState.showClickHighlights) {
+        Text("Show Click Highlights")
+          .font(.system(size: 12))
+          .foregroundStyle(ReframedColors.primaryText)
+      }
+      .toggleStyle(.switch)
+      .controlSize(.mini)
+
+      if editorState.showClickHighlights {
+        HStack(spacing: 8) {
+          Text("Color")
+            .font(.system(size: 12))
+            .foregroundStyle(ReframedColors.secondaryText)
+          clickColorPickerButton
+        }
+
+        HStack(spacing: 8) {
+          Text("Size")
+            .font(.system(size: 12))
+            .foregroundStyle(ReframedColors.secondaryText)
+          Slider(value: $editorState.clickHighlightSize, in: 16...80, step: 2)
+          Text("\(Int(editorState.clickHighlightSize))px")
+            .font(.system(size: 12, design: .monospaced))
+            .foregroundStyle(ReframedColors.secondaryText)
+            .frame(width: 36, alignment: .trailing)
+        }
+      }
+    }
+  }
+
+  private var clickColorPickerButton: some View {
+    let currentName = TailwindColors.all.first { $0.color == editorState.clickHighlightColor }?.name ?? "Blue"
+    return Button {
+      showClickColorPopover.toggle()
+    } label: {
+      HStack(spacing: 6) {
+        Circle()
+          .fill(Color(cgColor: editorState.clickHighlightColor.cgColor))
+          .frame(width: 16, height: 16)
+        Text(currentName)
+          .font(.system(size: 12, weight: .medium))
+          .foregroundStyle(ReframedColors.primaryText)
+          .lineLimit(1)
+        Spacer()
+        Image(systemName: "chevron.up.chevron.down")
+          .font(.system(size: 9, weight: .semibold))
+          .foregroundStyle(ReframedColors.dimLabel)
+      }
+      .padding(.horizontal, 10)
+      .frame(height: 30)
+      .background(ReframedColors.fieldBackground)
+      .clipShape(RoundedRectangle(cornerRadius: 6))
+    }
+    .buttonStyle(.plain)
+    .popover(isPresented: $showClickColorPopover, arrowEdge: .trailing) {
+      ScrollView {
+        VStack(alignment: .leading, spacing: 0) {
+          ForEach(TailwindColors.all) { preset in
+            Button {
+              editorState.clickHighlightColor = preset.color
+              showClickColorPopover = false
+            } label: {
+              HStack(spacing: 10) {
+                Circle()
+                  .fill(preset.swiftUIColor)
+                  .frame(width: 18, height: 18)
+                Text(preset.name)
+                  .font(.system(size: 13))
+                  .foregroundStyle(ReframedColors.primaryText)
+                Spacer()
+                if editorState.clickHighlightColor == preset.color {
+                  Image(systemName: "checkmark")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(ReframedColors.primaryText)
+                }
+              }
+              .padding(.horizontal, 12)
+              .padding(.vertical, 5)
+              .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+          }
+        }
+        .padding(.vertical, 8)
+      }
+      .frame(width: 200)
+      .frame(maxHeight: 320)
+    }
+  }
+
+  private var zoomSection: some View {
+    VStack(alignment: .leading, spacing: 10) {
+      sectionHeader(icon: "plus.magnifyingglass", title: "Zoom")
+
+      Toggle(isOn: $editorState.autoZoomEnabled) {
+        Text("Auto Zoom")
+          .font(.system(size: 12))
+          .foregroundStyle(ReframedColors.primaryText)
+      }
+      .toggleStyle(.switch)
+      .controlSize(.mini)
+      .onChange(of: editorState.autoZoomEnabled) { _, enabled in
+        if enabled {
+          editorState.generateAutoZoom()
+        } else {
+          editorState.clearAutoZoom()
+        }
+      }
+
+      Toggle(isOn: $editorState.zoomFollowCursor) {
+        Text("Follow Cursor")
+          .font(.system(size: 12))
+          .foregroundStyle(ReframedColors.primaryText)
+      }
+      .toggleStyle(.switch)
+      .controlSize(.mini)
+
+      HStack(spacing: 8) {
+        Text("Level")
+          .font(.system(size: 12))
+          .foregroundStyle(ReframedColors.secondaryText)
+        Slider(value: $editorState.zoomLevel, in: 1.5...3.0, step: 0.1)
+        Text(String(format: "%.1fx", editorState.zoomLevel))
+          .font(.system(size: 12, design: .monospaced))
+          .foregroundStyle(ReframedColors.secondaryText)
+          .frame(width: 36, alignment: .trailing)
+      }
+      .onChange(of: editorState.zoomLevel) { _, _ in
+        if editorState.autoZoomEnabled { editorState.generateAutoZoom() }
+      }
+
+      HStack(spacing: 8) {
+        Text("Speed")
+          .font(.system(size: 12))
+          .foregroundStyle(ReframedColors.secondaryText)
+        Slider(value: $editorState.zoomTransitionSpeed, in: 0.1...1.0, step: 0.05)
+        Text(String(format: "%.2fs", editorState.zoomTransitionSpeed))
+          .font(.system(size: 12, design: .monospaced))
+          .foregroundStyle(ReframedColors.secondaryText)
+          .frame(width: 42, alignment: .trailing)
+      }
+      .onChange(of: editorState.zoomTransitionSpeed) { _, _ in
+        if editorState.autoZoomEnabled { editorState.generateAutoZoom() }
+      }
+
+      HStack(spacing: 8) {
+        Text("Dwell")
+          .font(.system(size: 12))
+          .foregroundStyle(ReframedColors.secondaryText)
+        Slider(value: $editorState.zoomDwellThreshold, in: 0.2...2.0, step: 0.1)
+        Text(String(format: "%.1fs", editorState.zoomDwellThreshold))
+          .font(.system(size: 12, design: .monospaced))
+          .foregroundStyle(ReframedColors.secondaryText)
+          .frame(width: 36, alignment: .trailing)
+      }
+      .onChange(of: editorState.zoomDwellThreshold) { _, _ in
+        if editorState.autoZoomEnabled { editorState.generateAutoZoom() }
       }
     }
   }

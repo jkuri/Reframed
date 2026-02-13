@@ -11,7 +11,6 @@ final class VideoTrackWriter: @unchecked Sendable {
   private let clock: SharedRecordingClock
   private let logger = Logger(label: "eu.jankuri.reframed.video-track-writer")
   let queue = DispatchQueue(label: "eu.jankuri.reframed.video-track-writer.queue", qos: .userInteractive)
-  var clickRenderer: MouseClickRenderer?
   var writtenFrames = 0
   var droppedFrames = 0
   private(set) var firstSamplePTS: CMTime = .invalid
@@ -78,10 +77,7 @@ final class VideoTrackWriter: @unchecked Sendable {
 
     if isPaused { return }
 
-    var workingBuffer = sampleBuffer
-    if let renderer = clickRenderer, let modified = renderer.processFrame(sampleBuffer) {
-      workingBuffer = modified
-    }
+    let workingBuffer = sampleBuffer
 
     let rawPTS = CMSampleBufferGetPresentationTimeStamp(workingBuffer)
 

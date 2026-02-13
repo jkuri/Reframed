@@ -10,7 +10,27 @@ struct ProjectMetadata: Codable, Sendable {
   var webcamSize: CodableSize?
   var hasSystemAudio: Bool
   var hasMicrophoneAudio: Bool
+  var hasCursorMetadata: Bool = false
   var editorState: EditorStateData?
+}
+
+struct CursorSettingsData: Codable, Sendable {
+  var showCursor: Bool
+  var cursorStyleRaw: Int
+  var cursorSize: CGFloat
+  var cursorSmoothingRaw: Int
+  var showClickHighlights: Bool = true
+  var clickHighlightColor: CodableColor? = nil
+  var clickHighlightSize: CGFloat = 36
+}
+
+struct ZoomSettingsData: Codable, Sendable {
+  var autoZoomEnabled: Bool
+  var zoomFollowCursor: Bool = true
+  var zoomLevel: Double
+  var transitionDuration: Double
+  var dwellThreshold: Double
+  var keyframes: [ZoomKeyframe]
 }
 
 struct EditorStateData: Codable, Sendable {
@@ -22,6 +42,8 @@ struct EditorStateData: Codable, Sendable {
   var pipCornerRadius: CGFloat
   var pipBorderWidth: CGFloat
   var pipLayout: PiPLayout
+  var cursorSettings: CursorSettingsData?
+  var zoomSettings: ZoomSettingsData?
 }
 
 struct CodableSize: Codable, Sendable {

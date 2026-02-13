@@ -20,7 +20,7 @@ final class ScreenCaptureSession: NSObject, SCStreamDelegate, SCStreamOutput, @u
     super.init()
   }
 
-  func start(target: CaptureTarget, display: SCDisplay, displayScale: CGFloat, fps: Int = 60) async throws {
+  func start(target: CaptureTarget, display: SCDisplay, displayScale: CGFloat, fps: Int = 60, hideCursor: Bool = false) async throws {
     let filter: SCContentFilter
     let sourceRect: CGRect
 
@@ -50,7 +50,7 @@ final class ScreenCaptureSession: NSObject, SCStreamDelegate, SCStreamOutput, @u
     config.height = pixelH
     config.minimumFrameInterval = CMTime(value: 1, timescale: CMTimeScale(captureFps))
     config.pixelFormat = kCVPixelFormatType_32BGRA
-    config.showsCursor = true
+    config.showsCursor = !hideCursor
     config.capturesAudio = false
     config.queueDepth = 8
     config.scalesToFit = false

@@ -41,6 +41,7 @@ final class SessionState {
   private var persistentWebcam: WebcamCapture?
   private var verifiedCameraInfo: VerifiedCamera?
   private var mouseClickMonitor: MouseClickMonitor?
+  private var cursorMetadataRecorder: CursorMetadataRecorder?
   private var devicePreviewWindow: DevicePreviewWindow?
   private var deviceCapture: DeviceCapture?
   private var audioLevelTask: Task<Void, Never>?
@@ -352,6 +353,8 @@ final class SessionState {
   private func cleanupAfterRecordingFailure() {
     mouseClickMonitor?.stop()
     mouseClickMonitor = nil
+    cursorMetadataRecorder?.stop()
+    cursorMetadataRecorder = nil
     selectionCoordinator?.destroyAll()
     selectionCoordinator = nil
     windowSelectionCoordinator?.destroyOverlay()
@@ -424,21 +427,8 @@ final class SessionState {
       existingWebcam = (webcam, info)
     }
 
-    let clickColor: NSColor?
-    let clickRenderer: MouseClickRenderer?
-    if options.showMouseClicks {
-      let cc: NSColor
-      if let mc = options.mouseClickColor {
-        cc = NSColor(cgColor: mc.cgColor) ?? .controlAccentColor
-      } else {
-        cc = .controlAccentColor
-      }
-      clickColor = cc
-      clickRenderer = MouseClickRenderer(color: cc, size: CGFloat(options.mouseClickSize))
-    } else {
-      clickColor = nil
-      clickRenderer = nil
-    }
+    let metadataRecorder = CursorMetadataRecorder()
+    self.cursorMetadataRecorder = metadataRecorder
 
     let startedAt = try await coordinator.startRecording(
       target: target,
@@ -448,8 +438,10 @@ final class SessionState {
       cameraDeviceId: useCam ? options.selectedCamera?.id : nil,
       cameraResolution: ConfigService.shared.cameraMaximumResolution,
       existingWebcam: existingWebcam,
-      clickRenderer: clickRenderer
+      cursorMetadataRecorder: metadataRecorder
     )
+
+    metadataRecorder.start()
 
     if existingWebcam == nil, useCam {
       let box = await coordinator.getWebcamCaptureSessionBox()
@@ -460,11 +452,9 @@ final class SessionState {
       }
     }
 
-    if options.showMouseClicks, let clickColor {
-      let monitor = MouseClickMonitor(color: clickColor, size: CGFloat(options.mouseClickSize), renderer: clickRenderer)
-      monitor.start()
-      mouseClickMonitor = monitor
-    }
+    let monitor = MouseClickMonitor(metadataRecorder: metadataRecorder)
+    monitor.start()
+    mouseClickMonitor = monitor
 
     SoundEffect.startRecording.play()
     transition(to: .recording(startedAt: startedAt))
@@ -480,6 +470,7 @@ final class SessionState {
 
     mouseClickMonitor?.stop()
     mouseClickMonitor = nil
+    cursorMetadataRecorder = nil
 
     SoundEffect.stopRecording.play()
     transition(to: .processing)

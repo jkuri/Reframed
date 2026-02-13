@@ -17,6 +17,7 @@ actor RecordingCoordinator {
   private var systemAudioWriter: AudioTrackWriter?
   private var micAudioWriter: AudioTrackWriter?
   private var recordingClock: SharedRecordingClock?
+  private var cursorMetadataRecorder: CursorMetadataRecorder?
   private let logger = Logger(label: "eu.jankuri.reframed.recording-coordinator")
   private var pauseStartTime: CMTime = .invalid
   private var totalPauseOffset: CMTime = .zero
@@ -34,7 +35,7 @@ actor RecordingCoordinator {
     cameraDeviceId: String? = nil,
     cameraResolution: String = "1080p",
     existingWebcam: (WebcamCapture, VerifiedCamera)? = nil,
-    clickRenderer: MouseClickRenderer? = nil
+    cursorMetadataRecorder: CursorMetadataRecorder? = nil
   ) async throws -> Date {
     var verifiedCam: (capture: WebcamCapture, info: VerifiedCamera)?
     var verifiedMic: MicrophoneCapture?
@@ -115,27 +116,35 @@ actor RecordingCoordinator {
     )
     self.videoWriter = vidWriter
 
-    if let clickRenderer {
-      let captureOrigin: CGPoint
-      switch target {
-      case .region(let selection):
-        captureOrigin = selection.screenCaptureKitRect.origin
-      case .window(let window):
-        captureOrigin = window.frame.origin
-      case .screen:
-        captureOrigin = display.frame.origin
-      }
-      clickRenderer.configure(
+    let captureOrigin: CGPoint
+    switch target {
+    case .region(let selection):
+      captureOrigin = selection.screenCaptureKitRect.origin
+    case .window(let window):
+      captureOrigin = window.frame.origin
+    case .screen:
+      captureOrigin = display.frame.origin
+    }
+
+    if let cursorMetadataRecorder {
+      cursorMetadataRecorder.configure(
         captureOrigin: captureOrigin,
+        captureSize: sourceRect.size,
         displayScale: displayScale,
         displayHeight: CGFloat(CGDisplayPixelsHigh(display.displayID))
       )
-      vidWriter.clickRenderer = clickRenderer
+      self.cursorMetadataRecorder = cursorMetadataRecorder
     }
 
     let session = ScreenCaptureSession(videoWriter: vidWriter)
     do {
-      try await session.start(target: target, display: display, displayScale: displayScale, fps: fps)
+      try await session.start(
+        target: target,
+        display: display,
+        displayScale: displayScale,
+        fps: fps,
+        hideCursor: cursorMetadataRecorder != nil
+      )
     } catch {
       verifiedCam?.capture.stop()
       verifiedMic?.stop()
@@ -357,6 +366,7 @@ actor RecordingCoordinator {
     systemAudioWriter?.pause()
     micAudioWriter?.pause()
     deviceAudioWriter?.pause()
+    cursorMetadataRecorder?.pause()
     logger.info("Recording paused")
   }
 
@@ -377,10 +387,13 @@ actor RecordingCoordinator {
     microphoneCapture?.resume()
     webcamCapture?.resume()
     deviceCapture?.resume()
+    cursorMetadataRecorder?.resume()
     logger.info("Recording resumed, total offset: \(CMTimeGetSeconds(totalPauseOffset))s")
   }
 
   func stopRecordingRaw(keepWebcamAlive: Bool = false) async throws -> RecordingResult? {
+    cursorMetadataRecorder?.stop()
+
     microphoneCapture?.stop()
     microphoneCapture = nil
 
@@ -412,6 +425,19 @@ actor RecordingCoordinator {
     let micURL = await micResult
     let deviceAudioURL = await deviceAudioResult
 
+    var cursorMetadataURL: URL?
+    if let recorder = cursorMetadataRecorder {
+      let tempURL = FileManager.default.temporaryDirectory
+        .appendingPathComponent("cursor-metadata-\(UUID().uuidString).json")
+      do {
+        try recorder.writeToFile(at: tempURL)
+        cursorMetadataURL = tempURL
+      } catch {
+        logger.error("Failed to write cursor metadata: \(error)")
+      }
+    }
+    cursorMetadataRecorder = nil
+
     let screenW = pixelW
     let screenH = pixelH
     let camW = webcamPixelW
@@ -435,6 +461,7 @@ actor RecordingCoordinator {
       webcamVideoURL: webcamURL,
       systemAudioURL: sysAudioURL ?? deviceAudioURL,
       microphoneAudioURL: micURL,
+      cursorMetadataURL: cursorMetadataURL,
       screenSize: CGSize(width: screenW, height: screenH),
       webcamSize: webcamURL != nil ? CGSize(width: camW, height: camH) : nil,
       fps: fps

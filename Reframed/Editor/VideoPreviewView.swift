@@ -13,6 +13,17 @@ struct VideoPreviewView: NSViewRepresentable {
   var videoCornerRadius: CGFloat = 0
   var pipCornerRadius: CGFloat = 12
   var pipBorderWidth: CGFloat = 0
+  var cursorMetadataProvider: CursorMetadataProvider?
+  var showCursor: Bool = false
+  var cursorStyle: CursorStyle = .defaultArrow
+  var cursorSize: CGFloat = 24
+  var cursorSmoothing: CursorSmoothing = .standard
+  var showClickHighlights: Bool = true
+  var clickHighlightColor: CGColor = CGColor(srgbRed: 0.2, green: 0.5, blue: 1.0, alpha: 1.0)
+  var clickHighlightSize: CGFloat = 36
+  var zoomFollowCursor: Bool = true
+  var currentTime: Double = 0
+  var zoomTimeline: ZoomTimeline?
 
   func makeNSView(context: Context) -> VideoPreviewContainer {
     let container = VideoPreviewContainer()
@@ -36,6 +47,41 @@ struct VideoPreviewView: NSViewRepresentable {
       pipCornerRadius: pipCornerRadius,
       pipBorderWidth: pipBorderWidth
     )
+
+    if let zoom = zoomTimeline {
+      var zoomRect = zoom.zoomRect(at: currentTime)
+      if zoomFollowCursor, zoomRect.width < 1.0 || zoomRect.height < 1.0,
+        let provider = cursorMetadataProvider
+      {
+        let cursorPos = provider.sample(at: currentTime, smoothing: cursorSmoothing)
+        zoomRect = ZoomTimeline.followCursor(zoomRect, cursorPosition: cursorPos)
+      }
+      nsView.updateZoomRect(zoomRect)
+    } else {
+      nsView.updateZoomRect(CGRect(x: 0, y: 0, width: 1, height: 1))
+    }
+
+    if let provider = cursorMetadataProvider, showCursor {
+      let pos = provider.sample(at: currentTime, smoothing: cursorSmoothing)
+      let clicks = showClickHighlights ? provider.activeClicks(at: currentTime) : []
+      nsView.updateCursorOverlay(
+        normalizedPosition: pos,
+        style: cursorStyle,
+        size: cursorSize,
+        visible: true,
+        clicks: clicks,
+        clickHighlightColor: clickHighlightColor,
+        clickHighlightSize: clickHighlightSize
+      )
+    } else {
+      nsView.updateCursorOverlay(
+        normalizedPosition: .zero,
+        style: .defaultArrow,
+        size: 24,
+        visible: false,
+        clicks: []
+      )
+    }
   }
 
   func makeCoordinator() -> Coordinator {
@@ -64,6 +110,8 @@ final class VideoPreviewContainer: NSView {
   let screenPlayerLayer = AVPlayerLayer()
   let webcamPlayerLayer = AVPlayerLayer()
   private let webcamView = WebcamPiPView()
+  private let cursorOverlay = CursorOverlayLayer()
+  private let screenContainerLayer = CALayer()
   var coordinator: VideoPreviewView.Coordinator?
   private var currentLayout = PiPLayout()
   private var currentWebcamSize: CGSize?
@@ -75,15 +123,21 @@ final class VideoPreviewContainer: NSView {
   private var currentPipBorderWidth: CGFloat = 0
   private let screenMaskLayer = CAShapeLayer()
   private var trackingArea: NSTrackingArea?
+  private var currentZoomRect = CGRect(x: 0, y: 0, width: 1, height: 1)
 
   override init(frame: NSRect) {
     super.init(frame: frame)
     wantsLayer = true
     layer?.backgroundColor = NSColor.clear.cgColor
 
+    screenContainerLayer.masksToBounds = true
+    layer?.addSublayer(screenContainerLayer)
+
     screenPlayerLayer.videoGravity = .resizeAspectFill
-    screenPlayerLayer.mask = screenMaskLayer
-    layer?.addSublayer(screenPlayerLayer)
+    screenContainerLayer.addSublayer(screenPlayerLayer)
+
+    cursorOverlay.zPosition = 10
+    layer?.addSublayer(cursorOverlay)
 
     webcamView.wantsLayer = true
     webcamView.layer?.cornerRadius = 12
@@ -146,6 +200,83 @@ final class VideoPreviewContainer: NSView {
     layoutAll()
   }
 
+  func updateCursorOverlay(
+    normalizedPosition: CGPoint,
+    style: CursorStyle,
+    size: CGFloat,
+    visible: Bool,
+    clicks: [(point: CGPoint, progress: Double)],
+    clickHighlightColor: CGColor? = nil,
+    clickHighlightSize: CGFloat = 36
+  ) {
+    let canvasRect = AVMakeRect(aspectRatio: currentCanvasSize, insideRect: bounds)
+    let scaleX = canvasRect.width / max(currentCanvasSize.width, 1)
+    let scaleY = canvasRect.height / max(currentCanvasSize.height, 1)
+    let padH = currentPadding * currentScreenSize.width * scaleX
+    let padV = currentPadding * currentScreenSize.height * scaleY
+
+    let screenRect = CGRect(
+      x: canvasRect.origin.x + padH,
+      y: canvasRect.origin.y + padV,
+      width: canvasRect.width - padH * 2,
+      height: canvasRect.height - padV * 2
+    )
+
+    let zr = currentZoomRect
+    let isZoomed = zr.width < 1.0 || zr.height < 1.0
+
+    func transformPos(_ pos: CGPoint) -> (CGPoint, Bool) {
+      var p = pos
+      if isZoomed {
+        p = CGPoint(x: (p.x - zr.origin.x) / zr.width, y: (p.y - zr.origin.y) / zr.height)
+        if p.x < -0.05 || p.x > 1.05 || p.y < -0.05 || p.y > 1.05 {
+          return (p, false)
+        }
+      }
+      let pixelX = screenRect.origin.x + p.x * screenRect.width
+      let pixelY = screenRect.origin.y + (1 - p.y) * screenRect.height
+      return (CGPoint(x: pixelX, y: pixelY), true)
+    }
+
+    let (cursorPixel, cursorVisible) = transformPos(normalizedPosition)
+
+    let adjustedClicks: [(point: CGPoint, progress: Double)] = clicks.compactMap { click in
+      let (pixel, vis) = transformPos(click.point)
+      guard vis else { return nil }
+      return (pixel, click.progress)
+    }
+
+    cursorOverlay.update(
+      pixelPosition: cursorPixel,
+      style: style,
+      size: size * min(scaleX, scaleY),
+      visible: visible && cursorVisible,
+      containerSize: bounds.size,
+      clicks: adjustedClicks,
+      highlightColor: clickHighlightColor,
+      highlightSize: clickHighlightSize * min(scaleX, scaleY)
+    )
+  }
+
+  func updateZoomRect(_ rect: CGRect) {
+    CATransaction.begin()
+    CATransaction.setDisableActions(true)
+    currentZoomRect = rect
+    let containerBounds = screenContainerLayer.bounds
+    if rect.width >= 1.0 && rect.height >= 1.0 {
+      screenPlayerLayer.frame = containerBounds
+    } else {
+      let cw = containerBounds.width
+      let ch = containerBounds.height
+      let pw = cw / rect.width
+      let ph = ch / rect.height
+      let px = -rect.origin.x * pw
+      let py = -(1 - rect.origin.y - rect.height) * ph
+      screenPlayerLayer.frame = CGRect(x: px, y: py, width: pw, height: ph)
+    }
+    CATransaction.commit()
+  }
+
   private func layoutAll() {
     CATransaction.begin()
     CATransaction.setDisableActions(true)
@@ -163,7 +294,7 @@ final class VideoPreviewContainer: NSView {
       height: canvasRect.height - padV * 2
     )
 
-    screenPlayerLayer.frame = screenRect
+    screenContainerLayer.frame = screenRect
     let maskPath = CGPath(
       roundedRect: CGRect(origin: .zero, size: screenRect.size),
       cornerWidth: currentVideoCornerRadius * min(scaleX, scaleY),
@@ -172,6 +303,20 @@ final class VideoPreviewContainer: NSView {
     )
     screenMaskLayer.frame = CGRect(origin: .zero, size: screenRect.size)
     screenMaskLayer.path = maskPath
+    screenContainerLayer.mask = screenMaskLayer
+
+    let zr = currentZoomRect
+    if zr.width < 1.0 || zr.height < 1.0 {
+      let cw = screenRect.width
+      let ch = screenRect.height
+      let pw = cw / zr.width
+      let ph = ch / zr.height
+      let px = -zr.origin.x * pw
+      let py = -(1 - zr.origin.y - zr.height) * ph
+      screenPlayerLayer.frame = CGRect(x: px, y: py, width: pw, height: ph)
+    } else {
+      screenPlayerLayer.frame = screenContainerLayer.bounds
+    }
 
     guard let ws = currentWebcamSize, webcamPlayerLayer.player != nil else {
       webcamView.isHidden = true

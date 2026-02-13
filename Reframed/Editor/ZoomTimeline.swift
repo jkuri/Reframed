@@ -1,0 +1,145 @@
+import CoreGraphics
+import Foundation
+
+struct ZoomKeyframe: Codable, Sendable {
+  var t: Double
+  var zoomLevel: Double
+  var centerX: Double
+  var centerY: Double
+  var isAuto: Bool
+}
+
+final class ZoomTimeline: @unchecked Sendable {
+  private let lock = NSLock()
+  private var keyframes: [ZoomKeyframe] = []
+
+  init(keyframes: [ZoomKeyframe] = []) {
+    self.keyframes = keyframes.sorted { $0.t < $1.t }
+  }
+
+  var allKeyframes: [ZoomKeyframe] {
+    lock.lock()
+    let kfs = keyframes
+    lock.unlock()
+    return kfs
+  }
+
+  func zoomRect(at time: Double) -> CGRect {
+    lock.lock()
+    let kfs = keyframes
+    lock.unlock()
+
+    guard !kfs.isEmpty else {
+      return CGRect(x: 0, y: 0, width: 1, height: 1)
+    }
+
+    let zoom = interpolatedZoom(at: time, keyframes: kfs)
+
+    if zoom.zoomLevel <= 1.0 {
+      return CGRect(x: 0, y: 0, width: 1, height: 1)
+    }
+
+    let visibleW = 1.0 / zoom.zoomLevel
+    let visibleH = 1.0 / zoom.zoomLevel
+
+    var originX = zoom.centerX - visibleW / 2
+    var originY = zoom.centerY - visibleH / 2
+
+    originX = max(0, min(1 - visibleW, originX))
+    originY = max(0, min(1 - visibleH, originY))
+
+    return CGRect(x: originX, y: originY, width: visibleW, height: visibleH)
+  }
+
+  func addKeyframe(_ keyframe: ZoomKeyframe) {
+    lock.lock()
+    keyframes.append(keyframe)
+    keyframes.sort { $0.t < $1.t }
+    lock.unlock()
+  }
+
+  func removeKeyframe(at index: Int) {
+    lock.lock()
+    guard index >= 0 && index < keyframes.count else {
+      lock.unlock()
+      return
+    }
+    keyframes.remove(at: index)
+    lock.unlock()
+  }
+
+  func setKeyframes(_ newKeyframes: [ZoomKeyframe]) {
+    lock.lock()
+    keyframes = newKeyframes.sorted { $0.t < $1.t }
+    lock.unlock()
+  }
+
+  func clearAutoKeyframes() {
+    lock.lock()
+    keyframes.removeAll { $0.isAuto }
+    lock.unlock()
+  }
+
+  var isEmpty: Bool {
+    lock.lock()
+    let empty = keyframes.isEmpty
+    lock.unlock()
+    return empty
+  }
+
+  private func interpolatedZoom(at time: Double, keyframes kfs: [ZoomKeyframe]) -> (zoomLevel: Double, centerX: Double, centerY: Double) {
+    guard !kfs.isEmpty else {
+      return (1.0, 0.5, 0.5)
+    }
+
+    if time <= kfs.first!.t {
+      let k = kfs.first!
+      return (k.zoomLevel, k.centerX, k.centerY)
+    }
+    if time >= kfs.last!.t {
+      let k = kfs.last!
+      return (k.zoomLevel, k.centerX, k.centerY)
+    }
+
+    var lo = 0
+    var hi = kfs.count - 1
+    while lo < hi - 1 {
+      let mid = (lo + hi) / 2
+      if kfs[mid].t <= time {
+        lo = mid
+      } else {
+        hi = mid
+      }
+    }
+
+    let k0 = kfs[lo]
+    let k1 = kfs[hi]
+    let span = k1.t - k0.t
+    guard span > 0 else {
+      return (k1.zoomLevel, k1.centerX, k1.centerY)
+    }
+
+    let linearT = (time - k0.t) / span
+    let t = easeInOut(linearT)
+
+    let zoom = k0.zoomLevel + (k1.zoomLevel - k0.zoomLevel) * t
+    let cx = k0.centerX + (k1.centerX - k0.centerX) * t
+    let cy = k0.centerY + (k1.centerY - k0.centerY) * t
+
+    return (zoom, cx, cy)
+  }
+
+  static func followCursor(_ rect: CGRect, cursorPosition: CGPoint) -> CGRect {
+    guard rect.width < 1.0 || rect.height < 1.0 else { return rect }
+    let originX = max(0, min(1 - rect.width, cursorPosition.x - rect.width / 2))
+    let originY = max(0, min(1 - rect.height, cursorPosition.y - rect.height / 2))
+    return CGRect(x: originX, y: originY, width: rect.width, height: rect.height)
+  }
+
+  private func easeInOut(_ t: Double) -> Double {
+    if t < 0.5 {
+      return 2 * t * t
+    }
+    return -1 + (4 - 2 * t) * t
+  }
+}

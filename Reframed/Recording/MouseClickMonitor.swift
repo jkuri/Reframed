@@ -3,26 +3,28 @@ import AppKit
 @MainActor
 final class MouseClickMonitor {
   private var monitor: Any?
-  private let color: NSColor
-  private let size: CGFloat
-  private let renderer: MouseClickRenderer?
+  private var keystrokeMonitor: Any?
+  private let metadataRecorder: CursorMetadataRecorder?
 
-  init(color: NSColor, size: CGFloat, renderer: MouseClickRenderer? = nil) {
-    self.color = color
-    self.size = size
-    self.renderer = renderer
+  init(metadataRecorder: CursorMetadataRecorder? = nil) {
+    self.metadataRecorder = metadataRecorder
   }
 
   func start() {
     guard monitor == nil else { return }
-    let clickColor = color
-    let clickSize = size
-    let clickRenderer = renderer
-    monitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { [weak self] event in
+    let cursorRecorder = metadataRecorder
+    monitor = NSEvent.addGlobalMonitorForEvents(matching: [.leftMouseDown, .rightMouseDown]) { event in
       MainActor.assumeIsolated {
         let screenPoint = NSEvent.mouseLocation
-        clickRenderer?.recordClick(at: screenPoint)
-        self?.handleClick(event, color: clickColor, size: clickSize)
+        let button = event.type == .rightMouseDown ? 1 : 0
+        cursorRecorder?.recordClick(at: screenPoint, button: button)
+      }
+    }
+
+    if cursorRecorder != nil {
+      keystrokeMonitor = NSEvent.addGlobalMonitorForEvents(matching: [.keyDown, .keyUp]) { event in
+        let isDown = event.type == .keyDown
+        cursorRecorder?.recordKeystroke(keyCode: event.keyCode, modifiers: UInt(event.modifierFlags.rawValue), isDown: isDown)
       }
     }
   }
@@ -32,10 +34,10 @@ final class MouseClickMonitor {
       NSEvent.removeMonitor(monitor)
     }
     monitor = nil
-  }
 
-  private func handleClick(_ event: NSEvent, color: NSColor, size: CGFloat) {
-    let screenPoint = NSEvent.mouseLocation
-    _ = MouseClickWindow(at: screenPoint, color: color, size: size)
+    if let keystrokeMonitor {
+      NSEvent.removeMonitor(keystrokeMonitor)
+    }
+    keystrokeMonitor = nil
   }
 }

@@ -23,6 +23,15 @@ enum VideoCompositor {
     pipCornerRadius: CGFloat = 12,
     pipBorderWidth: CGFloat = 0,
     exportSettings: ExportSettings = ExportSettings(),
+    cursorSnapshot: CursorMetadataSnapshot? = nil,
+    cursorStyle: CursorStyle = .defaultArrow,
+    cursorSize: CGFloat = 24,
+    cursorSmoothing: CursorSmoothing = .standard,
+    showClickHighlights: Bool = true,
+    clickHighlightColor: CGColor = CGColor(srgbRed: 0.2, green: 0.5, blue: 1.0, alpha: 1.0),
+    clickHighlightSize: CGFloat = 36,
+    zoomFollowCursor: Bool = true,
+    zoomTimeline: ZoomTimeline? = nil,
     progressHandler: (@MainActor @Sendable (Double) -> Void)? = nil
   ) async throws -> URL {
     let composition = AVMutableComposition()
@@ -58,10 +67,12 @@ enum VideoCompositor {
 
     let hasVisualEffects = backgroundStyle != .none || padding > 0 || videoCornerRadius > 0
     let hasWebcam = result.webcamVideoURL != nil
+    let hasCursor = cursorSnapshot != nil
+    let hasZoom = zoomTimeline != nil
     let needsReencode =
       exportSettings.codec != .h264 || exportSettings.resolution != .original
       || exportSettings.fps != .original
-    let needsCompositor = hasVisualEffects || hasWebcam || needsReencode
+    let needsCompositor = hasVisualEffects || hasWebcam || needsReencode || hasCursor || hasZoom
 
     let canvasSize: CGSize
     if padding > 0 {
@@ -145,7 +156,18 @@ enum VideoCompositor {
         paddingH: paddingHPx,
         paddingV: paddingVPx,
         videoCornerRadius: scaledCornerRadius,
-        canvasSize: renderSize
+        canvasSize: renderSize,
+        cursorSnapshot: cursorSnapshot,
+        cursorStyle: cursorStyle,
+        cursorSize: cursorSize,
+        cursorSmoothing: cursorSmoothing,
+        showCursor: cursorSnapshot != nil,
+        showClickHighlights: showClickHighlights,
+        clickHighlightColor: clickHighlightColor,
+        clickHighlightSize: clickHighlightSize,
+        zoomFollowCursor: zoomFollowCursor,
+        zoomTimeline: zoomTimeline,
+        trimStartSeconds: CMTimeGetSeconds(effectiveTrim.start)
       )
 
       let videoComposition = AVMutableVideoComposition()

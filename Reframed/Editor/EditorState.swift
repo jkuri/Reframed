@@ -33,6 +33,23 @@ final class EditorState {
   var exportResultIsError = false
   var lastExportedURL: URL?
 
+  var cursorMetadataProvider: CursorMetadataProvider?
+  var showCursor: Bool = true
+  var cursorStyle: CursorStyle = .defaultArrow
+  var cursorSize: CGFloat = 24
+  var cursorSmoothing: CursorSmoothing = .standard
+
+  var showClickHighlights: Bool = true
+  var clickHighlightColor: CodableColor = CodableColor(r: 0.2, g: 0.5, b: 1.0, a: 1.0)
+  var clickHighlightSize: CGFloat = 36
+
+  var zoomTimeline: ZoomTimeline?
+  var autoZoomEnabled: Bool = false
+  var zoomFollowCursor: Bool = true
+  var zoomLevel: Double = 2.0
+  var zoomTransitionSpeed: Double = 0.4
+  var zoomDwellThreshold: Double = 0.5
+
   private let logger = Logger(label: "eu.jankuri.reframed.editor-state")
 
   var isPlaying: Bool { playerController.isPlaying }
@@ -73,6 +90,10 @@ final class EditorState {
     playerController.micAudioTrimEnd = micAudioTrimEnd
     playerController.setupTimeObserver()
 
+    if let cursorURL = project?.cursorMetadataURL ?? result.cursorMetadataURL {
+      cursorMetadataProvider = try? CursorMetadataProvider.load(from: cursorURL)
+    }
+
     if let saved = project?.metadata.editorState {
       let start = CMTime(seconds: saved.trimStartSeconds, preferredTimescale: 600)
       let end = CMTime(seconds: saved.trimEndSeconds, preferredTimescale: 600)
@@ -80,6 +101,27 @@ final class EditorState {
         trimStart = start
         trimEnd = CMTimeMinimum(end, playerController.duration)
         playerController.trimEnd = trimEnd
+      }
+      if let cursorSettings = saved.cursorSettings {
+        showCursor = cursorSettings.showCursor
+        cursorStyle = CursorStyle(rawValue: cursorSettings.cursorStyleRaw) ?? .defaultArrow
+        cursorSize = cursorSettings.cursorSize
+        cursorSmoothing = CursorSmoothing(rawValue: cursorSettings.cursorSmoothingRaw) ?? .standard
+        showClickHighlights = cursorSettings.showClickHighlights
+        if let savedColor = cursorSettings.clickHighlightColor {
+          clickHighlightColor = savedColor
+        }
+        clickHighlightSize = cursorSettings.clickHighlightSize
+      }
+      if let zoomSettings = saved.zoomSettings {
+        autoZoomEnabled = zoomSettings.autoZoomEnabled
+        zoomFollowCursor = zoomSettings.zoomFollowCursor
+        zoomLevel = zoomSettings.zoomLevel
+        zoomTransitionSpeed = zoomSettings.transitionDuration
+        zoomDwellThreshold = zoomSettings.dwellThreshold
+        if !zoomSettings.keyframes.isEmpty {
+          zoomTimeline = ZoomTimeline(keyframes: zoomSettings.keyframes)
+        }
       }
     } else if hasWebcam {
       setPipCorner(.bottomRight)
@@ -168,6 +210,8 @@ final class EditorState {
     exportProgress = 0
     defer { isExporting = false }
 
+    let cursorSnapshot = showCursor ? cursorMetadataProvider?.makeSnapshot() : nil
+
     let state = self
     let url = try await VideoCompositor.export(
       result: result,
@@ -181,6 +225,15 @@ final class EditorState {
       pipCornerRadius: pipCornerRadius,
       pipBorderWidth: pipBorderWidth,
       exportSettings: settings,
+      cursorSnapshot: cursorSnapshot,
+      cursorStyle: cursorStyle,
+      cursorSize: cursorSize,
+      cursorSmoothing: cursorSmoothing,
+      showClickHighlights: showClickHighlights,
+      clickHighlightColor: clickHighlightColor.cgColor,
+      clickHighlightSize: clickHighlightSize,
+      zoomFollowCursor: zoomFollowCursor,
+      zoomTimeline: zoomTimeline,
       progressHandler: { progress in
         state.exportProgress = progress
       }
@@ -237,6 +290,29 @@ final class EditorState {
 
   func saveState() {
     guard let project else { return }
+    var cursorSettings: CursorSettingsData?
+    if cursorMetadataProvider != nil {
+      cursorSettings = CursorSettingsData(
+        showCursor: showCursor,
+        cursorStyleRaw: cursorStyle.rawValue,
+        cursorSize: cursorSize,
+        cursorSmoothingRaw: cursorSmoothing.rawValue,
+        showClickHighlights: showClickHighlights,
+        clickHighlightColor: clickHighlightColor,
+        clickHighlightSize: clickHighlightSize
+      )
+    }
+    var zoomSettings: ZoomSettingsData?
+    if let zt = zoomTimeline {
+      zoomSettings = ZoomSettingsData(
+        autoZoomEnabled: autoZoomEnabled,
+        zoomFollowCursor: zoomFollowCursor,
+        zoomLevel: zoomLevel,
+        transitionDuration: zoomTransitionSpeed,
+        dwellThreshold: zoomDwellThreshold,
+        keyframes: zt.allKeyframes
+      )
+    }
     let data = EditorStateData(
       trimStartSeconds: CMTimeGetSeconds(trimStart),
       trimEndSeconds: CMTimeGetSeconds(trimEnd),
@@ -245,9 +321,62 @@ final class EditorState {
       videoCornerRadius: videoCornerRadius,
       pipCornerRadius: pipCornerRadius,
       pipBorderWidth: pipBorderWidth,
-      pipLayout: pipLayout
+      pipLayout: pipLayout,
+      cursorSettings: cursorSettings,
+      zoomSettings: zoomSettings
     )
     try? project.saveEditorState(data)
+  }
+
+  func generateAutoZoom() {
+    guard let provider = cursorMetadataProvider else { return }
+    let config = ZoomDetectorConfig(
+      zoomLevel: zoomLevel,
+      dwellThresholdSeconds: zoomDwellThreshold,
+      velocityThreshold: 0.05,
+      minZoomDuration: 1.0,
+      transitionDuration: zoomTransitionSpeed
+    )
+    let dur = CMTimeGetSeconds(duration)
+    let keyframes = ZoomDetector.detect(from: provider.metadata, duration: dur, config: config)
+
+    if zoomTimeline == nil {
+      zoomTimeline = ZoomTimeline(keyframes: keyframes)
+    } else {
+      zoomTimeline?.clearAutoKeyframes()
+      for kf in keyframes {
+        zoomTimeline?.addKeyframe(kf)
+      }
+    }
+  }
+
+  func clearAutoZoom() {
+    zoomTimeline?.clearAutoKeyframes()
+    if zoomTimeline?.isEmpty == true {
+      zoomTimeline = nil
+    }
+  }
+
+  func addManualZoomKeyframe(at time: Double, center: CGPoint) {
+    if zoomTimeline == nil {
+      zoomTimeline = ZoomTimeline()
+    }
+    zoomTimeline?.addKeyframe(
+      ZoomKeyframe(
+        t: time,
+        zoomLevel: zoomLevel,
+        centerX: center.x,
+        centerY: center.y,
+        isAuto: false
+      )
+    )
+  }
+
+  func removeZoomKeyframe(at index: Int) {
+    zoomTimeline?.removeKeyframe(at: index)
+    if zoomTimeline?.isEmpty == true {
+      zoomTimeline = nil
+    }
   }
 
   func teardown() {

@@ -67,6 +67,26 @@ final class PiPVideoCompositor: NSObject, AVVideoCompositing, @unchecked Sendabl
 
     let screenImage = createImage(from: screenBuffer, colorSpace: colorSpace)
     if let img = screenImage {
+      let metadataTime = CMTimeGetSeconds(request.compositionTime) + instruction.trimStartSeconds
+      var zoomRect = instruction.zoomTimeline?.zoomRect(at: metadataTime)
+      if instruction.zoomFollowCursor, let zr = zoomRect, zr.width < 1.0 || zr.height < 1.0,
+        let snapshot = instruction.cursorSnapshot
+      {
+        let cursorPos = snapshot.sample(at: metadataTime, smoothing: instruction.cursorSmoothing)
+        zoomRect = ZoomTimeline.followCursor(zr, cursorPosition: cursorPos)
+      }
+      let sourceImg: CGImage
+      if let zr = zoomRect, zr.width < 1.0 || zr.height < 1.0 {
+        let cropX = zr.origin.x * CGFloat(img.width)
+        let cropY = zr.origin.y * CGFloat(img.height)
+        let cropW = zr.width * CGFloat(img.width)
+        let cropH = zr.height * CGFloat(img.height)
+        let cropRect = CGRect(x: cropX, y: cropY, width: cropW, height: cropH)
+        sourceImg = img.cropping(to: cropRect) ?? img
+      } else {
+        sourceImg = img
+      }
+
       if instruction.videoCornerRadius > 0 {
         let path = CGPath(
           roundedRect: videoRect,
@@ -77,10 +97,75 @@ final class PiPVideoCompositor: NSObject, AVVideoCompositing, @unchecked Sendabl
         context.saveGState()
         context.addPath(path)
         context.clip()
-        context.draw(img, in: videoRect)
+        context.draw(sourceImg, in: videoRect)
         context.restoreGState()
       } else {
-        context.draw(img, in: videoRect)
+        context.draw(sourceImg, in: videoRect)
+      }
+
+      if instruction.showCursor, let snapshot = instruction.cursorSnapshot {
+        context.saveGState()
+        context.translateBy(x: 0, y: CGFloat(height))
+        context.scaleBy(x: 1, y: -1)
+
+        let flippedVideoRect = CGRect(
+          x: videoRect.origin.x,
+          y: CGFloat(height) - videoRect.origin.y - videoRect.height,
+          width: videoRect.width,
+          height: videoRect.height
+        )
+
+        let cursorPos = snapshot.sample(at: metadataTime, smoothing: instruction.cursorSmoothing)
+
+        var pixelX: CGFloat
+        var pixelY: CGFloat
+
+        if let zr = zoomRect, zr.width < 1.0 || zr.height < 1.0 {
+          let relX = (cursorPos.x - zr.origin.x) / zr.width
+          let relY = (cursorPos.y - zr.origin.y) / zr.height
+          pixelX = flippedVideoRect.origin.x + relX * flippedVideoRect.width
+          pixelY = flippedVideoRect.origin.y + relY * flippedVideoRect.height
+        } else {
+          pixelX = flippedVideoRect.origin.x + cursorPos.x * flippedVideoRect.width
+          pixelY = flippedVideoRect.origin.y + cursorPos.y * flippedVideoRect.height
+        }
+
+        let drawScale = flippedVideoRect.width / max(CGFloat(img.width), 1)
+
+        CursorRenderer.drawCursor(
+          in: context,
+          position: CGPoint(x: pixelX, y: pixelY),
+          style: instruction.cursorStyle,
+          size: instruction.cursorSize * drawScale
+        )
+
+        if instruction.showClickHighlights {
+          let clicks = snapshot.activeClicks(at: metadataTime)
+          for (clickPoint, progress) in clicks {
+            var clickPixelX: CGFloat
+            var clickPixelY: CGFloat
+
+            if let zr = zoomRect, zr.width < 1.0 || zr.height < 1.0 {
+              let relX = (clickPoint.x - zr.origin.x) / zr.width
+              let relY = (clickPoint.y - zr.origin.y) / zr.height
+              clickPixelX = flippedVideoRect.origin.x + relX * flippedVideoRect.width
+              clickPixelY = flippedVideoRect.origin.y + relY * flippedVideoRect.height
+            } else {
+              clickPixelX = flippedVideoRect.origin.x + clickPoint.x * flippedVideoRect.width
+              clickPixelY = flippedVideoRect.origin.y + clickPoint.y * flippedVideoRect.height
+            }
+
+            CursorRenderer.drawClickHighlight(
+              in: context,
+              position: CGPoint(x: clickPixelX, y: clickPixelY),
+              progress: progress,
+              size: instruction.clickHighlightSize * drawScale,
+              color: instruction.clickHighlightColor
+            )
+          }
+        }
+
+        context.restoreGState()
       }
     }
 

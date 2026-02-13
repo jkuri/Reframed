@@ -144,6 +144,10 @@ struct TimelineView: View {
               }
             )
           }
+
+          if let zt = editorState.zoomTimeline, !zt.allKeyframes.isEmpty {
+            zoomTrackLane(keyframes: zt.allKeyframes)
+          }
         }
       }
 
@@ -439,6 +443,36 @@ struct TimelineView: View {
     }
     path.closeSubpath()
     return path
+  }
+
+  // MARK: - Zoom Track
+
+  private func zoomTrackLane(keyframes: [ZoomKeyframe]) -> some View {
+    HStack(spacing: 0) {
+      trackSidebar(label: "Zoom", icon: "plus.magnifyingglass")
+        .frame(width: sidebarWidth)
+
+      GeometryReader { geo in
+        ZoomKeyframeEditor(
+          keyframes: keyframes,
+          duration: totalSeconds,
+          width: geo.size.width,
+          height: geo.size.height,
+          onAddKeyframe: { time in
+            if let provider = editorState.cursorMetadataProvider {
+              let pos = provider.sample(at: time)
+              editorState.addManualZoomKeyframe(at: time, center: pos)
+            }
+          },
+          onRemoveKeyframe: { index in
+            editorState.removeZoomKeyframe(at: index)
+          }
+        )
+      }
+      .padding(.trailing, 8)
+    }
+    .frame(height: trackHeight)
+    .background(ReframedColors.panelBackground)
   }
 
   // MARK: - Trim & Playhead

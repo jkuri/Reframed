@@ -30,11 +30,6 @@ final class ConfigService {
     set { data.rememberLastSelection = newValue; save() }
   }
 
-  var showMouseClicks: Bool {
-    get { data.showMouseClicks }
-    set { data.showMouseClicks = newValue; save() }
-  }
-
   var fps: Int {
     get { data.fps }
     set { data.fps = newValue; save() }
@@ -58,16 +53,6 @@ final class ConfigService {
   var projectFolder: String {
     get { data.projectFolder }
     set { data.projectFolder = newValue; save() }
-  }
-
-  var mouseClickColor: CodableColor? {
-    get { data.mouseClickColor }
-    set { data.mouseClickColor = newValue; save() }
-  }
-
-  var mouseClickSize: Int {
-    get { data.mouseClickSize }
-    set { data.mouseClickSize = newValue; save() }
   }
 
   var appearance: String {
@@ -117,13 +102,10 @@ private struct ConfigData: Codable {
   var timerDelay: Int = 0
   var audioDeviceId: String? = nil
   var rememberLastSelection: Bool = true
-  var showMouseClicks: Bool = false
   var fps: Int = 60
   var captureSystemAudio: Bool = false
   var cameraDeviceId: String? = nil
   var cameraMaximumResolution: String = "1080p"
   var projectFolder: String = "~/Reframed"
   var appearance: String = "system"
-  var mouseClickColor: CodableColor? = nil
-  var mouseClickSize: Int = 36
 }
