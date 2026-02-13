@@ -75,18 +75,7 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
         let cursorPos = snapshot.sample(at: metadataTime, smoothing: instruction.cursorSmoothing)
         zoomRect = ZoomTimeline.followCursor(zr, cursorPosition: cursorPos)
       }
-      let sourceImg: CGImage
-      if let zr = zoomRect, zr.width < 1.0 || zr.height < 1.0 {
-        let cropX = zr.origin.x * CGFloat(img.width)
-        let cropY = zr.origin.y * CGFloat(img.height)
-        let cropW = zr.width * CGFloat(img.width)
-        let cropH = zr.height * CGFloat(img.height)
-        let cropRect = CGRect(x: cropX, y: cropY, width: cropW, height: cropH)
-        sourceImg = img.cropping(to: cropRect) ?? img
-      } else {
-        sourceImg = img
-      }
-
+      context.saveGState()
       if instruction.videoCornerRadius > 0 {
         let path = CGPath(
           roundedRect: videoRect,
@@ -94,14 +83,30 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
           cornerHeight: instruction.videoCornerRadius,
           transform: nil
         )
-        context.saveGState()
         context.addPath(path)
         context.clip()
-        context.draw(sourceImg, in: videoRect)
-        context.restoreGState()
-      } else {
-        context.draw(sourceImg, in: videoRect)
       }
+
+      if let zr = zoomRect, zr.width < 1.0 || zr.height < 1.0 {
+        let srcW = CGFloat(img.width)
+        let srcH = CGFloat(img.height)
+        let scaleX = videoRect.width / (zr.width * srcW)
+        let scaleY = videoRect.height / (zr.height * srcH)
+        let drawRect = CGRect(
+          x: videoRect.origin.x - zr.origin.x * srcW * scaleX,
+          y: videoRect.origin.y - zr.origin.y * srcH * scaleY,
+          width: srcW * scaleX,
+          height: srcH * scaleY
+        )
+        if instruction.videoCornerRadius <= 0 {
+          context.clip(to: videoRect)
+        }
+        context.interpolationQuality = .high
+        context.draw(img, in: drawRect)
+      } else {
+        context.draw(img, in: videoRect)
+      }
+      context.restoreGState()
 
       if instruction.showCursor, let snapshot = instruction.cursorSnapshot {
         context.saveGState()

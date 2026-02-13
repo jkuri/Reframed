@@ -54,6 +54,8 @@ final class EditorWindow: NSObject, NSWindowDelegate {
     )
 
     window.titlebarAppearsTransparent = true
+    window.titleVisibility = .hidden
+    window.styleMask.insert(.fullSizeContentView)
     window.backgroundColor = ReframedColors.panelBackgroundNS
     window.contentView = hostingView
     window.minSize = NSSize(width: 900, height: 550)

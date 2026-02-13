@@ -122,7 +122,9 @@ final class ZoomTimeline: @unchecked Sendable {
     let linearT = (time - k0.t) / span
     let t = easeInOut(linearT)
 
-    let zoom = k0.zoomLevel + (k1.zoomLevel - k0.zoomLevel) * t
+    let inv0 = 1.0 / k0.zoomLevel
+    let inv1 = 1.0 / k1.zoomLevel
+    let zoom = 1.0 / (inv0 + (inv1 - inv0) * t)
     let cx = k0.centerX + (k1.centerX - k0.centerX) * t
     let cy = k0.centerY + (k1.centerY - k0.centerY) * t
 
@@ -137,9 +139,6 @@ final class ZoomTimeline: @unchecked Sendable {
   }
 
   private func easeInOut(_ t: Double) -> Double {
-    if t < 0.5 {
-      return 2 * t * t
-    }
-    return -1 + (4 - 2 * t) * t
+    t * t * t * (t * (t * 6 - 15) + 10)
   }
 }

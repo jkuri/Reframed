@@ -12,16 +12,16 @@ struct EditorTopBar: View {
       HStack(spacing: 6) {
         Button(action: onOpenFolder) {
           Image(systemName: "folder")
-            .font(.system(size: 13))
-            .frame(width: 28, height: 28)
+            .font(.system(size: 16))
+            .frame(width: 32, height: 32)
         }
         .buttonStyle(.plain)
         .foregroundStyle(ReframedColors.primaryText)
 
         Button(action: onDelete) {
           Image(systemName: "trash")
-            .font(.system(size: 13))
-            .frame(width: 28, height: 28)
+            .font(.system(size: 16))
+            .frame(width: 32, height: 32)
         }
         .buttonStyle(.plain)
         .foregroundStyle(ReframedColors.primaryText)
@@ -49,10 +49,10 @@ struct EditorTopBar: View {
 
       Button(action: { editorState.showExportSheet = true }) {
         Text("Export")
-          .font(.system(size: 13, weight: .medium))
+          .font(.system(size: 14, weight: .semibold))
           .foregroundStyle(.white)
-          .padding(.horizontal, 16)
-          .frame(height: 28)
+          .padding(.horizontal, 20)
+          .frame(height: 32)
           .background(Color.blue)
           .clipShape(RoundedRectangle(cornerRadius: 6))
       }
@@ -60,7 +60,8 @@ struct EditorTopBar: View {
       .disabled(editorState.isExporting)
       .opacity(editorState.isExporting ? 0.4 : 1.0)
     }
-    .padding(.horizontal, 16)
+    .padding(.leading, 16)
+    .padding(.trailing, 16)
     .padding(.vertical, 8)
   }
 }
