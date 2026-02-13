@@ -2,7 +2,8 @@ import SwiftUI
 
 struct EditorView: View {
   @Bindable var editorState: EditorState
-  @State private var thumbnailGenerator = ThumbnailGenerator()
+  @State private var thumbnailGenerator = ThumbnailGenerator(count: 24)
+  @State private var webcamThumbnailGenerator = ThumbnailGenerator(count: 24)
   @State private var systemWaveformGenerator = AudioWaveformGenerator()
   @State private var micWaveformGenerator = AudioWaveformGenerator()
   @Environment(\.colorScheme) private var colorScheme
@@ -26,6 +27,11 @@ struct EditorView: View {
         Divider().background(ReframedColors.divider)
         PropertiesPanel(editorState: editorState)
       }
+      .frame(maxHeight: .infinity)
+
+      Divider().background(ReframedColors.divider)
+      timeline
+        .fixedSize(horizontal: false, vertical: true)
     }
     .background(ReframedColors.panelBackground)
     .task {
@@ -33,14 +39,18 @@ struct EditorView: View {
       let sysURL = editorState.result.systemAudioURL
       let micURL = editorState.result.microphoneAudioURL
       let screenURL = editorState.result.screenVideoURL
+      let webcamURL = editorState.result.webcamVideoURL
       async let thumbTask: Void = thumbnailGenerator.generate(from: screenURL)
+      async let webcamTask: Void = {
+        if let url = webcamURL { await webcamThumbnailGenerator.generate(from: url) }
+      }()
       async let sysTask: Void = {
         if let url = sysURL { await systemWaveformGenerator.generate(from: url) }
       }()
       async let micTask: Void = {
         if let url = micURL { await micWaveformGenerator.generate(from: url) }
       }()
-      _ = await (thumbTask, sysTask, micTask)
+      _ = await (thumbTask, webcamTask, sysTask, micTask)
     }
     .sheet(isPresented: $editorState.showExportSheet) {
       ExportSheet(isPresented: $editorState.showExportSheet, sourceFPS: editorState.result.fps) { settings in
@@ -77,7 +87,6 @@ struct EditorView: View {
         .frame(maxHeight: .infinity)
       Divider().background(ReframedColors.divider)
       EditorBottomBar(editorState: editorState)
-      timeline
     }
   }
 
@@ -143,6 +152,7 @@ struct EditorView: View {
     TimelineView(
       editorState: editorState,
       thumbnails: thumbnailGenerator.thumbnails,
+      webcamThumbnails: webcamThumbnailGenerator.thumbnails,
       systemAudioSamples: systemWaveformGenerator.samples,
       micAudioSamples: micWaveformGenerator.samples,
       onScrub: { time in
