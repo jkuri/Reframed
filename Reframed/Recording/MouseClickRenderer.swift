@@ -122,15 +122,17 @@ final class MouseClickRenderer: @unchecked Sendable {
 
     let bitmapInfo = CGBitmapInfo.byteOrder32Little.rawValue | CGImageAlphaInfo.premultipliedFirst.rawValue
 
-    guard let context = CGContext(
-      data: dstBase,
-      width: width,
-      height: height,
-      bitsPerComponent: 8,
-      bytesPerRow: dstBytesPerRow,
-      space: CGColorSpaceCreateDeviceRGB(),
-      bitmapInfo: bitmapInfo
-    ) else { return nil }
+    guard
+      let context = CGContext(
+        data: dstBase,
+        width: width,
+        height: height,
+        bitsPerComponent: 8,
+        bytesPerRow: dstBytesPerRow,
+        space: CGColorSpaceCreateDeviceRGB(),
+        bitmapInfo: bitmapInfo
+      )
+    else { return nil }
 
     context.translateBy(x: 0, y: CGFloat(height))
     context.scaleBy(x: 1, y: -1)
@@ -151,14 +153,24 @@ final class MouseClickRenderer: @unchecked Sendable {
         height: currentDiameter
       )
 
-      context.setFillColor(CGColor(
-        srgbRed: colorR, green: colorG, blue: colorB, alpha: 0.3 * opacity
-      ))
+      context.setFillColor(
+        CGColor(
+          srgbRed: colorR,
+          green: colorG,
+          blue: colorB,
+          alpha: 0.3 * opacity
+        )
+      )
       context.fillEllipse(in: circleRect)
 
-      context.setStrokeColor(CGColor(
-        srgbRed: colorR, green: colorG, blue: colorB, alpha: opacity
-      ))
+      context.setStrokeColor(
+        CGColor(
+          srgbRed: colorR,
+          green: colorG,
+          blue: colorB,
+          alpha: opacity
+        )
+      )
       context.setLineWidth(2.0 * scaleFactor)
       context.strokeEllipse(in: circleRect)
     }

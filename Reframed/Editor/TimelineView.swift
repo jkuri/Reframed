@@ -265,9 +265,12 @@ struct TimelineView: View {
         .coordinateSpace(name: "timeline")
         .overlay {
           trimHandleOverlay(
-            width: width, height: h,
-            trimStart: trimStart, trimEnd: trimEnd,
-            onTrimStart: onTrimStart, onTrimEnd: onTrimEnd
+            width: width,
+            height: h,
+            trimStart: trimStart,
+            trimEnd: trimEnd,
+            onTrimStart: onTrimStart,
+            onTrimEnd: onTrimEnd
           )
         }
       }
@@ -478,8 +481,10 @@ struct TimelineView: View {
   }
 
   private func trimHandleOverlay(
-    width: CGFloat, height: CGFloat,
-    trimStart: Double, trimEnd: Double,
+    width: CGFloat,
+    height: CGFloat,
+    trimStart: Double,
+    trimEnd: Double,
     onTrimStart: @escaping (Double) -> Void,
     onTrimEnd: @escaping (Double) -> Void
   ) -> some View {

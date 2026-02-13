@@ -114,7 +114,13 @@ final class AudioTrackWriter: @unchecked Sendable {
 
     var dataPointer: UnsafeMutablePointer<Int8>?
     var lengthAtOffset: Int = 0
-    let status = CMBlockBufferGetDataPointer(blockBuffer, atOffset: 0, lengthAtOffsetOut: &lengthAtOffset, totalLengthOut: nil, dataPointerOut: &dataPointer)
+    let status = CMBlockBufferGetDataPointer(
+      blockBuffer,
+      atOffset: 0,
+      lengthAtOffsetOut: &lengthAtOffset,
+      totalLengthOut: nil,
+      dataPointerOut: &dataPointer
+    )
     guard status == noErr, let ptr = dataPointer else { return 0 }
 
     var peak: Float = 0

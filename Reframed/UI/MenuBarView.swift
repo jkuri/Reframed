@@ -53,7 +53,11 @@ struct MenuBarView: View {
             .padding(.horizontal, 12)
           }
 
-          MenuBarActionRow(icon: "folder", title: "Open Projects Folder", subtitle: "\(totalProjectCount) project\(totalProjectCount == 1 ? "" : "s")") {
+          MenuBarActionRow(
+            icon: "folder",
+            title: "Open Projects Folder",
+            subtitle: "\(totalProjectCount) project\(totalProjectCount == 1 ? "" : "s")"
+          ) {
             onDismiss()
             let path = (ConfigService.shared.projectFolder as NSString).expandingTildeInPath
             NSWorkspace.shared.open(URL(fileURLWithPath: path))
@@ -93,11 +97,13 @@ struct MenuBarView: View {
     let folderURL = URL(fileURLWithPath: path)
     let fm = FileManager.default
 
-    guard let contents = try? fm.contentsOfDirectory(
-      at: folderURL,
-      includingPropertiesForKeys: [.contentModificationDateKey],
-      options: [.skipsHiddenFiles]
-    ) else {
+    guard
+      let contents = try? fm.contentsOfDirectory(
+        at: folderURL,
+        includingPropertiesForKeys: [.contentModificationDateKey],
+        options: [.skipsHiddenFiles]
+      )
+    else {
       recentProjects = []
       return
     }

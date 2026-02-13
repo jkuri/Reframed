@@ -155,7 +155,6 @@ struct EditorView: View {
     }
   }
 
-
   private var timeline: some View {
     TimelineView(
       editorState: editorState,

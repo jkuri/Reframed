@@ -39,4 +39,3 @@ enum BackgroundStyle: Sendable, Equatable, Codable {
     }
   }
 }
-

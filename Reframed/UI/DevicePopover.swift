@@ -150,7 +150,9 @@ private struct DeviceRow: View {
           )
           .background(
             RoundedRectangle(cornerRadius: 7)
-              .fill(isSelected ? Color(nsColor: .controlAccentColor).opacity(0.08) : (isHovered ? ReframedColors.hoverBackground : Color.clear))
+              .fill(
+                isSelected ? Color(nsColor: .controlAccentColor).opacity(0.08) : (isHovered ? ReframedColors.hoverBackground : Color.clear)
+              )
           )
       )
       .contentShape(Rectangle())
