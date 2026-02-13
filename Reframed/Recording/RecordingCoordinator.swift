@@ -510,6 +510,12 @@ actor RecordingCoordinator {
     return destination
   }
 
+  func getAudioLevels() -> (mic: Float, system: Float) {
+    let mic = micAudioWriter?.currentPeakLevel ?? 0
+    let sys = systemAudioWriter?.currentPeakLevel ?? 0
+    return (mic, sys)
+  }
+
   func getWebcamCaptureSessionBox() -> SendableBox<AVCaptureSession>? {
     guard let session = webcamCapture?.captureSession else { return nil }
     return SendableBox(session)

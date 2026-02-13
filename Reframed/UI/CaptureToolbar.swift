@@ -201,12 +201,12 @@ struct CaptureToolbar: View {
   private func countdownContent(remaining: Int) -> some View {
     Group {
       Image(systemName: "timer")
-        .font(.system(size: 16))
+        .font(.system(size: 14))
         .foregroundStyle(ReframedColors.secondaryText)
         .padding(.leading, 4)
 
       Text("Recording in \(remaining)...")
-        .font(.system(size: 14, weight: .medium, design: .monospaced))
+        .font(.system(size: 12, weight: .medium))
         .foregroundStyle(ReframedColors.primaryText)
         .padding(.horizontal, 10)
         .frame(height: 52)
@@ -220,7 +220,7 @@ struct CaptureToolbar: View {
   }
 
   private func recordingControls(startedAt: Date, isPaused: Bool) -> some View {
-    Group {
+    HStack(spacing: 0) {
       Circle()
         .fill(isPaused ? Color.orange : Color.red)
         .frame(width: 10, height: 10)
@@ -230,21 +230,21 @@ struct CaptureToolbar: View {
         .padding(.horizontal, 10)
 
       if session.options.captureSystemAudio || session.isMicrophoneOn || session.isCameraOn {
-        HStack(spacing: 6) {
+        HStack(spacing: 12) {
           if session.options.captureSystemAudio {
-            Image(systemName: "speaker.wave.2.fill")
-              .font(.system(size: 11))
-              .foregroundStyle(ReframedColors.tertiaryText)
+            AudioLevelIcon(icon: "speaker.wave.2.fill", level: session.systemAudioLevel)
           }
           if session.isMicrophoneOn {
-            Image(systemName: "mic.fill")
-              .font(.system(size: 11))
-              .foregroundStyle(ReframedColors.tertiaryText)
+            AudioLevelIcon(icon: "mic.fill", level: session.micAudioLevel)
           }
           if session.isCameraOn {
-            Image(systemName: "web.camera.fill")
-              .font(.system(size: 11))
-              .foregroundStyle(ReframedColors.tertiaryText)
+            VStack(spacing: 2) {
+              Image(systemName: "web.camera.fill")
+                .font(.system(size: 15))
+                .foregroundStyle(ReframedColors.tertiaryText)
+                .frame(height: 20)
+              Color.clear.frame(height: 3)
+            }
           }
         }
         .padding(.trailing, 2)
@@ -274,6 +274,7 @@ struct CaptureToolbar: View {
         showRestartAlert = true
       }
     }
+    .frame(height: 52)
   }
 
   private var processingContent: some View {
@@ -282,7 +283,7 @@ struct CaptureToolbar: View {
         .controlSize(.small)
         .scaleEffect(0.8)
       Text("Processing...")
-        .font(.system(size: 13, weight: .medium))
+        .font(.system(size: 12, weight: .medium))
         .foregroundStyle(ReframedColors.primaryText)
     }
     .frame(minWidth: 150, alignment: .center)
@@ -295,24 +296,21 @@ private struct CompactTimerView: View {
   let startedAt: Date
   let frozen: Bool
 
-  @State private var elapsed: TimeInterval = 0
-  private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
-
   var body: some View {
-    Text(formatted)
-      .font(.system(size: 16, design: .monospaced))
-      .foregroundStyle(ReframedColors.primaryText)
-      .onReceive(timer) { _ in
-        guard !frozen else { return }
-        elapsed = Date().timeIntervalSince(startedAt)
+    if frozen {
+      timerText(for: Date())
+    } else {
+      SwiftUI.TimelineView(.periodic(from: startedAt, by: 1)) { context in
+        timerText(for: context.date)
       }
-      .onAppear {
-        elapsed = Date().timeIntervalSince(startedAt)
-      }
+    }
   }
 
-  private var formatted: String {
-    formatDuration(seconds: Int(elapsed))
+  private func timerText(for date: Date) -> some View {
+    Text(formatDuration(seconds: Int(date.timeIntervalSince(startedAt))))
+      .font(.system(size: 16, design: .monospaced))
+      .foregroundStyle(ReframedColors.primaryText)
+      .frame(minWidth: 80)
   }
 }
 
@@ -382,6 +380,30 @@ private struct ToolbarToggleButton: View {
     if !isAvailable { return Color.clear }
     if isOn { return ReframedColors.selectedBackground }
     return Color.clear
+  }
+}
+
+private struct AudioLevelIcon: View {
+  let icon: String
+  let level: Float
+
+  private let dotCount = 8
+  private let thresholds: [Float] = [0.01, 0.03, 0.06, 0.10, 0.16, 0.24, 0.35, 0.50]
+
+  var body: some View {
+    VStack(spacing: 4) {
+      Image(systemName: icon)
+        .font(.system(size: 15))
+        .foregroundStyle(ReframedColors.tertiaryText)
+        .frame(height: 20)
+      HStack(spacing: 1.5) {
+        ForEach(0..<dotCount, id: \.self) { i in
+          Circle()
+            .fill(level > thresholds[i] ? Color.accentColor : ReframedColors.tertiaryText.opacity(0.2))
+            .frame(width: 3, height: 3)
+        }
+      }
+    }
   }
 }
 

@@ -15,6 +15,7 @@ final class AudioTrackWriter: @unchecked Sendable {
   private var isPaused = false
   private var pauseOffset = CMTime.zero
   private var hasRegistered = false
+  nonisolated(unsafe) private(set) var currentPeakLevel: Float = 0
 
   init(outputURL: URL, label: String, sampleRate: Double, channelCount: Int, clock: SharedRecordingClock) throws {
     self.outputURL = outputURL
@@ -50,6 +51,9 @@ final class AudioTrackWriter: @unchecked Sendable {
 
   func appendSample(_ sampleBuffer: CMSampleBuffer) {
     dispatchPrecondition(condition: .onQueue(queue))
+
+    let newPeak = computePeakLevel(sampleBuffer)
+    currentPeakLevel = max(newPeak, currentPeakLevel * 0.85)
 
     guard let assetWriter else { return }
 
@@ -101,6 +105,39 @@ final class AudioTrackWriter: @unchecked Sendable {
     if status == noErr, let adjusted = adjustedBuffer {
       audioInput.append(adjusted)
     }
+  }
+
+  private func computePeakLevel(_ sampleBuffer: CMSampleBuffer) -> Float {
+    guard let blockBuffer = CMSampleBufferGetDataBuffer(sampleBuffer) else { return 0 }
+    let length = CMBlockBufferGetDataLength(blockBuffer)
+    guard length > 0 else { return 0 }
+
+    var dataPointer: UnsafeMutablePointer<Int8>?
+    var lengthAtOffset: Int = 0
+    let status = CMBlockBufferGetDataPointer(blockBuffer, atOffset: 0, lengthAtOffsetOut: &lengthAtOffset, totalLengthOut: nil, dataPointerOut: &dataPointer)
+    guard status == noErr, let ptr = dataPointer else { return 0 }
+
+    var peak: Float = 0
+    if let formatDesc = CMSampleBufferGetFormatDescription(sampleBuffer),
+      let asbd = CMAudioFormatDescriptionGetStreamBasicDescription(formatDesc)
+    {
+      if asbd.pointee.mFormatFlags & kAudioFormatFlagIsFloat != 0 {
+        let count = lengthAtOffset / MemoryLayout<Float>.size
+        let floatPtr = UnsafeRawPointer(ptr).assumingMemoryBound(to: Float.self)
+        for i in stride(from: 0, to: count, by: 4) {
+          let v = Swift.abs(floatPtr[i])
+          if v > peak { peak = v }
+        }
+      } else {
+        let count = lengthAtOffset / MemoryLayout<Int16>.size
+        let int16Ptr = UnsafeRawPointer(ptr).assumingMemoryBound(to: Int16.self)
+        for i in stride(from: 0, to: count, by: 4) {
+          let v = Float(Swift.abs(int16Ptr[i])) / Float(Int16.max)
+          if v > peak { peak = v }
+        }
+      }
+    }
+    return peak
   }
 
   func finish() async -> URL? {

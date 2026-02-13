@@ -21,6 +21,8 @@ final class SessionState {
   var cameraPreviewState: CameraPreviewState = .off
   var isCameraOn = false
   var isMicrophoneOn = false
+  var micAudioLevel: Float = 0
+  var systemAudioLevel: Float = 0
   let options = RecordingOptions()
 
   weak var statusItemButton: NSStatusBarButton?
@@ -41,6 +43,7 @@ final class SessionState {
   private var mouseClickMonitor: MouseClickMonitor?
   private var devicePreviewWindow: DevicePreviewWindow?
   private var deviceCapture: DeviceCapture?
+  private var audioLevelTask: Task<Void, Never>?
 
   weak var overlayView: SelectionOverlayView?
 
@@ -107,6 +110,25 @@ final class SessionState {
     webcamPreviewWindow?.close()
     webcamPreviewWindow = nil
     cameraPreviewState = .off
+  }
+
+  private func startAudioLevelPolling() {
+    audioLevelTask = Task { [weak self] in
+      while !Task.isCancelled {
+        guard let self, let coordinator = self.recordingCoordinator else { break }
+        let levels = await coordinator.getAudioLevels()
+        self.micAudioLevel = levels.mic
+        self.systemAudioLevel = levels.system
+        try? await Task.sleep(for: .milliseconds(100))
+      }
+    }
+  }
+
+  private func stopAudioLevelPolling() {
+    audioLevelTask?.cancel()
+    audioLevelTask = nil
+    micAudioLevel = 0
+    systemAudioLevel = 0
   }
 
   private static func cameraMaxDimensions(for resolution: String) -> (Int, Int) {
@@ -633,6 +655,15 @@ final class SessionState {
   private func transition(to newState: CaptureState) {
     state = newState
     updateStatusIcon()
+
+    switch newState {
+    case .recording:
+      if audioLevelTask == nil { startAudioLevelPolling() }
+    case .paused:
+      break
+    default:
+      stopAudioLevelPolling()
+    }
   }
 
   private func updateStatusIcon() {
