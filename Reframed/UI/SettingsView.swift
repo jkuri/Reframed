@@ -71,31 +71,33 @@ struct SettingsView: View {
   }
 
   private var tabBar: some View {
-    HStack(spacing: 6) {
-      ForEach(SettingsTab.allCases, id: \.self) { tab in
-        Button {
-          selectedTab = tab
-        } label: {
-          HStack(spacing: 5) {
-            Image(systemName: tab.icon)
-              .font(.system(size: 11))
-            Text(tab.rawValue)
-              .font(.system(size: 12, weight: .medium))
+    HoverEffectScope {
+      HStack(spacing: 4) {
+        ForEach(SettingsTab.allCases, id: \.self) { tab in
+          Button {
+            selectedTab = tab
+          } label: {
+            HStack(spacing: 6) {
+              Image(systemName: tab.icon)
+                .font(.system(size: 13))
+              Text(tab.rawValue)
+                .font(.system(size: 13, weight: .medium))
+            }
+            .foregroundStyle(selectedTab == tab ? ReframedColors.primaryText : ReframedColors.dimLabel)
+            .padding(.horizontal, 18)
+            .padding(.vertical, 10)
+            .background(selectedTab == tab ? ReframedColors.selectedActive : Color.clear)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .contentShape(Rectangle())
           }
-          .foregroundStyle(selectedTab == tab ? ReframedColors.primaryText : ReframedColors.dimLabel)
-          .padding(.horizontal, 14)
-          .padding(.vertical, 7)
-          .background(selectedTab == tab ? ReframedColors.selectedActive : ReframedColors.fieldBackground)
-          .clipShape(RoundedRectangle(cornerRadius: 6))
+          .buttonStyle(.plain)
+          .hoverEffect(id: "settings.tab.\(tab.rawValue)")
         }
-        .buttonStyle(.plain)
       }
+      .padding(.horizontal, 24)
+      .padding(.vertical, 12)
     }
-    .padding(.horizontal, 24)
-    .padding(.vertical, 12)
   }
-
-  // MARK: - General Tab
 
   private var generalContent: some View {
     Group {
@@ -190,8 +192,6 @@ struct SettingsView: View {
       )
     }
   }
-
-  // MARK: - Recording Tab
 
   private var recordingContent: some View {
     Group {
@@ -375,8 +375,6 @@ struct SettingsView: View {
     .presentationBackground(ReframedColors.panelBackground)
   }
 
-  // MARK: - Devices Tab
-
   private var devicesContent: some View {
     Group {
       audioSection
@@ -492,8 +490,6 @@ struct SettingsView: View {
       .padding(.horizontal, 10)
     }
   }
-
-  // MARK: - Shared Helpers
 
   private func devicePickerButton(label: String, isActive: Binding<Bool>) -> some View {
     Button {

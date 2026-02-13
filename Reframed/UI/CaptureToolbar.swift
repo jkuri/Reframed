@@ -156,7 +156,7 @@ struct CaptureToolbar: View {
         } label: {
           HStack(spacing: 4) {
             Text("Options")
-              .font(.system(size: 13, weight: .medium))
+              .font(.system(size: 12))
             Image(systemName: "chevron.down")
               .font(.system(size: 9, weight: .semibold))
           }

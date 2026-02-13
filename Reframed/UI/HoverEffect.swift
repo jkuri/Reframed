@@ -8,19 +8,18 @@ struct HoverEffectScope<Content: View>: View {
 
   var body: some View {
     let _ = colorScheme
-    ZStack {
-      if let hoveredID {
-        RoundedRectangle(cornerRadius: 8)
-          .fill(ReframedColors.hoverBackground)
-          .matchedGeometryEffect(id: hoveredID, in: hoverNamespace, isSource: false)
-          .animation(.spring(response: 0.3, dampingFraction: 0.75), value: hoveredID)
-          .transition(.opacity.animation(.easeInOut(duration: 0.2)))
+    content
+      .environment(\.hoverNamespace, hoverNamespace)
+      .environment(\.hoverID, $hoveredID)
+      .background {
+        if let hoveredID {
+          RoundedRectangle(cornerRadius: 8)
+            .fill(ReframedColors.hoverBackground)
+            .matchedGeometryEffect(id: hoveredID, in: hoverNamespace, isSource: false)
+            .animation(.spring(response: 0.3, dampingFraction: 0.75), value: hoveredID)
+            .transition(.opacity.animation(.easeInOut(duration: 0.2)))
+        }
       }
-
-      content
-        .environment(\.hoverNamespace, hoverNamespace)
-        .environment(\.hoverID, $hoveredID)
-    }
   }
 }
 
