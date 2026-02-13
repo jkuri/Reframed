@@ -338,44 +338,48 @@ final class EditorState {
       transitionDuration: zoomTransitionSpeed
     )
     let dur = CMTimeGetSeconds(duration)
-    let keyframes = ZoomDetector.detect(from: provider.metadata, duration: dur, config: config)
+    var newKeyframes = ZoomDetector.detect(from: provider.metadata, duration: dur, config: config)
 
-    if zoomTimeline == nil {
-      zoomTimeline = ZoomTimeline(keyframes: keyframes)
-    } else {
-      zoomTimeline?.clearAutoKeyframes()
-      for kf in keyframes {
-        zoomTimeline?.addKeyframe(kf)
-      }
+    if let existing = zoomTimeline {
+      let manualKeyframes = existing.allKeyframes.filter { !$0.isAuto }
+      newKeyframes.append(contentsOf: manualKeyframes)
     }
+
+    zoomTimeline = ZoomTimeline(keyframes: newKeyframes)
   }
 
   func clearAutoZoom() {
-    zoomTimeline?.clearAutoKeyframes()
-    if zoomTimeline?.isEmpty == true {
+    guard let existing = zoomTimeline else { return }
+    let manualKeyframes = existing.allKeyframes.filter { !$0.isAuto }
+    if manualKeyframes.isEmpty {
       zoomTimeline = nil
+    } else {
+      zoomTimeline = ZoomTimeline(keyframes: manualKeyframes)
     }
   }
 
   func addManualZoomKeyframe(at time: Double, center: CGPoint) {
-    if zoomTimeline == nil {
-      zoomTimeline = ZoomTimeline()
-    }
-    zoomTimeline?.addKeyframe(
-      ZoomKeyframe(
-        t: time,
-        zoomLevel: zoomLevel,
-        centerX: center.x,
-        centerY: center.y,
-        isAuto: false
-      )
+    let kf = ZoomKeyframe(
+      t: time,
+      zoomLevel: zoomLevel,
+      centerX: center.x,
+      centerY: center.y,
+      isAuto: false
     )
+    var existing = zoomTimeline?.allKeyframes ?? []
+    existing.append(kf)
+    zoomTimeline = ZoomTimeline(keyframes: existing)
   }
 
   func removeZoomKeyframe(at index: Int) {
-    zoomTimeline?.removeKeyframe(at: index)
-    if zoomTimeline?.isEmpty == true {
+    guard let existing = zoomTimeline else { return }
+    var kfs = existing.allKeyframes
+    guard index >= 0 && index < kfs.count else { return }
+    kfs.remove(at: index)
+    if kfs.isEmpty {
       zoomTimeline = nil
+    } else {
+      zoomTimeline = ZoomTimeline(keyframes: kfs)
     }
   }
 

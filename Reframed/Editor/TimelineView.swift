@@ -53,6 +53,7 @@ struct TimelineView: View {
           Color.clear
             .frame(width: sidebarWidth, height: rulerHeight)
           timeRuler
+            .padding(.trailing, 8)
         }
 
         VStack(spacing: 10) {
@@ -549,7 +550,7 @@ struct TimelineView: View {
 
   private var playheadOverlay: some View {
     GeometryReader { geo in
-      let contentWidth = geo.size.width - sidebarWidth
+      let contentWidth = geo.size.width - sidebarWidth - 8
       let centerX = sidebarWidth + contentWidth * playheadFraction
 
       Rectangle()

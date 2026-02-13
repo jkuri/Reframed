@@ -23,6 +23,14 @@ final class SharedRecordingClock: @unchecked Sendable {
     }
   }
 
+  var referenceTimeSeconds: Double? {
+    lock.lock()
+    let ref = _referenceTime
+    lock.unlock()
+    guard ref.isValid else { return nil }
+    return CMTimeGetSeconds(ref)
+  }
+
   func adjustPTS(_ rawPTS: CMTime, pauseOffset: CMTime) -> CMTime? {
     lock.lock()
     let ref = _referenceTime

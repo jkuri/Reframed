@@ -427,6 +427,15 @@ actor RecordingCoordinator {
 
     var cursorMetadataURL: URL?
     if let recorder = cursorMetadataRecorder {
+      if let refTime = recordingClock?.referenceTimeSeconds {
+        let cursorStart = recorder.startHostTimeSeconds
+        let offset = cursorStart - refTime
+        if abs(offset) > 0.001 {
+          recorder.adjustTimestamps(by: offset)
+          logger.info("Cursor metadata adjusted by \(String(format: "%.3f", offset))s to sync with video clock")
+        }
+      }
+
       let tempURL = FileManager.default.temporaryDirectory
         .appendingPathComponent("cursor-metadata-\(UUID().uuidString).json")
       do {

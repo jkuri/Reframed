@@ -104,10 +104,34 @@ final class CursorMetadataRecorder: @unchecked Sendable {
     lock.unlock()
   }
 
+  var startHostTimeSeconds: Double {
+    lock.lock()
+    let t = startHostTime.isValid ? CMTimeGetSeconds(startHostTime) : 0
+    lock.unlock()
+    return t
+  }
+
   func stop() {
     lock.lock()
     timer?.cancel()
     timer = nil
+    lock.unlock()
+  }
+
+  func adjustTimestamps(by offset: Double) {
+    lock.lock()
+    for i in samples.indices {
+      let s = samples[i]
+      samples[i] = CursorSample(t: s.t + offset, x: s.x, y: s.y, p: s.p)
+    }
+    for i in clicks.indices {
+      let c = clicks[i]
+      clicks[i] = CursorClickEvent(t: c.t + offset, x: c.x, y: c.y, button: c.button)
+    }
+    for i in keystrokes.indices {
+      let k = keystrokes[i]
+      keystrokes[i] = KeystrokeEvent(t: k.t + offset, keyCode: k.keyCode, modifiers: k.modifiers, isDown: k.isDown)
+    }
     lock.unlock()
   }
 

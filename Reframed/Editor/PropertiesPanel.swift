@@ -512,10 +512,10 @@ struct PropertiesPanel: View {
       }
 
       HStack(spacing: 8) {
-        Text("Dwell")
+        Text("Hold")
           .font(.system(size: 12))
           .foregroundStyle(ReframedColors.secondaryText)
-        Slider(value: $editorState.zoomDwellThreshold, in: 0.2...2.0, step: 0.1)
+        Slider(value: $editorState.zoomDwellThreshold, in: 0.5...3.0, step: 0.1)
         Text(String(format: "%.1fs", editorState.zoomDwellThreshold))
           .font(.system(size: 12, design: .monospaced))
           .foregroundStyle(ReframedColors.secondaryText)

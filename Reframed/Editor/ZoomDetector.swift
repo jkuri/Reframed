@@ -10,136 +10,79 @@ struct ZoomDetectorConfig: Codable, Sendable {
 
 enum ZoomDetector {
   static func detect(from metadata: CursorMetadataFile, duration: Double, config: ZoomDetectorConfig) -> [ZoomKeyframe] {
-    let samples = metadata.samples
-    guard samples.count > 10 else { return [] }
+    let clicks = metadata.clicks
+    guard !clicks.isEmpty else { return [] }
 
-    let velocityWindowSec = 0.3
-    let sampleRate = Double(metadata.sampleRateHz)
-    let velocityWindowSamples = max(1, Int(velocityWindowSec * sampleRate))
-
-    var velocities: [Double] = Array(repeating: 0, count: samples.count)
-    for i in velocityWindowSamples..<samples.count {
-      let dx = samples[i].x - samples[i - velocityWindowSamples].x
-      let dy = samples[i].y - samples[i - velocityWindowSamples].y
-      let dt = samples[i].t - samples[i - velocityWindowSamples].t
-      if dt > 0 {
-        velocities[i] = sqrt(dx * dx + dy * dy) / dt
-      }
+    struct ClickRegion {
+      var startTime: Double
+      var endTime: Double
+      var centerX: Double
+      var centerY: Double
+      var clickCount: Int
     }
 
-    struct DwellRegion {
-      var startIdx: Int
-      var endIdx: Int
-      var avgX: Double
-      var avgY: Double
-    }
+    var regions: [ClickRegion] = []
 
-    var regions: [DwellRegion] = []
-    var dwellStart: Int?
-    var sumX = 0.0
-    var sumY = 0.0
-    var count = 0
+    for click in clicks {
+      guard click.t >= 0 && click.t <= duration else { continue }
 
-    for i in 0..<samples.count {
-      if velocities[i] < config.velocityThreshold {
-        if dwellStart == nil {
-          dwellStart = i
-          sumX = 0
-          sumY = 0
-          count = 0
-        }
-        sumX += samples[i].x
-        sumY += samples[i].y
-        count += 1
-      } else {
-        if let start = dwellStart, count > 0 {
-          let dwellDuration = samples[i - 1].t - samples[start].t
-          if dwellDuration >= config.dwellThresholdSeconds {
-            regions.append(
-              DwellRegion(
-                startIdx: start,
-                endIdx: i - 1,
-                avgX: sumX / Double(count),
-                avgY: sumY / Double(count)
-              )
-            )
-          }
-        }
-        dwellStart = nil
-      }
-    }
-
-    if let start = dwellStart, count > 0 {
-      let dwellDuration = samples[samples.count - 1].t - samples[start].t
-      if dwellDuration >= config.dwellThresholdSeconds {
-        regions.append(
-          DwellRegion(
-            startIdx: start,
-            endIdx: samples.count - 1,
-            avgX: sumX / Double(count),
-            avgY: sumY / Double(count)
-          )
-        )
-      }
-    }
-
-    var merged: [DwellRegion] = []
-    for region in regions {
-      if let last = merged.last {
-        let gap = samples[region.startIdx].t - samples[last.endIdx].t
-        if gap < config.transitionDuration * 2 {
-          let totalCount = (last.endIdx - last.startIdx + 1) + (region.endIdx - region.startIdx + 1)
-          let lastCount = last.endIdx - last.startIdx + 1
-          let regionCount = region.endIdx - region.startIdx + 1
-          let avgX = (last.avgX * Double(lastCount) + region.avgX * Double(regionCount)) / Double(totalCount)
-          let avgY = (last.avgY * Double(lastCount) + region.avgY * Double(regionCount)) / Double(totalCount)
-          merged[merged.count - 1] = DwellRegion(
-            startIdx: last.startIdx,
-            endIdx: region.endIdx,
-            avgX: avgX,
-            avgY: avgY
-          )
+      if var last = regions.last {
+        let gap = click.t - last.endTime
+        if gap < config.dwellThresholdSeconds {
+          let totalClicks = last.clickCount + 1
+          last.centerX = (last.centerX * Double(last.clickCount) + click.x) / Double(totalClicks)
+          last.centerY = (last.centerY * Double(last.clickCount) + click.y) / Double(totalClicks)
+          last.endTime = click.t
+          last.clickCount = totalClicks
+          regions[regions.count - 1] = last
           continue
         }
       }
-      merged.append(region)
+
+      regions.append(ClickRegion(
+        startTime: click.t,
+        endTime: click.t,
+        centerX: click.x,
+        centerY: click.y,
+        clickCount: 1
+      ))
     }
 
     var keyframes: [ZoomKeyframe] = []
 
-    for region in merged {
-      let regionDuration = samples[region.endIdx].t - samples[region.startIdx].t
-      guard regionDuration >= config.minZoomDuration else { continue }
+    let holdDuration = max(config.dwellThresholdSeconds, 0.5)
 
-      let zoomInTime = max(0, samples[region.startIdx].t - config.transitionDuration)
-      let zoomOutTime = min(duration, samples[region.endIdx].t + config.transitionDuration)
+    for region in regions {
+      let holdEnd = max(region.endTime, region.startTime + holdDuration)
+      let zoomInTime = max(0, region.startTime - config.transitionDuration)
+      let zoomOutTime = min(duration, holdEnd + config.transitionDuration)
 
       keyframes.append(
         ZoomKeyframe(
           t: zoomInTime,
           zoomLevel: 1.0,
-          centerX: region.avgX,
-          centerY: region.avgY,
+          centerX: region.centerX,
+          centerY: region.centerY,
           isAuto: true
         )
       )
 
       keyframes.append(
         ZoomKeyframe(
-          t: samples[region.startIdx].t,
+          t: region.startTime,
           zoomLevel: config.zoomLevel,
-          centerX: region.avgX,
-          centerY: region.avgY,
+          centerX: region.centerX,
+          centerY: region.centerY,
           isAuto: true
         )
       )
 
       keyframes.append(
         ZoomKeyframe(
-          t: samples[region.endIdx].t,
+          t: holdEnd,
           zoomLevel: config.zoomLevel,
-          centerX: region.avgX,
-          centerY: region.avgY,
+          centerX: region.centerX,
+          centerY: region.centerY,
           isAuto: true
         )
       )
@@ -148,8 +91,8 @@ enum ZoomDetector {
         ZoomKeyframe(
           t: zoomOutTime,
           zoomLevel: 1.0,
-          centerX: region.avgX,
-          centerY: region.avgY,
+          centerX: region.centerX,
+          centerY: region.centerY,
           isAuto: true
         )
       )
