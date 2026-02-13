@@ -20,20 +20,28 @@ struct EditorView: View {
         onOpenFolder: { editorState.openProjectFolder() },
         onDelete: { editorState.showDeleteConfirmation = true }
       )
-      Divider().background(ReframedColors.divider)
+      .padding(.bottom, 4)
 
-      HStack(spacing: 0) {
+      HStack(spacing: 12) {
         mainContent
-        Divider().background(ReframedColors.divider)
+          .background(ReframedColors.panelBackground)
+          .clipShape(RoundedRectangle(cornerRadius: 8))
         PropertiesPanel(editorState: editorState)
+          .background(ReframedColors.panelBackground)
+          .clipShape(RoundedRectangle(cornerRadius: 8))
       }
+      .padding(.horizontal, 12)
       .frame(maxHeight: .infinity)
 
-      Divider().background(ReframedColors.divider)
       timeline
         .fixedSize(horizontal: false, vertical: true)
+        .background(ReframedColors.panelBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 8))
+        .padding(.horizontal, 12)
+        .padding(.top, 12)
+        .padding(.bottom, 12)
     }
-    .background(ReframedColors.panelBackground)
+    .background(ReframedColors.selectedBackground.opacity(0.55))
     .task {
       await editorState.setup()
       let sysURL = editorState.result.systemAudioURL
@@ -85,7 +93,6 @@ struct EditorView: View {
     VStack(spacing: 0) {
       videoPreview
         .frame(maxHeight: .infinity)
-      Divider().background(ReframedColors.divider)
       EditorBottomBar(editorState: editorState)
     }
   }

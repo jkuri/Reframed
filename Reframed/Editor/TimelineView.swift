@@ -55,9 +55,6 @@ struct TimelineView: View {
           timeRuler
         }
 
-        ReframedColors.divider
-          .frame(height: 1)
-
         VStack(spacing: 10) {
           trackLane(
             label: "Screen",

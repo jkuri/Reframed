@@ -38,7 +38,6 @@ struct PropertiesPanel: View {
       .padding(16)
     }
     .frame(width: 260)
-    .background(ReframedColors.panelBackground)
     .onChange(of: backgroundMode) { _, newValue in
       updateBackgroundStyle(mode: newValue)
     }
