@@ -67,6 +67,7 @@
 		A20000000000000000000005 /* SyncedPlayerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000005 /* SyncedPlayerController.swift */; };
 		A20000000000000000000006 /* EditorState.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000006 /* EditorState.swift */; };
 		A20000000000000000000007 /* ThumbnailGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000007 /* ThumbnailGenerator.swift */; };
+		A2000000000000000000000B /* AudioWaveformGenerator.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000B /* AudioWaveformGenerator.swift */; };
 		A20000000000000000000008 /* VideoPreviewView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000008 /* VideoPreviewView.swift */; };
 		A20000000000000000000009 /* TimelineView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000009 /* TimelineView.swift */; };
 		A2000000000000000000000A /* TrimHandle.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000A /* TrimHandle.swift */; };
@@ -96,6 +97,7 @@
 		A70000000000000000000002 /* DeviceCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70000000000000000000002 /* DeviceCapture.swift */; };
 		A70000000000000000000003 /* DevicePreviewWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70000000000000000000003 /* DevicePreviewWindow.swift */; };
 		A70000000000000000000004 /* DevicePopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70000000000000000000004 /* DevicePopover.swift */; };
+		A80000000000000000000001 /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80000000000000000000001 /* MenuBarView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -161,6 +163,7 @@
 		B20000000000000000000005 /* SyncedPlayerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncedPlayerController.swift; sourceTree = "<group>"; };
 		B20000000000000000000006 /* EditorState.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorState.swift; sourceTree = "<group>"; };
 		B20000000000000000000007 /* ThumbnailGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ThumbnailGenerator.swift; sourceTree = "<group>"; };
+		B2000000000000000000000B /* AudioWaveformGenerator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = AudioWaveformGenerator.swift; sourceTree = "<group>"; };
 		B20000000000000000000008 /* VideoPreviewView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoPreviewView.swift; sourceTree = "<group>"; };
 		B20000000000000000000009 /* TimelineView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimelineView.swift; sourceTree = "<group>"; };
 		B2000000000000000000000A /* TrimHandle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TrimHandle.swift; sourceTree = "<group>"; };
@@ -190,6 +193,7 @@
 		B70000000000000000000002 /* DeviceCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceCapture.swift; sourceTree = "<group>"; };
 		B70000000000000000000003 /* DevicePreviewWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevicePreviewWindow.swift; sourceTree = "<group>"; };
 		B70000000000000000000004 /* DevicePopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevicePopover.swift; sourceTree = "<group>"; };
+		B80000000000000000000001 /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -344,6 +348,7 @@
 				B1000000000000000000002D /* SettingsView.swift */,
 				B20000000000000000000012 /* CountdownOverlayWindow.swift */,
 				B70000000000000000000004 /* DevicePopover.swift */,
+				B80000000000000000000001 /* MenuBarView.swift */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -410,6 +415,7 @@
 		D20000000000000000000001 /* Editor */ = {
 			isa = PBXGroup;
 			children = (
+				B2000000000000000000000B /* AudioWaveformGenerator.swift */,
 				B20000000000000000000013 /* BackgroundStyle.swift */,
 				B2000000000000000000001A /* CompositionInstruction.swift */,
 				B20000000000000000000019 /* EditorBottomBar.swift */,
@@ -560,6 +566,7 @@
 				A20000000000000000000005 /* SyncedPlayerController.swift in Sources */,
 				A20000000000000000000006 /* EditorState.swift in Sources */,
 				A20000000000000000000007 /* ThumbnailGenerator.swift in Sources */,
+				A2000000000000000000000B /* AudioWaveformGenerator.swift in Sources */,
 				A20000000000000000000008 /* VideoPreviewView.swift in Sources */,
 				A20000000000000000000009 /* TimelineView.swift in Sources */,
 				A2000000000000000000000A /* TrimHandle.swift in Sources */,
@@ -589,6 +596,7 @@
 				A70000000000000000000002 /* DeviceCapture.swift in Sources */,
 				A70000000000000000000003 /* DevicePreviewWindow.swift in Sources */,
 				A70000000000000000000004 /* DevicePopover.swift in Sources */,
+				A80000000000000000000001 /* MenuBarView.swift in Sources */,
 			);
 		};
 /* End PBXSourcesBuildPhase section */

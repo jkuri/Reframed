@@ -18,8 +18,9 @@ struct PropertiesPanel: View {
 
   @State private var backgroundMode: BackgroundMode = .none
   @State private var selectedGradientId: Int = 0
-  @State private var solidColor: Color = .blue
+  @State private var selectedColorId: String? = "Blue"
   @State private var editingProjectName: String = ""
+  @State private var showColorPopover = false
   @FocusState private var projectNameFocused: Bool
 
   var body: some View {
@@ -46,9 +47,11 @@ struct PropertiesPanel: View {
         editorState.backgroundStyle = .gradient(newValue)
       }
     }
-    .onChange(of: solidColor) { _, newValue in
-      if backgroundMode == .color {
-        editorState.backgroundStyle = .solidColor(CodableColor(cgColor: NSColor(newValue).cgColor))
+    .onChange(of: selectedColorId) { _, newValue in
+      if backgroundMode == .color, let id = newValue,
+        let preset = TailwindColors.all.first(where: { $0.id == id })
+      {
+        editorState.backgroundStyle = .solidColor(preset.color)
       }
     }
   }
@@ -91,9 +94,7 @@ struct PropertiesPanel: View {
       case .gradient:
         gradientGrid
       case .color:
-        ColorPicker("Color", selection: $solidColor, supportsOpacity: false)
-          .font(.system(size: 12))
-          .foregroundStyle(ReframedColors.secondaryText)
+        solidColorPicker
       }
     }
   }
@@ -122,6 +123,72 @@ struct PropertiesPanel: View {
         .buttonStyle(.plain)
       }
     }
+  }
+
+  private var solidColorPicker: some View {
+    Button {
+      showColorPopover.toggle()
+    } label: {
+      HStack(spacing: 6) {
+        Circle()
+          .fill(solidColorDisplay)
+          .frame(width: 16, height: 16)
+        Text(selectedColorId ?? "Blue")
+          .font(.system(size: 12, weight: .medium))
+          .foregroundStyle(ReframedColors.primaryText)
+          .lineLimit(1)
+        Spacer()
+        Image(systemName: "chevron.up.chevron.down")
+          .font(.system(size: 9, weight: .semibold))
+          .foregroundStyle(ReframedColors.dimLabel)
+      }
+      .padding(.horizontal, 10)
+      .frame(height: 30)
+      .background(ReframedColors.fieldBackground)
+      .clipShape(RoundedRectangle(cornerRadius: 6))
+    }
+    .buttonStyle(.plain)
+    .popover(isPresented: $showColorPopover, arrowEdge: .trailing) {
+      ScrollView {
+        VStack(alignment: .leading, spacing: 0) {
+          ForEach(TailwindColors.all) { preset in
+            Button {
+              selectedColorId = preset.id
+              showColorPopover = false
+            } label: {
+              HStack(spacing: 10) {
+                Circle()
+                  .fill(preset.swiftUIColor)
+                  .frame(width: 18, height: 18)
+                Text(preset.name)
+                  .font(.system(size: 13))
+                  .foregroundStyle(ReframedColors.primaryText)
+                Spacer()
+                if selectedColorId == preset.id {
+                  Image(systemName: "checkmark")
+                    .font(.system(size: 12, weight: .semibold))
+                    .foregroundStyle(ReframedColors.primaryText)
+                }
+              }
+              .padding(.horizontal, 12)
+              .padding(.vertical, 5)
+              .contentShape(Rectangle())
+            }
+            .buttonStyle(.plain)
+          }
+        }
+        .padding(.vertical, 8)
+      }
+      .frame(width: 200)
+      .frame(maxHeight: 320)
+    }
+  }
+
+  private var solidColorDisplay: Color {
+    guard let id = selectedColorId, let preset = TailwindColors.all.first(where: { $0.id == id }) else {
+      return TailwindColors.all[0].swiftUIColor
+    }
+    return preset.swiftUIColor
   }
 
   private var paddingSection: some View {
@@ -206,15 +273,18 @@ struct PropertiesPanel: View {
         Text("Size")
           .font(.system(size: 12))
           .foregroundStyle(ReframedColors.secondaryText)
-        Slider(value: $editorState.pipLayout.relativeWidth, in: 0.1...0.5, step: 0.01)
+        Slider(value: $editorState.pipLayout.relativeWidth, in: 0.1...1.0, step: 0.01)
+          .onChange(of: editorState.pipLayout.relativeWidth) { _, _ in
+            editorState.clampPipPosition()
+          }
       }
 
       HStack(spacing: 8) {
         Text("Radius")
           .font(.system(size: 12))
           .foregroundStyle(ReframedColors.secondaryText)
-        Slider(value: $editorState.pipCornerRadius, in: 0...40, step: 1)
-        Text("\(Int(editorState.pipCornerRadius))px")
+        Slider(value: $editorState.pipCornerRadius, in: 0...50, step: 1)
+        Text("\(Int(editorState.pipCornerRadius))%")
           .font(.system(size: 12, design: .monospaced))
           .foregroundStyle(ReframedColors.secondaryText)
           .frame(width: 36, alignment: .trailing)
@@ -261,7 +331,13 @@ struct PropertiesPanel: View {
     case .gradient:
       editorState.backgroundStyle = .gradient(selectedGradientId)
     case .color:
-      editorState.backgroundStyle = .solidColor(CodableColor(cgColor: NSColor(solidColor).cgColor))
+      if let id = selectedColorId, let preset = TailwindColors.all.first(where: { $0.id == id }) {
+        editorState.backgroundStyle = .solidColor(preset.color)
+      } else {
+        let first = TailwindColors.all[0]
+        selectedColorId = first.id
+        editorState.backgroundStyle = .solidColor(first.color)
+      }
     }
   }
 }

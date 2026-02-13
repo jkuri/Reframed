@@ -47,7 +47,7 @@ final class EditorWindow: NSObject, NSWindowDelegate {
     let hostingView = NSHostingView(rootView: editorView)
 
     let window = NSWindow(
-      contentRect: NSRect(x: 0, y: 0, width: 1100, height: 700),
+      contentRect: NSRect(x: 0, y: 0, width: 1400, height: 900),
       styleMask: [.titled, .closable, .miniaturizable, .resizable],
       backing: .buffered,
       defer: false

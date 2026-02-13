@@ -4,32 +4,13 @@ import SwiftUI
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
   let session = SessionState()
-  private var statusItem: NSStatusItem!
   private var permissionsWindow: NSWindow?
 
   func applicationDidFinishLaunching(_ notification: Notification) {
     ConfigService.shared.applyAppearance()
     DeviceDiscovery.shared.enable()
-    setupStatusItem()
     if Permissions.allPermissionsGranted {
       session.showToolbar()
-    }
-  }
-
-  private func setupStatusItem() {
-    statusItem = NSStatusBar.system.statusItem(withLength: NSStatusItem.variableLength)
-    guard let button = statusItem.button else { return }
-    button.image = NSImage(systemSymbolName: "rectangle.dashed.badge.record", accessibilityDescription: "Reframed")
-    button.action = #selector(statusItemClicked)
-    button.target = self
-    session.statusItemButton = button
-  }
-
-  @objc private func statusItemClicked() {
-    if Permissions.allPermissionsGranted {
-      session.toggleToolbar()
-    } else {
-      showPermissionsWindow()
     }
   }
 
@@ -42,7 +23,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     return false
   }
 
-  private func showPermissionsWindow() {
+  func showPermissionsWindow() {
     if let permissionsWindow, permissionsWindow.isVisible {
       permissionsWindow.makeKeyAndOrderFront(nil)
       NSApp.activate(ignoringOtherApps: true)

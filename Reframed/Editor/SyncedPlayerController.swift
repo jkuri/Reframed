@@ -7,12 +7,18 @@ import Foundation
 final class SyncedPlayerController {
   let screenPlayer: AVPlayer
   let webcamPlayer: AVPlayer?
+  private let systemAudioPlayer: AVPlayer?
+  private let micAudioPlayer: AVPlayer?
   private(set) var currentTime: CMTime = .zero
   private(set) var duration: CMTime = .zero
   private(set) var isPlaying = false
   private var timeObserver: Any?
   private var boundaryObserver: Any?
   var trimEnd: CMTime = .zero
+  var systemAudioTrimStart: CMTime = .zero
+  var systemAudioTrimEnd: CMTime = .zero
+  var micAudioTrimStart: CMTime = .zero
+  var micAudioTrimEnd: CMTime = .zero
 
   init(result: RecordingResult) {
     let screenAsset = AVURLAsset(url: result.screenVideoURL)
@@ -23,8 +29,28 @@ final class SyncedPlayerController {
       let webcamAsset = AVURLAsset(url: webcamURL)
       webcamPlayer = AVPlayer(playerItem: AVPlayerItem(asset: webcamAsset))
       webcamPlayer?.actionAtItemEnd = .pause
+      webcamPlayer?.isMuted = true
     } else {
       webcamPlayer = nil
+    }
+
+    let hasExternalAudio = result.systemAudioURL != nil || result.microphoneAudioURL != nil
+    if hasExternalAudio {
+      screenPlayer.isMuted = true
+    }
+
+    if let sysURL = result.systemAudioURL {
+      systemAudioPlayer = AVPlayer(playerItem: AVPlayerItem(asset: AVURLAsset(url: sysURL)))
+      systemAudioPlayer?.actionAtItemEnd = .pause
+    } else {
+      systemAudioPlayer = nil
+    }
+
+    if let micURL = result.microphoneAudioURL {
+      micAudioPlayer = AVPlayer(playerItem: AVPlayerItem(asset: AVURLAsset(url: micURL)))
+      micAudioPlayer?.actionAtItemEnd = .pause
+    } else {
+      micAudioPlayer = nil
     }
   }
 
@@ -44,7 +70,19 @@ final class SyncedPlayerController {
         if self.trimEnd.isValid && CMTimeCompare(time, self.trimEnd) >= 0 {
           self.pause()
         }
+        self.updateAudioMuting(at: time)
       }
+    }
+  }
+
+  private func updateAudioMuting(at time: CMTime) {
+    if let sysPlayer = systemAudioPlayer {
+      let inRange = CMTimeCompare(time, systemAudioTrimStart) >= 0 && CMTimeCompare(time, systemAudioTrimEnd) < 0
+      sysPlayer.isMuted = !inRange
+    }
+    if let micPlayer = micAudioPlayer {
+      let inRange = CMTimeCompare(time, micAudioTrimStart) >= 0 && CMTimeCompare(time, micAudioTrimEnd) < 0
+      micPlayer.isMuted = !inRange
     }
   }
 
@@ -55,14 +93,18 @@ final class SyncedPlayerController {
     }
     screenPlayer.play()
     webcamPlayer?.play()
+    systemAudioPlayer?.play()
+    micAudioPlayer?.play()
     isPlaying = true
   }
 
   func pause() {
     screenPlayer.pause()
     webcamPlayer?.pause()
+    systemAudioPlayer?.pause()
+    micAudioPlayer?.pause()
     isPlaying = false
-    syncWebcam()
+    syncAuxPlayers()
   }
 
   func seek(to time: CMTime) {
@@ -70,6 +112,8 @@ final class SyncedPlayerController {
     let toleranceAfter = CMTime(value: 1, timescale: 600)
     screenPlayer.seek(to: time, toleranceBefore: toleranceBefore, toleranceAfter: toleranceAfter)
     webcamPlayer?.seek(to: time, toleranceBefore: toleranceBefore, toleranceAfter: toleranceAfter)
+    systemAudioPlayer?.seek(to: time, toleranceBefore: toleranceBefore, toleranceAfter: toleranceAfter)
+    micAudioPlayer?.seek(to: time, toleranceBefore: toleranceBefore, toleranceAfter: toleranceAfter)
     currentTime = time
   }
 
@@ -80,12 +124,15 @@ final class SyncedPlayerController {
     }
     screenPlayer.pause()
     webcamPlayer?.pause()
+    systemAudioPlayer?.pause()
+    micAudioPlayer?.pause()
   }
 
-  private func syncWebcam() {
-    guard let webcam = webcamPlayer else { return }
+  private func syncAuxPlayers() {
     let screenTime = screenPlayer.currentTime()
     let tolerance = CMTime(value: 1, timescale: 600)
-    webcam.seek(to: screenTime, toleranceBefore: tolerance, toleranceAfter: tolerance)
+    webcamPlayer?.seek(to: screenTime, toleranceBefore: tolerance, toleranceAfter: tolerance)
+    systemAudioPlayer?.seek(to: screenTime, toleranceBefore: tolerance, toleranceAfter: tolerance)
+    micAudioPlayer?.seek(to: screenTime, toleranceBefore: tolerance, toleranceAfter: tolerance)
   }
 }

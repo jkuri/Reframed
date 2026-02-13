@@ -13,13 +13,17 @@ final class EditorState {
   var pipLayout = PiPLayout()
   var trimStart: CMTime = .zero
   var trimEnd: CMTime = .zero
+  var systemAudioTrimStart: CMTime = .zero
+  var systemAudioTrimEnd: CMTime = .zero
+  var micAudioTrimStart: CMTime = .zero
+  var micAudioTrimEnd: CMTime = .zero
   var isExporting = false
   var exportProgress: Double = 0
 
   var backgroundStyle: BackgroundStyle = .none
   var padding: CGFloat = 0
   var videoCornerRadius: CGFloat = 0
-  var pipCornerRadius: CGFloat = 12
+  var pipCornerRadius: CGFloat = 8
   var pipBorderWidth: CGFloat = 0
   var projectName: String = ""
   var showExportSheet = false
@@ -62,7 +66,11 @@ final class EditorState {
   func setup() async {
     await playerController.loadDuration()
     trimEnd = playerController.duration
+    systemAudioTrimEnd = playerController.duration
+    micAudioTrimEnd = playerController.duration
     playerController.trimEnd = trimEnd
+    playerController.systemAudioTrimEnd = systemAudioTrimEnd
+    playerController.micAudioTrimEnd = micAudioTrimEnd
     playerController.setupTimeObserver()
 
     if let saved = project?.metadata.editorState {
@@ -94,29 +102,57 @@ final class EditorState {
     playerController.trimEnd = time
   }
 
+  func updateSystemAudioTrimStart(_ time: CMTime) {
+    systemAudioTrimStart = time
+    playerController.systemAudioTrimStart = time
+  }
+
+  func updateSystemAudioTrimEnd(_ time: CMTime) {
+    systemAudioTrimEnd = time
+    playerController.systemAudioTrimEnd = time
+  }
+
+  func updateMicAudioTrimStart(_ time: CMTime) {
+    micAudioTrimStart = time
+    playerController.micAudioTrimStart = time
+  }
+
+  func updateMicAudioTrimEnd(_ time: CMTime) {
+    micAudioTrimEnd = time
+    playerController.micAudioTrimEnd = time
+  }
+
   func setPipCorner(_ corner: PiPCorner) {
     let margin: CGFloat = 0.02
-    let w = pipLayout.relativeWidth
-    let aspect: CGFloat = {
-      guard let ws = result.webcamSize else { return 0.75 }
-      return ws.height / max(ws.width, 1)
-    }()
-    let h = w * aspect * (result.screenSize.width / max(result.screenSize.height, 1))
+    let relH = pipRelativeHeight
 
     switch corner {
     case .topLeft:
       pipLayout.relativeX = margin
       pipLayout.relativeY = margin
     case .topRight:
-      pipLayout.relativeX = 1.0 - w - margin
+      pipLayout.relativeX = 1.0 - pipLayout.relativeWidth - margin
       pipLayout.relativeY = margin
     case .bottomLeft:
       pipLayout.relativeX = margin
-      pipLayout.relativeY = 1.0 - h - margin
+      pipLayout.relativeY = 1.0 - relH - margin
     case .bottomRight:
-      pipLayout.relativeX = 1.0 - w - margin
-      pipLayout.relativeY = 1.0 - h - margin
+      pipLayout.relativeX = 1.0 - pipLayout.relativeWidth - margin
+      pipLayout.relativeY = 1.0 - relH - margin
     }
+  }
+
+  func clampPipPosition() {
+    let relH = pipRelativeHeight
+    pipLayout.relativeX = max(0, min(1 - pipLayout.relativeWidth, pipLayout.relativeX))
+    pipLayout.relativeY = max(0, min(1 - relH, pipLayout.relativeY))
+  }
+
+  private var pipRelativeHeight: CGFloat {
+    guard let ws = result.webcamSize else { return pipLayout.relativeWidth * 0.75 }
+    let canvas = canvasSize(for: result.screenSize)
+    let aspect = ws.height / max(ws.width, 1)
+    return pipLayout.relativeWidth * aspect * (canvas.width / max(canvas.height, 1))
   }
 
   func canvasSize(for screenSize: CGSize) -> CGSize {
@@ -137,6 +173,8 @@ final class EditorState {
       result: result,
       pipLayout: pipLayout,
       trimRange: CMTimeRange(start: trimStart, end: trimEnd),
+      systemAudioTrimRange: CMTimeRange(start: systemAudioTrimStart, end: systemAudioTrimEnd),
+      micAudioTrimRange: CMTimeRange(start: micAudioTrimStart, end: micAudioTrimEnd),
       backgroundStyle: backgroundStyle,
       padding: padding,
       videoCornerRadius: videoCornerRadius,

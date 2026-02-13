@@ -137,4 +137,9 @@ enum ReframedColors {
   static var permissionText: Color {
     isDark ? Color.white.opacity(0.8) : Color.black.opacity(0.7)
   }
+
+  static var controlAccentColor: Color {
+    Color(nsColor: .controlAccentColor)
+  }
+
 }

@@ -3,6 +3,8 @@ import SwiftUI
 struct EditorView: View {
   @Bindable var editorState: EditorState
   @State private var thumbnailGenerator = ThumbnailGenerator()
+  @State private var systemWaveformGenerator = AudioWaveformGenerator()
+  @State private var micWaveformGenerator = AudioWaveformGenerator()
   @Environment(\.colorScheme) private var colorScheme
 
   let onSave: (URL) -> Void
@@ -28,7 +30,17 @@ struct EditorView: View {
     .background(ReframedColors.panelBackground)
     .task {
       await editorState.setup()
-      await thumbnailGenerator.generate(from: editorState.result.screenVideoURL)
+      let sysURL = editorState.result.systemAudioURL
+      let micURL = editorState.result.microphoneAudioURL
+      let screenURL = editorState.result.screenVideoURL
+      async let thumbTask: Void = thumbnailGenerator.generate(from: screenURL)
+      async let sysTask: Void = {
+        if let url = sysURL { await systemWaveformGenerator.generate(from: url) }
+      }()
+      async let micTask: Void = {
+        if let url = micURL { await micWaveformGenerator.generate(from: url) }
+      }()
+      _ = await (thumbTask, sysTask, micTask)
     }
     .sheet(isPresented: $editorState.showExportSheet) {
       ExportSheet(isPresented: $editorState.showExportSheet, sourceFPS: editorState.result.fps) { settings in
@@ -64,9 +76,8 @@ struct EditorView: View {
       videoPreview
         .frame(maxHeight: .infinity)
       Divider().background(ReframedColors.divider)
-      timeline
-      Divider().background(ReframedColors.divider)
       EditorBottomBar(editorState: editorState)
+      timeline
     }
   }
 
@@ -92,12 +103,12 @@ struct EditorView: View {
           pipLayout: $editorState.pipLayout,
           webcamSize: editorState.result.webcamSize,
           screenSize: screenSize,
+          canvasSize: editorState.canvasSize(for: screenSize),
+          padding: editorState.padding,
+          videoCornerRadius: editorState.videoCornerRadius,
           pipCornerRadius: editorState.pipCornerRadius,
           pipBorderWidth: editorState.pipBorderWidth
         )
-        .clipShape(RoundedRectangle(cornerRadius: scaledCornerRadius(in: geo.size)))
-        .padding(.horizontal, scaledHPadding(in: geo.size))
-        .padding(.vertical, scaledVPadding(in: geo.size))
       }
       .frame(maxWidth: .infinity, maxHeight: .infinity)
       .aspectRatio(hasEffects ? canvasAspect : screenSize.width / max(screenSize.height, 1), contentMode: .fit)
@@ -127,38 +138,18 @@ struct EditorView: View {
     }
   }
 
-  private func scaledHPadding(in viewSize: CGSize) -> CGFloat {
-    guard editorState.padding > 0 else { return 0 }
-    let canvasSize = editorState.canvasSize(for: editorState.result.screenSize)
-    let fitScale = min(viewSize.width / canvasSize.width, viewSize.height / canvasSize.height)
-    return editorState.padding * editorState.result.screenSize.width * fitScale
-  }
-
-  private func scaledVPadding(in viewSize: CGSize) -> CGFloat {
-    guard editorState.padding > 0 else { return 0 }
-    let canvasSize = editorState.canvasSize(for: editorState.result.screenSize)
-    let fitScale = min(viewSize.width / canvasSize.width, viewSize.height / canvasSize.height)
-    return editorState.padding * editorState.result.screenSize.height * fitScale
-  }
-
-  private func scaledCornerRadius(in viewSize: CGSize) -> CGFloat {
-    guard editorState.videoCornerRadius > 0 else { return 0 }
-    let canvasSize = editorState.canvasSize(for: editorState.result.screenSize)
-    let fitScale = min(viewSize.width / canvasSize.width, viewSize.height / canvasSize.height)
-    return editorState.videoCornerRadius * fitScale
-  }
 
   private var timeline: some View {
     TimelineView(
       editorState: editorState,
       thumbnails: thumbnailGenerator.thumbnails,
+      systemAudioSamples: systemWaveformGenerator.samples,
+      micAudioSamples: micWaveformGenerator.samples,
       onScrub: { time in
         editorState.pause()
         editorState.seek(to: time)
       }
     )
-    .padding(.horizontal, 16)
-    .padding(.vertical, 8)
   }
 
   private func handleExport(settings: ExportSettings) {

@@ -6,10 +6,17 @@ import Logging
 enum VideoCompositor {
   private static let logger = Logger(label: "eu.jankuri.reframed.video-compositor")
 
+  private struct AudioSource {
+    let url: URL
+    let trimRange: CMTimeRange
+  }
+
   static func export(
     result: RecordingResult,
     pipLayout: PiPLayout,
     trimRange: CMTimeRange,
+    systemAudioTrimRange: CMTimeRange? = nil,
+    micAudioTrimRange: CMTimeRange? = nil,
     backgroundStyle: BackgroundStyle = .none,
     padding: CGFloat = 0,
     videoCornerRadius: CGFloat = 0,
@@ -41,15 +48,12 @@ enum VideoCompositor {
     )
     try compScreenTrack?.insertTimeRange(effectiveTrim, of: screenVideoTrack, at: .zero)
 
-    var audioFiles: [URL] = []
-    if let sysURL = result.systemAudioURL { audioFiles.append(sysURL) }
-    if let micURL = result.microphoneAudioURL { audioFiles.append(micURL) }
-
-    let mixedAudioURL: URL?
-    if audioFiles.count > 1 {
-      mixedAudioURL = try await mixAudioFiles(audioFiles)
-    } else {
-      mixedAudioURL = audioFiles.first
+    var audioSources: [AudioSource] = []
+    if let sysURL = result.systemAudioURL {
+      audioSources.append(AudioSource(url: sysURL, trimRange: systemAudioTrimRange ?? effectiveTrim))
+    }
+    if let micURL = result.microphoneAudioURL {
+      audioSources.append(AudioSource(url: micURL, trimRange: micAudioTrimRange ?? effectiveTrim))
     }
 
     let hasVisualEffects = backgroundStyle != .none || padding > 0 || videoCornerRadius > 0
@@ -125,7 +129,14 @@ enum VideoCompositor {
             height: rect.height * scaleY
           )
         },
-        pipCornerRadius: pipCornerRadius * (renderSize.width / canvasSize.width),
+        pipCornerRadius: {
+          guard let rect = pipRect else { return 0 }
+          let sX = renderSize.width / canvasSize.width
+          let sY = renderSize.height / canvasSize.height
+          let scaledW = rect.width * sX
+          let scaledH = rect.height * sY
+          return min(scaledW, scaledH) * (pipCornerRadius / 100.0)
+        }(),
         pipBorderWidth: pipBorderWidth * (renderSize.width / canvasSize.width),
         outputSize: renderSize,
         backgroundColors: bgColors,
@@ -143,7 +154,7 @@ enum VideoCompositor {
       videoComposition.renderSize = renderSize
       videoComposition.instructions = [instruction]
 
-      try await addAudioTrack(to: composition, from: mixedAudioURL, trimRange: effectiveTrim)
+      try await addAudioTracks(to: composition, sources: audioSources, videoTrimRange: effectiveTrim)
 
       let outputURL = FileManager.default.tempRecordingURL()
       guard
@@ -163,15 +174,12 @@ enum VideoCompositor {
         FileManager.default.defaultSaveURL(for: outputURL, extension: exportSettings.format.fileExtension)
       }
       try FileManager.default.moveToFinal(from: outputURL, to: destination)
-      if let mixURL = mixedAudioURL, mixURL.lastPathComponent == "mixed-audio.m4a" {
-        try? FileManager.default.removeItem(at: mixURL)
-      }
 
       logger.info("Composited export saved: \(destination.path)")
       return destination
     }
 
-    try await addAudioTrack(to: composition, from: mixedAudioURL, trimRange: effectiveTrim)
+    try await addAudioTracks(to: composition, sources: audioSources, videoTrimRange: effectiveTrim)
 
     let outputURL = FileManager.default.tempRecordingURL()
     guard
@@ -190,9 +198,6 @@ enum VideoCompositor {
       FileManager.default.defaultSaveURL(for: outputURL, extension: exportSettings.format.fileExtension)
     }
     try FileManager.default.moveToFinal(from: outputURL, to: destination)
-    if let mixURL = mixedAudioURL, mixURL.lastPathComponent == "mixed-audio.m4a" {
-      try? FileManager.default.removeItem(at: mixURL)
-    }
 
     logger.info("Passthrough export saved: \(destination.path)")
     return destination
@@ -248,70 +253,27 @@ enum VideoCompositor {
     }
   }
 
-  private static func addAudioTrack(
+  private static func addAudioTracks(
     to composition: AVMutableComposition,
-    from audioURL: URL?,
-    trimRange: CMTimeRange
+    sources: [AudioSource],
+    videoTrimRange: CMTimeRange
   ) async throws {
-    guard let audioURL else { return }
-    let audioAsset = AVURLAsset(url: audioURL)
-    guard let audioTrack = try await audioAsset.loadTracks(withMediaType: .audio).first else { return }
-    let audioTimeRange = try await audioTrack.load(.timeRange)
-    let audioDuration = CMTimeMinimum(audioTimeRange.duration, trimRange.duration)
-    let audioRange = CMTimeRange(
-      start: trimRange.start,
-      duration: CMTimeMinimum(audioDuration, CMTimeSubtract(audioTimeRange.end, trimRange.start))
-    )
-    guard CMTimeCompare(audioRange.duration, .zero) > 0 else { return }
-    let compAudioTrack = composition.addMutableTrack(
-      withMediaType: .audio,
-      preferredTrackID: kCMPersistentTrackID_Invalid
-    )
-    try compAudioTrack?.insertTimeRange(audioRange, of: audioTrack, at: .zero)
-  }
+    for source in sources {
+      let asset = AVURLAsset(url: source.url)
+      guard let audioTrack = try await asset.loadTracks(withMediaType: .audio).first else { continue }
 
-  private static func mixAudioFiles(_ files: [URL]) async throws -> URL {
-    let composition = AVMutableComposition()
+      let overlapStart = CMTimeMaximum(source.trimRange.start, videoTrimRange.start)
+      let overlapEnd = CMTimeMinimum(source.trimRange.end, videoTrimRange.end)
+      guard CMTimeCompare(overlapEnd, overlapStart) > 0 else { continue }
 
-    for file in files {
-      let asset = AVURLAsset(url: file)
-      if let sourceTrack = try await asset.loadTracks(withMediaType: .audio).first {
-        let timeRange = try await sourceTrack.load(.timeRange)
-        let compTrack = composition.addMutableTrack(
-          withMediaType: .audio,
-          preferredTrackID: kCMPersistentTrackID_Invalid
-        )
-        try compTrack?.insertTimeRange(timeRange, of: sourceTrack, at: .zero)
-      }
-    }
+      let sourceRange = CMTimeRange(start: overlapStart, end: overlapEnd)
+      let insertionTime = CMTimeSubtract(overlapStart, videoTrimRange.start)
 
-    let audioMix = AVMutableAudioMix()
-    audioMix.inputParameters = composition.tracks(withMediaType: .audio).map { track in
-      let params = AVMutableAudioMixInputParameters(track: track)
-      params.setVolume(1.0, at: .zero)
-      return params
-    }
-
-    let outputURL = FileManager.default.tempRecordingURL()
-      .deletingLastPathComponent()
-      .appendingPathComponent("mixed-audio.m4a")
-    if FileManager.default.fileExists(atPath: outputURL.path) {
-      try FileManager.default.removeItem(at: outputURL)
-    }
-
-    guard
-      let exportSession = AVAssetExportSession(
-        asset: composition,
-        presetName: AVAssetExportPresetAppleM4A
+      let compTrack = composition.addMutableTrack(
+        withMediaType: .audio,
+        preferredTrackID: kCMPersistentTrackID_Invalid
       )
-    else {
-      throw CaptureError.recordingFailed("Failed to create audio mix session")
+      try compTrack?.insertTimeRange(sourceRange, of: audioTrack, at: insertionTime)
     }
-
-    exportSession.audioMix = audioMix
-    try await exportSession.export(to: outputURL, as: .m4a)
-
-    logger.info("Audio mix finished: \(files.count) tracks -> \(outputURL.lastPathComponent)")
-    return outputURL
   }
 }
