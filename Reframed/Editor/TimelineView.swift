@@ -450,6 +450,7 @@ struct TimelineView: View {
         startX: startX,
         endX: endX,
         fullWidth: width,
+        fullHeight: height,
         accentColor: accentColor
       )
       .clipShape(RoundedRectangle(cornerRadius: 6))
@@ -513,13 +514,14 @@ struct TimelineView: View {
     startX: CGFloat,
     endX: CGFloat,
     fullWidth: CGFloat,
+    fullHeight: CGFloat,
     accentColor: Color
   ) -> some View {
     Canvas { context, size in
       let count = samples.count
       guard count > 1 else { return }
-      let midY = size.height / 2
-      let maxAmp = size.height * 0.4
+      let midY = fullHeight / 2
+      let maxAmp = fullHeight * 0.4
       let step = fullWidth / CGFloat(count - 1)
 
       var topPoints: [CGPoint] = []
@@ -531,7 +533,8 @@ struct TimelineView: View {
         bottomPoints.append(CGPoint(x: x, y: midY + amp))
       }
 
-      context.translateBy(x: -startX, y: 0)
+      let yOffset = (fullHeight - size.height) / 2
+      context.translateBy(x: -startX, y: -yOffset)
       let activePath = buildWaveformPath(top: topPoints, bottom: bottomPoints, minX: startX, maxX: endX)
       context.fill(activePath, with: .color(accentColor))
     }

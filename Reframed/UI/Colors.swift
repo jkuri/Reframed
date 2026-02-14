@@ -145,7 +145,7 @@ enum ReframedColors {
   static let screenTrackColor = Color(red: 0.23, green: 0.51, blue: 0.96)
   static let webcamTrackColor = Color(red: 0.13, green: 0.77, blue: 0.37)
 
-  static let systemAudioColor = Color(red: 0.92, green: 0.70, blue: 0.03)
+  static let systemAudioColor = Color(red: 0.925, green: 0.282, blue: 0.600)
   static let micAudioColor = Color(red: 0.94, green: 0.27, blue: 0.27)
 
   static let zoomAutoColor = Color(red: 0.45, green: 0.30, blue: 0.75)
