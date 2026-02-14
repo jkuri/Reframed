@@ -52,7 +52,7 @@ struct SettingsView: View {
     VStack(spacing: 0) {
       tabBar
       ScrollView {
-        VStack(alignment: .leading, spacing: 20) {
+        VStack(alignment: .leading, spacing: Layout.sectionSpacing) {
           switch selectedTab {
           case .general:
             generalContent
@@ -62,7 +62,7 @@ struct SettingsView: View {
             devicesContent
           }
         }
-        .padding(24)
+        .padding(Layout.settingsPadding)
       }
     }
     .frame(width: 600, height: 520)

@@ -122,6 +122,7 @@
 		A1000000000000000000003A /* SliderRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000003A /* SliderRow.swift */; };
 		A1000000000000000000003B /* TailwindColorPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000003B /* TailwindColorPicker.swift */; };
 		A1000000000000000000003C /* SegmentPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000003C /* SegmentPicker.swift */; };
+		A1000000000000000000003D /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000003D /* Constants.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -177,6 +178,7 @@
 		B1000000000000000000002B /* PermissionsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PermissionsView.swift; sourceTree = "<group>"; };
 		B1000000000000000000002C /* StartRecordingButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = StartRecordingButton.swift; sourceTree = "<group>"; };
 		B1000000000000000000002D /* SettingsView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsView.swift; sourceTree = "<group>"; };
+		B1000000000000000000003D /* Constants.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Constants.swift; sourceTree = "<group>"; };
 		BDB41C1253D94BEF960FD7D2 /* WindowSelectionCoordinator.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowSelectionCoordinator.swift; sourceTree = "<group>"; };
 		C4146D517F5E493F943D90D0 /* WindowSelectionView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowSelectionView.swift; sourceTree = "<group>"; };
 		EC41BA6DF5654C57AC930549 /* WindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowController.swift; sourceTree = "<group>"; };
@@ -407,6 +409,7 @@
 				B1000000000000000000003A /* SliderRow.swift */,
 				B1000000000000000000003B /* TailwindColorPicker.swift */,
 				B1000000000000000000003C /* SegmentPicker.swift */,
+				B1000000000000000000003D /* Constants.swift */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -638,6 +641,7 @@
 				A1000000000000000000002B /* PermissionsView.swift in Sources */,
 				A1000000000000000000002C /* StartRecordingButton.swift in Sources */,
 				A1000000000000000000002D /* SettingsView.swift in Sources */,
+				A1000000000000000000003D /* Constants.swift in Sources */,
 				A20000000000000000000001 /* WebcamCapture.swift in Sources */,
 				A20000000000000000000002 /* WebcamPreviewWindow.swift in Sources */,
 				A20000000000000000000003 /* RecordingResult.swift in Sources */,

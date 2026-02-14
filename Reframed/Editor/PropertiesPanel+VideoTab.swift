@@ -2,7 +2,7 @@ import SwiftUI
 
 extension PropertiesPanel {
   var backgroundSection: some View {
-    VStack(alignment: .leading, spacing: 10) {
+    VStack(alignment: .leading, spacing: Layout.itemSpacing) {
       sectionHeader(icon: "paintbrush.fill", title: "Background")
 
       Picker("", selection: $backgroundMode) {
@@ -24,7 +24,7 @@ extension PropertiesPanel {
   }
 
   var gradientGrid: some View {
-    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 8), count: 4), spacing: 8) {
+    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: Layout.gridSpacing), count: 4), spacing: Layout.gridSpacing) {
       ForEach(GradientPresets.all) { preset in
         Button {
           selectedGradientId = preset.id
@@ -67,7 +67,7 @@ extension PropertiesPanel {
   }
 
   var paddingSection: some View {
-    VStack(alignment: .leading, spacing: 10) {
+    VStack(alignment: .leading, spacing: Layout.itemSpacing) {
       HStack {
         sectionHeader(icon: "arrow.up.left.and.arrow.down.right", title: "Padding")
         Spacer()
@@ -91,7 +91,7 @@ extension PropertiesPanel {
   }
 
   var cornerRadiusSection: some View {
-    VStack(alignment: .leading, spacing: 10) {
+    VStack(alignment: .leading, spacing: Layout.itemSpacing) {
       HStack {
         sectionHeader(icon: "rectangle.roundedtop", title: "Corner Radius")
         Spacer()

@@ -11,7 +11,7 @@ extension SettingsView {
   }
 
   var appearanceSection: some View {
-    VStack(alignment: .leading, spacing: 8) {
+    VStack(alignment: .leading, spacing: Layout.itemSpacing) {
       sectionLabel("Appearance")
 
       SegmentPicker(
@@ -29,7 +29,7 @@ extension SettingsView {
   }
 
   var projectFolderSection: some View {
-    VStack(alignment: .leading, spacing: 8) {
+    VStack(alignment: .leading, spacing: Layout.itemSpacing) {
       sectionLabel("Project Folder")
       HStack(spacing: 8) {
         Text(projectFolder)
@@ -52,7 +52,7 @@ extension SettingsView {
   }
 
   var outputSection: some View {
-    VStack(alignment: .leading, spacing: 8) {
+    VStack(alignment: .leading, spacing: Layout.itemSpacing) {
       sectionLabel("Output Folder")
       HStack(spacing: 8) {
         Text(outputFolder)
@@ -75,7 +75,7 @@ extension SettingsView {
   }
 
   var optionsSection: some View {
-    VStack(alignment: .leading, spacing: 8) {
+    VStack(alignment: .leading, spacing: Layout.itemSpacing) {
       sectionLabel("Options")
 
       settingsToggle(

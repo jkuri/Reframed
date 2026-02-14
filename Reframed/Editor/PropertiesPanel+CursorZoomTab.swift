@@ -29,7 +29,7 @@ extension PropertiesPanel {
   }
 
   var cursorSection: some View {
-    VStack(alignment: .leading, spacing: 14) {
+    VStack(alignment: .leading, spacing: Layout.itemSpacing) {
       sectionHeader(icon: "cursorarrow", title: "Cursor")
 
       toggleRow("Show Cursor", isOn: $editorState.showCursor)
@@ -39,20 +39,18 @@ extension PropertiesPanel {
 
         SliderRow(
           label: "Size",
-          labelWidth: cursorLabelWidth,
+          labelWidth: Layout.labelWidth,
           value: $editorState.cursorSize,
           range: 16...64,
           step: 2,
           formattedValue: "\(Int(editorState.cursorSize))px"
         )
-
-        clickHighlightsSubsection
       }
     }
   }
 
   var clickHighlightsSubsection: some View {
-    VStack(alignment: .leading, spacing: 14) {
+    VStack(alignment: .leading, spacing: Layout.itemSpacing) {
       sectionHeader(icon: "cursorarrow.click.2", title: "Click Highlights")
 
       toggleRow("Show Highlights", isOn: $editorState.showClickHighlights)
@@ -62,13 +60,13 @@ extension PropertiesPanel {
           Text("Color")
             .font(.system(size: 12))
             .foregroundStyle(ReframedColors.secondaryText)
-            .frame(width: cursorLabelWidth, alignment: .leading)
+            .frame(width: Layout.labelWidth, alignment: .leading)
           clickColorPickerButton
         }
 
         SliderRow(
           label: "Size",
-          labelWidth: cursorLabelWidth,
+          labelWidth: Layout.labelWidth,
           value: $editorState.clickHighlightSize,
           range: 16...80,
           step: 2,
@@ -103,7 +101,7 @@ extension PropertiesPanel {
   }
 
   var zoomSection: some View {
-    VStack(alignment: .leading, spacing: 10) {
+    VStack(alignment: .leading, spacing: Layout.itemSpacing) {
       sectionHeader(icon: "plus.magnifyingglass", title: "Zoom")
 
       toggleRow("Enable Zoom", isOn: $editorState.zoomEnabled)
@@ -129,7 +127,7 @@ extension PropertiesPanel {
         if editorState.autoZoomEnabled {
           SliderRow(
             label: "Level",
-            labelWidth: zoomLabelWidth,
+            labelWidth: Layout.labelWidth,
             value: $editorState.zoomLevel,
             range: 1.5...5.0,
             step: 0.1,
@@ -142,7 +140,7 @@ extension PropertiesPanel {
 
           SliderRow(
             label: "Speed",
-            labelWidth: zoomLabelWidth,
+            labelWidth: Layout.labelWidth,
             value: $editorState.zoomTransitionSpeed,
             range: 0.1...2.0,
             step: 0.05,
@@ -155,7 +153,7 @@ extension PropertiesPanel {
 
           SliderRow(
             label: "Hold",
-            labelWidth: zoomLabelWidth,
+            labelWidth: Layout.labelWidth,
             value: $editorState.zoomDwellThreshold,
             range: 0.5...5.0,
             step: 0.1,

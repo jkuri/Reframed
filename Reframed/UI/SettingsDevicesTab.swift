@@ -14,7 +14,7 @@ extension SettingsView {
   }
 
   var audioSection: some View {
-    VStack(alignment: .leading, spacing: 8) {
+    VStack(alignment: .leading, spacing: Layout.itemSpacing) {
       sectionLabel("Audio")
 
       settingsToggle(
@@ -60,7 +60,7 @@ extension SettingsView {
   }
 
   var cameraSectionView: some View {
-    VStack(alignment: .leading, spacing: 8) {
+    VStack(alignment: .leading, spacing: Layout.itemSpacing) {
       sectionLabel("Camera")
 
       HStack {

@@ -25,13 +25,10 @@ struct PropertiesPanel: View {
   @State var showClickColorPopover = false
   @FocusState private var projectNameFocused: Bool
 
-  let cursorLabelWidth: CGFloat = 42
-  let zoomLabelWidth: CGFloat = 42
-
   var body: some View {
     let _ = colorScheme
     ScrollView {
-      VStack(alignment: .leading, spacing: 20) {
+      VStack(alignment: .leading, spacing: Layout.sectionSpacing) {
         switch selectedTab {
         case .general:
           projectSection
@@ -44,11 +41,14 @@ struct PropertiesPanel: View {
           cameraSection
         case .cursor:
           cursorSection
+          if editorState.showCursor {
+            clickHighlightsSubsection
+          }
         case .zoom:
           zoomSection
         }
       }
-      .padding(16)
+      .padding(Layout.panelPadding)
     }
     .frame(width: 300)
     .onChange(of: backgroundMode) { _, newValue in
@@ -70,7 +70,7 @@ struct PropertiesPanel: View {
 
   private var projectSection: some View {
     VStack(alignment: .leading, spacing: 16) {
-      VStack(alignment: .leading, spacing: 10) {
+      VStack(alignment: .leading, spacing: Layout.itemSpacing) {
         sectionHeader(icon: "doc.text", title: "Project")
 
         HStack(spacing: 6) {
@@ -106,10 +106,10 @@ struct PropertiesPanel: View {
   }
 
   private var recordingInfoSection: some View {
-    VStack(alignment: .leading, spacing: 10) {
+    VStack(alignment: .leading, spacing: Layout.itemSpacing) {
       sectionHeader(icon: "info.circle", title: "Recording Info")
 
-      VStack(spacing: 6) {
+      VStack(spacing: Layout.compactSpacing) {
         infoRow("Resolution", value: "\(Int(editorState.result.screenSize.width))x\(Int(editorState.result.screenSize.height))")
         infoRow("FPS", value: "\(editorState.result.fps)")
         infoRow("Duration", value: formatDuration(editorState.duration))
@@ -138,7 +138,7 @@ struct PropertiesPanel: View {
   }
 
   var canvasSection: some View {
-    VStack(alignment: .leading, spacing: 10) {
+    VStack(alignment: .leading, spacing: Layout.itemSpacing) {
       sectionHeader(icon: "rectangle.dashed", title: "Canvas")
 
       Picker("", selection: $editorState.canvasAspect) {

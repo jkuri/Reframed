@@ -9,7 +9,7 @@ extension SettingsView {
   }
 
   var frameRateSection: some View {
-    VStack(alignment: .leading, spacing: 8) {
+    VStack(alignment: .leading, spacing: Layout.itemSpacing) {
       sectionLabel("Frame Rate")
 
       HStack {
@@ -30,7 +30,7 @@ extension SettingsView {
   }
 
   var timerDelaySection: some View {
-    VStack(alignment: .leading, spacing: 8) {
+    VStack(alignment: .leading, spacing: Layout.itemSpacing) {
       sectionLabel("Timer Delay")
 
       HStack {

@@ -2,7 +2,7 @@ import SwiftUI
 
 extension PropertiesPanel {
   var cameraSection: some View {
-    VStack(alignment: .leading, spacing: 10) {
+    VStack(alignment: .leading, spacing: Layout.itemSpacing) {
       sectionHeader(icon: "pip", title: "Camera")
 
       HStack(spacing: 4) {
