@@ -349,7 +349,8 @@ final class EditorState {
     let finalEnd = min(gapEnd, max(regionEnd, finalStart + 0.05))
 
     cameraFullscreenRegions.insert(
-      AudioRegionData(startSeconds: finalStart, endSeconds: finalEnd), at: insertIdx
+      AudioRegionData(startSeconds: finalStart, endSeconds: finalEnd),
+      at: insertIdx
     )
     cameraFullscreenRegions.sort { $0.startSeconds < $1.startSeconds }
   }
@@ -369,7 +370,8 @@ final class EditorState {
   func updateCameraRegionEnd(regionId: UUID, newEnd: Double) {
     guard let idx = cameraFullscreenRegions.firstIndex(where: { $0.id == regionId }) else { return }
     let dur = CMTimeGetSeconds(duration)
-    let maxEnd: Double = idx < cameraFullscreenRegions.count - 1
+    let maxEnd: Double =
+      idx < cameraFullscreenRegions.count - 1
       ? cameraFullscreenRegions[idx + 1].startSeconds : dur
     let minEnd = cameraFullscreenRegions[idx].startSeconds + 0.01
     cameraFullscreenRegions[idx].endSeconds = max(minEnd, min(maxEnd, newEnd))
