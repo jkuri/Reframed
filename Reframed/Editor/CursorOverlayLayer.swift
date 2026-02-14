@@ -57,18 +57,17 @@ final class CursorOverlayLayer: CALayer {
     cursorLayer.isHidden = false
 
     let cursorRect: CGRect
-    switch style {
-    case .defaultArrow:
-      cursorRect = CGRect(
-        x: pixelPosition.x,
-        y: pixelPosition.y - size * 1.5,
-        width: size * 1.5,
-        height: size * 1.5
-      )
-    case .crosshair, .circleDot:
+    if style.isCentered {
       cursorRect = CGRect(
         x: pixelPosition.x - size * 0.75,
         y: pixelPosition.y - size * 0.75,
+        width: size * 1.5,
+        height: size * 1.5
+      )
+    } else {
+      cursorRect = CGRect(
+        x: pixelPosition.x,
+        y: pixelPosition.y - size * 1.5,
         width: size * 1.5,
         height: size * 1.5
       )
@@ -116,11 +115,10 @@ final class CursorOverlayLayer: CALayer {
     ctx.scaleBy(x: 1, y: -1)
 
     let drawPoint: CGPoint
-    switch style {
-    case .defaultArrow:
-      drawPoint = CGPoint(x: 0, y: 0)
-    case .crosshair, .circleDot:
+    if style.isCentered {
       drawPoint = CGPoint(x: CGFloat(width) / 2, y: CGFloat(height) / 2)
+    } else {
+      drawPoint = CGPoint(x: 0, y: 0)
     }
     CursorRenderer.drawCursor(in: ctx, position: drawPoint, style: style, size: size, scale: 1.0)
     return ctx.makeImage()

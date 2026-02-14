@@ -117,7 +117,7 @@ private struct ExportSheetButtonStyle: ButtonStyle {
       .frame(height: 30)
       .background(
         isPrimary
-          ? (configuration.isPressed ? ReframedColors.buttonPressed : ReframedColors.buttonBackground)
+          ? ReframedColors.controlAccentColor
           : (configuration.isPressed ? ReframedColors.buttonPressed : ReframedColors.buttonBackground)
       )
       .clipShape(RoundedRectangle(cornerRadius: 6))

@@ -375,6 +375,33 @@ struct PropertiesPanel: View {
 
   private let cursorLabelWidth: CGFloat = 42
 
+  private var cursorStyleGrid: some View {
+    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: 4), count: 5), spacing: 4) {
+      ForEach(CursorStyle.allCases, id: \.rawValue) { style in
+        let isSelected = editorState.cursorStyle == style
+        Button {
+          editorState.cursorStyle = style
+        } label: {
+          VStack(spacing: 3) {
+            Image(nsImage: CursorRenderer.previewImage(for: style, size: 42))
+              .frame(width: 42, height: 42)
+              .background(ReframedColors.fieldBackground)
+              .clipShape(RoundedRectangle(cornerRadius: 5))
+              .overlay(
+                RoundedRectangle(cornerRadius: 5)
+                  .stroke(isSelected ? ReframedColors.controlAccentColor : Color.clear, lineWidth: 2)
+              )
+            Text(style.label)
+              .font(.system(size: 8, weight: isSelected ? .semibold : .regular))
+              .foregroundStyle(isSelected ? ReframedColors.primaryText : ReframedColors.secondaryText)
+              .lineLimit(1)
+          }
+        }
+        .buttonStyle(.plain)
+      }
+    }
+  }
+
   private var cursorSection: some View {
     VStack(alignment: .leading, spacing: 14) {
       sectionHeader(icon: "cursorarrow", title: "Cursor")
@@ -382,18 +409,7 @@ struct PropertiesPanel: View {
       toggleRow("Show Cursor", isOn: $editorState.showCursor)
 
       if editorState.showCursor {
-        HStack(spacing: 8) {
-          Text("Style")
-            .font(.system(size: 12))
-            .foregroundStyle(ReframedColors.secondaryText)
-            .frame(width: cursorLabelWidth, alignment: .leading)
-          Picker("", selection: $editorState.cursorStyle) {
-            ForEach(CursorStyle.allCases, id: \.rawValue) { style in
-              Text(style.label).tag(style)
-            }
-          }
-          .pickerStyle(.segmented)
-        }
+        cursorStyleGrid
 
         HStack(spacing: 8) {
           Text("Size")

@@ -139,21 +139,29 @@ final class ScreenCaptureSession: NSObject, SCStreamDelegate, SCStreamOutput, @u
 
   private func createSampleBuffer(from pixelBuffer: CVPixelBuffer, pts: CMTime) -> CMSampleBuffer? {
     var formatDesc: CMVideoFormatDescription?
-    guard CMVideoFormatDescriptionCreateForImageBuffer(allocator: kCFAllocatorDefault, imageBuffer: pixelBuffer, formatDescriptionOut: &formatDesc) == noErr,
-          let formatDescription = formatDesc else {
+    guard
+      CMVideoFormatDescriptionCreateForImageBuffer(
+        allocator: kCFAllocatorDefault,
+        imageBuffer: pixelBuffer,
+        formatDescriptionOut: &formatDesc
+      ) == noErr,
+      let formatDescription = formatDesc
+    else {
       return nil
     }
 
     var timingInfo = CMSampleTimingInfo(duration: .invalid, presentationTimeStamp: pts, decodeTimeStamp: .invalid)
     var newSampleBuffer: CMSampleBuffer?
 
-    guard CMSampleBufferCreateReadyWithImageBuffer(
-      allocator: kCFAllocatorDefault,
-      imageBuffer: pixelBuffer,
-      formatDescription: formatDescription,
-      sampleTiming: &timingInfo,
-      sampleBufferOut: &newSampleBuffer
-    ) == noErr else {
+    guard
+      CMSampleBufferCreateReadyWithImageBuffer(
+        allocator: kCFAllocatorDefault,
+        imageBuffer: pixelBuffer,
+        formatDescription: formatDescription,
+        sampleTiming: &timingInfo,
+        sampleBufferOut: &newSampleBuffer
+      ) == noErr
+    else {
       return nil
     }
 
