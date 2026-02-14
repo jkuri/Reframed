@@ -340,8 +340,7 @@ enum VideoCompositor {
     writer.startWriting()
     writer.startSession(atSourceTime: timeRange.start)
 
-    let duration = CMTimeGetSeconds(timeRange.duration)
-    let totalFrames = max(duration * exportFPS, 1.0)
+    let totalFrames = max(floor(CMTimeGetSeconds(timeRange.duration) * exportFPS) + 1, 1)
     let exportStartTime = CFAbsoluteTimeGetCurrent()
     nonisolated(unsafe) let cancelled = UnsafeMutablePointer<Bool>.allocate(capacity: 1)
     cancelled.initialize(to: false)
@@ -349,7 +348,7 @@ enum VideoCompositor {
 
     try await withTaskCancellationHandler {
       try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
-        nonisolated(unsafe) var framesProcessed = 0
+        nonisolated(unsafe) var sampleCount = 0
         nonisolated(unsafe) var continued = false
 
         let group = DispatchGroup()
@@ -401,11 +400,13 @@ enum VideoCompositor {
             }
             if let buffer = videoOutput.copyNextSampleBuffer() {
               videoInput.append(buffer)
-              framesProcessed += 1
-              if framesProcessed % 10 == 0, let handler = progressHandler {
-                let progress = min(Double(framesProcessed) / totalFrames, 1.0)
+              sampleCount += 1
+              if sampleCount % 10 == 0, let handler = progressHandler {
+                let progress = min(Double(sampleCount) / totalFrames, 1.0)
                 let elapsed = CFAbsoluteTimeGetCurrent() - exportStartTime
-                let eta: Double? = progress > 0.01 ? elapsed / progress * (1.0 - progress) : nil
+                let remaining = Double(Int(totalFrames) - sampleCount)
+                let secsPerFrame = elapsed / Double(sampleCount)
+                let eta = remaining * secsPerFrame
                 Task { @MainActor in handler(progress, eta) }
               }
             } else {
