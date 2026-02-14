@@ -126,6 +126,11 @@ Uses `MenuBarExtra(.window)` + MenuBarExtraAccess (1.2.x) for the `isPresented` 
 ## Code style
 
 - Do not add code comments. Generate only code, no inline comments or doc comments.
+- Always create reusable views if possible and put them in the `UI/` folder.
+- Always reuse functions if possible (e.g. time formatting) and put them in the `Utilities/` folder.
+- If a view exceeds 200 lines, break it into separate files using Swift extensions.
+- Always run `make format` after changes.
+- Always run `make build` after changes and make sure there are no warnings or errors.
 
 ## Key constraints
 
