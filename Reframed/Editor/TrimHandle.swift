@@ -19,6 +19,16 @@ struct TrimHandle: View {
       .fill(Color.clear)
       .frame(width: hitWidth, height: height)
       .contentShape(Rectangle())
+      .onContinuousHover { phase in
+        switch phase {
+        case .active:
+          NSCursor.resizeLeftRight.set()
+        case .ended:
+          NSCursor.arrow.set()
+        @unknown default:
+          break
+        }
+      }
       .position(x: positionX, y: height / 2)
       .highPriorityGesture(
         DragGesture(minimumDistance: 0, coordinateSpace: .named("timeline"))
