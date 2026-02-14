@@ -41,34 +41,46 @@ struct EditorView: View {
   var body: some View {
     let _ = colorScheme
     VStack(spacing: 0) {
-      EditorTopBar(
-        editorState: editorState,
-        onOpenFolder: { editorState.openProjectFolder() },
-        onDelete: { editorState.showDeleteConfirmation = true }
-      )
-      .padding(.bottom, 4)
-
-      HStack(spacing: 6) {
+      if editorState.isPreviewMode {
         mainContent
-          .background(ReframedColors.panelBackground)
-          .clipShape(RoundedRectangle(cornerRadius: 8))
-        editorSidebar
-          .background(ReframedColors.panelBackground)
-          .clipShape(RoundedRectangle(cornerRadius: 8))
-        PropertiesPanel(editorState: editorState, selectedTab: selectedTab)
-          .background(ReframedColors.panelBackground)
-          .clipShape(RoundedRectangle(cornerRadius: 8))
-      }
-      .padding(.horizontal, 12)
-      .frame(maxHeight: .infinity)
+          .frame(maxWidth: .infinity, maxHeight: .infinity)
+      } else {
+        EditorTopBar(
+          editorState: editorState,
+          onOpenFolder: { editorState.openProjectFolder() },
+          onDelete: { editorState.showDeleteConfirmation = true }
+        )
+        .padding(.bottom, 4)
 
-      timeline
-        .fixedSize(horizontal: false, vertical: true)
-        .background(ReframedColors.panelBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 8))
+        HStack(spacing: 6) {
+          mainContent
+            .background(ReframedColors.panelBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+          editorSidebar
+            .background(ReframedColors.panelBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+          PropertiesPanel(editorState: editorState, selectedTab: selectedTab)
+            .background(ReframedColors.panelBackground)
+            .clipShape(RoundedRectangle(cornerRadius: 8))
+        }
         .padding(.horizontal, 12)
-        .padding(.top, 12)
-        .padding(.bottom, 12)
+        .frame(maxHeight: .infinity)
+      }
+
+      transportBar
+        .padding(.horizontal, 12)
+        .padding(.top, 8)
+        .padding(.bottom, editorState.isPreviewMode ? 12 : 0)
+
+      if !editorState.isPreviewMode {
+        timeline
+          .fixedSize(horizontal: false, vertical: true)
+          .background(ReframedColors.panelBackground)
+          .clipShape(RoundedRectangle(cornerRadius: 8))
+          .padding(.horizontal, 12)
+          .padding(.top, 8)
+          .padding(.bottom, 12)
+      }
     }
     .frame(minWidth: 1200, minHeight: 800)
     .background(ReframedColors.selectedBackground.opacity(0.55))
@@ -151,11 +163,8 @@ struct EditorView: View {
   }
 
   private var mainContent: some View {
-    VStack(spacing: 0) {
-      videoPreview
-        .frame(maxHeight: .infinity)
-      EditorBottomBar(editorState: editorState)
-    }
+    videoPreview
+      .frame(maxHeight: .infinity)
   }
 
   private var videoPreview: some View {
@@ -225,6 +234,38 @@ struct EditorView: View {
     case .solidColor(let codableColor):
       Color(cgColor: codableColor.cgColor)
     }
+  }
+
+  private var transportBar: some View {
+    HStack {
+      Button(action: { editorState.togglePlayPause() }) {
+        Image(systemName: editorState.isPlaying ? "pause.fill" : "play.fill")
+          .font(.system(size: 14))
+          .frame(width: 28, height: 28)
+      }
+      .buttonStyle(.plain)
+      .foregroundStyle(ReframedColors.primaryText)
+
+      Spacer()
+
+      Text("\(formatPreciseDuration(editorState.currentTime)) / \(formatPreciseDuration(editorState.duration))")
+        .font(.system(size: 12, design: .monospaced))
+        .foregroundStyle(ReframedColors.secondaryText)
+
+      Spacer()
+
+      Button(action: { editorState.isPreviewMode.toggle() }) {
+        Image(systemName: editorState.isPreviewMode ? "arrow.down.right.and.arrow.up.left" : "arrow.up.left.and.arrow.down.right")
+          .font(.system(size: 14))
+          .frame(width: 28, height: 28)
+      }
+      .buttonStyle(.plain)
+      .foregroundStyle(ReframedColors.primaryText)
+    }
+    .padding(.horizontal, 8)
+    .padding(.vertical, 4)
+    .background(ReframedColors.panelBackground)
+    .clipShape(RoundedRectangle(cornerRadius: 8))
   }
 
   private var timeline: some View {

@@ -96,6 +96,12 @@ final class EditorWindow: NSObject, NSWindowDelegate {
       case 49, 36:
         state.togglePlayPause()
         return nil
+      case 53:
+        if state.isPreviewMode {
+          state.isPreviewMode = false
+          return nil
+        }
+        return event
       case 123:
         state.skipBackward()
         return nil

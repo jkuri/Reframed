@@ -52,6 +52,7 @@ final class EditorState {
   var cameraFullscreenRegions: [AudioRegionData] = []
   var isExporting = false
   var exportProgress: Double = 0
+  var isPreviewMode = false
 
   var backgroundStyle: BackgroundStyle = .none
   var canvasAspect: CanvasAspect = .original
