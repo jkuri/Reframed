@@ -48,7 +48,7 @@ struct EditorTopBar: View {
             .foregroundStyle(.white)
             .padding(.horizontal, 18)
             .frame(height: 28)
-            .background(Color.blue)
+            .background(ReframedColors.controlAccentColor)
             .clipShape(RoundedRectangle(cornerRadius: 6))
         }
         .buttonStyle(.plain)
