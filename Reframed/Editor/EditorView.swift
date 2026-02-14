@@ -290,16 +290,19 @@ struct EditorView: View {
   }
 
   private func handleExport(settings: ExportSettings) {
-    Task {
+    editorState.exportTask = Task {
       do {
         let url = try await editorState.export(settings: settings)
+        try Task.checkCancellation()
         editorState.exportResultMessage = "Saved to \(url.lastPathComponent)"
         editorState.exportResultIsError = false
+        editorState.showExportResult = true
+      } catch is CancellationError {
       } catch {
         editorState.exportResultMessage = error.localizedDescription
         editorState.exportResultIsError = true
+        editorState.showExportResult = true
       }
-      editorState.showExportResult = true
     }
   }
 }

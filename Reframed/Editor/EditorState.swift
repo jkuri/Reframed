@@ -52,6 +52,8 @@ final class EditorState {
   var cameraFullscreenRegions: [AudioRegionData] = []
   var isExporting = false
   var exportProgress: Double = 0
+  var exportETA: Double?
+  var exportTask: Task<Void, Never>?
   var isPreviewMode = false
 
   var backgroundStyle: BackgroundStyle = .none
@@ -439,7 +441,11 @@ final class EditorState {
   func export(settings: ExportSettings) async throws -> URL {
     isExporting = true
     exportProgress = 0
-    defer { isExporting = false }
+    exportETA = nil
+    defer {
+      isExporting = false
+      exportTask = nil
+    }
 
     let cursorSnapshot = showCursor ? cursorMetadataProvider?.makeSnapshot() : nil
 
@@ -485,14 +491,20 @@ final class EditorState {
       clickHighlightSize: clickHighlightSize,
       zoomFollowCursor: zoomFollowCursor,
       zoomTimeline: zoomTimeline,
-      progressHandler: { progress in
+      progressHandler: { progress, eta in
         state.exportProgress = progress
+        state.exportETA = eta
       }
     )
     exportProgress = 1.0
     lastExportedURL = url
     logger.info("Export finished: \(url.path)")
     return url
+  }
+
+  func cancelExport() {
+    exportTask?.cancel()
+    exportTask = nil
   }
 
   func deleteRecording() {

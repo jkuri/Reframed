@@ -16,6 +16,11 @@ struct EditorTopBar: View {
           Text("\(Int(editorState.exportProgress * 100))%")
             .font(.system(size: 11).monospacedDigit())
             .foregroundStyle(ReframedColors.secondaryText)
+            .frame(width: 32, alignment: .trailing)
+          Text(editorState.exportETA.map { $0 > 0 ? "ETA \(formatDuration(seconds: Int(ceil($0))))" : "" } ?? "")
+            .font(.system(size: 11).monospacedDigit())
+            .foregroundStyle(ReframedColors.secondaryText)
+            .frame(width: 72, alignment: .leading)
         }
       } else {
         Text(editorState.projectName)
@@ -41,6 +46,19 @@ struct EditorTopBar: View {
         }
         .buttonStyle(.plain)
         .foregroundStyle(ReframedColors.secondaryText)
+
+        if editorState.isExporting {
+          Button(action: { editorState.cancelExport() }) {
+            Text("Cancel")
+              .font(.system(size: 13, weight: .semibold))
+              .foregroundStyle(ReframedColors.primaryText)
+              .padding(.horizontal, 18)
+              .frame(height: 28)
+              .background(ReframedColors.secondaryText.opacity(0.15))
+              .clipShape(RoundedRectangle(cornerRadius: 6))
+          }
+          .buttonStyle(.plain)
+        }
 
         Button(action: { editorState.showExportSheet = true }) {
           Text("Export")

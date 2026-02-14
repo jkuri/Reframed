@@ -126,4 +126,11 @@ enum ExportCodec: Sendable, CaseIterable, Identifiable {
     case .h265: AVAssetExportPresetHEVCHighestQuality
     }
   }
+
+  var videoCodecType: AVVideoCodecType {
+    switch self {
+    case .h264: .h264
+    case .h265: .hevc
+    }
+  }
 }

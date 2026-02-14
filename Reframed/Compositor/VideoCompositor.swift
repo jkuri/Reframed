@@ -33,7 +33,7 @@ enum VideoCompositor {
     clickHighlightSize: CGFloat = 36,
     zoomFollowCursor: Bool = true,
     zoomTimeline: ZoomTimeline? = nil,
-    progressHandler: (@MainActor @Sendable (Double) -> Void)? = nil
+    progressHandler: (@MainActor @Sendable (Double, Double?) -> Void)? = nil
   ) async throws -> URL {
     let composition = AVMutableComposition()
     let screenAsset = AVURLAsset(url: result.screenVideoURL)
@@ -191,18 +191,17 @@ enum VideoCompositor {
       try await addAudioTracks(to: composition, sources: audioSources, videoTrimRange: effectiveTrim)
 
       let outputURL = FileManager.default.tempRecordingURL()
-      guard
-        let exportSession = AVAssetExportSession(
-          asset: composition,
-          presetName: exportSettings.codec.exportPreset
-        )
-      else {
-        throw CaptureError.recordingFailed("Failed to create export session")
-      }
-
-      exportSession.videoComposition = videoComposition
-      exportSession.timeRange = CMTimeRange(start: .zero, duration: effectiveTrim.duration)
-      try await runExport(exportSession, to: outputURL, fileType: exportSettings.format.fileType, progressHandler: progressHandler)
+      try await runManualExport(
+        asset: composition,
+        videoComposition: videoComposition,
+        timeRange: CMTimeRange(start: .zero, duration: effectiveTrim.duration),
+        renderSize: renderSize,
+        codec: exportSettings.codec.videoCodecType,
+        exportFPS: Double(exportFPS),
+        to: outputURL,
+        fileType: exportSettings.format.fileType,
+        progressHandler: progressHandler
+      )
 
       let destination = await MainActor.run {
         FileManager.default.defaultSaveURL(for: outputURL, extension: exportSettings.format.fileExtension)
@@ -247,22 +246,209 @@ enum VideoCompositor {
     _ session: AVAssetExportSession,
     to url: URL,
     fileType: AVFileType = .mp4,
-    progressHandler: (@MainActor @Sendable (Double) -> Void)?
+    progressHandler: (@MainActor @Sendable (Double, Double?) -> Void)?
   ) async throws {
     let progressTask: Task<Void, Never>?
     if let progressHandler {
       let poller = ExportProgressPoller(session)
       progressTask = Task.detached {
         while !Task.isCancelled {
-          await progressHandler(poller.progress)
+          await progressHandler(poller.progress, nil)
           try? await Task.sleep(nanoseconds: 200_000_000)
         }
       }
     } else {
       progressTask = nil
     }
-    try await session.export(to: url, as: fileType)
+    nonisolated(unsafe) let session = session
+    try await withTaskCancellationHandler {
+      try await session.export(to: url, as: fileType)
+    } onCancel: {
+      session.cancelExport()
+    }
     progressTask?.cancel()
+  }
+
+  private static func runManualExport(
+    asset: AVAsset,
+    videoComposition: AVVideoComposition?,
+    timeRange: CMTimeRange,
+    renderSize: CGSize,
+    codec: AVVideoCodecType,
+    exportFPS: Double,
+    to url: URL,
+    fileType: AVFileType,
+    progressHandler: (@MainActor @Sendable (Double, Double?) -> Void)?
+  ) async throws {
+    nonisolated(unsafe) let reader = try AVAssetReader(asset: asset)
+    reader.timeRange = timeRange
+
+    let videoTracks = try await asset.loadTracks(withMediaType: .video)
+    nonisolated(unsafe) let videoOutput = AVAssetReaderVideoCompositionOutput(
+      videoTracks: videoTracks,
+      videoSettings: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
+    )
+    videoOutput.videoComposition = videoComposition
+    reader.add(videoOutput)
+
+    let audioTracks = try await asset.loadTracks(withMediaType: .audio)
+    nonisolated(unsafe) var audioOutput: AVAssetReaderAudioMixOutput?
+    if !audioTracks.isEmpty {
+      let aOutput = AVAssetReaderAudioMixOutput(audioTracks: audioTracks, audioSettings: nil)
+      reader.add(aOutput)
+      audioOutput = aOutput
+    }
+
+    nonisolated(unsafe) let writer = try AVAssetWriter(url: url, fileType: fileType)
+
+    let compressionProperties: [String: Any]
+    if codec == .hevc {
+      compressionProperties = [AVVideoQualityKey: 1.0]
+    } else {
+      let pixels = Double(renderSize.width * renderSize.height)
+      compressionProperties = [AVVideoAverageBitRateKey: pixels * exportFPS * 0.15]
+    }
+    let videoSettings: [String: Any] = [
+      AVVideoCodecKey: codec,
+      AVVideoWidthKey: Int(renderSize.width),
+      AVVideoHeightKey: Int(renderSize.height),
+      AVVideoCompressionPropertiesKey: compressionProperties,
+    ]
+    nonisolated(unsafe) let videoInput = AVAssetWriterInput(mediaType: .video, outputSettings: videoSettings)
+    videoInput.expectsMediaDataInRealTime = false
+    writer.add(videoInput)
+
+    nonisolated(unsafe) var audioInput: AVAssetWriterInput?
+    if audioOutput != nil {
+      let audioSettings: [String: Any] = [
+        AVFormatIDKey: kAudioFormatMPEG4AAC,
+        AVNumberOfChannelsKey: 2,
+        AVSampleRateKey: 44100,
+        AVEncoderBitRateKey: 128_000,
+      ]
+      let aInput = AVAssetWriterInput(mediaType: .audio, outputSettings: audioSettings)
+      aInput.expectsMediaDataInRealTime = false
+      writer.add(aInput)
+      audioInput = aInput
+    }
+
+    guard reader.startReading() else {
+      throw CaptureError.recordingFailed(
+        "AVAssetReader failed to start: \(reader.error?.localizedDescription ?? "unknown")"
+      )
+    }
+    writer.startWriting()
+    writer.startSession(atSourceTime: timeRange.start)
+
+    let duration = CMTimeGetSeconds(timeRange.duration)
+    let totalFrames = max(duration * exportFPS, 1.0)
+    let exportStartTime = CFAbsoluteTimeGetCurrent()
+    nonisolated(unsafe) let cancelled = UnsafeMutablePointer<Bool>.allocate(capacity: 1)
+    cancelled.initialize(to: false)
+    defer { cancelled.deallocate() }
+
+    try await withTaskCancellationHandler {
+      try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, Error>) in
+        nonisolated(unsafe) var framesProcessed = 0
+        nonisolated(unsafe) var continued = false
+
+        let group = DispatchGroup()
+        let videoQueue = DispatchQueue(label: "eu.jankuri.reframed.export.video")
+        let audioQueue = DispatchQueue(label: "eu.jankuri.reframed.export.audio")
+
+        func finishIfNeeded() {
+          guard !continued else { return }
+          continued = true
+
+          if cancelled.pointee {
+            reader.cancelReading()
+            writer.cancelWriting()
+            try? FileManager.default.removeItem(at: url)
+            continuation.resume(throwing: CancellationError())
+            return
+          }
+
+          if reader.status == .failed {
+            writer.cancelWriting()
+            continuation.resume(
+              throwing: CaptureError.recordingFailed(
+                "AVAssetReader failed: \(reader.error?.localizedDescription ?? "unknown")"
+              )
+            )
+            return
+          }
+
+          writer.finishWriting {
+            if writer.status == .failed {
+              continuation.resume(
+                throwing: CaptureError.recordingFailed(
+                  "AVAssetWriter failed: \(writer.error?.localizedDescription ?? "unknown")"
+                )
+              )
+            } else {
+              continuation.resume()
+            }
+          }
+        }
+
+        group.enter()
+        videoInput.requestMediaDataWhenReady(on: videoQueue) {
+          while videoInput.isReadyForMoreMediaData {
+            if cancelled.pointee {
+              videoInput.markAsFinished()
+              group.leave()
+              return
+            }
+            if let buffer = videoOutput.copyNextSampleBuffer() {
+              videoInput.append(buffer)
+              framesProcessed += 1
+              if framesProcessed % 10 == 0, let handler = progressHandler {
+                let progress = min(Double(framesProcessed) / totalFrames, 1.0)
+                let elapsed = CFAbsoluteTimeGetCurrent() - exportStartTime
+                let eta: Double? = progress > 0.01 ? elapsed / progress * (1.0 - progress) : nil
+                Task { @MainActor in handler(progress, eta) }
+              }
+            } else {
+              videoInput.markAsFinished()
+              group.leave()
+              return
+            }
+          }
+        }
+
+        if let aOut = audioOutput, let aIn = audioInput {
+          nonisolated(unsafe) let safeAudioOutput = aOut
+          nonisolated(unsafe) let safeAudioInput = aIn
+          group.enter()
+          safeAudioInput.requestMediaDataWhenReady(on: audioQueue) {
+            while safeAudioInput.isReadyForMoreMediaData {
+              if cancelled.pointee {
+                safeAudioInput.markAsFinished()
+                group.leave()
+                return
+              }
+              if let buffer = safeAudioOutput.copyNextSampleBuffer() {
+                safeAudioInput.append(buffer)
+              } else {
+                safeAudioInput.markAsFinished()
+                group.leave()
+                return
+              }
+            }
+          }
+        }
+
+        group.notify(queue: .main) {
+          finishIfNeeded()
+        }
+      }
+    } onCancel: {
+      cancelled.pointee = true
+    }
+
+    if let handler = progressHandler {
+      await handler(1.0, 0)
+    }
   }
 
   private static func backgroundColorTuples(
