@@ -301,12 +301,12 @@ enum VideoCompositor {
 
     nonisolated(unsafe) let writer = try AVAssetWriter(url: url, fileType: fileType)
 
+    let pixels = Double(renderSize.width * renderSize.height)
     let compressionProperties: [String: Any]
     if codec == .hevc {
-      compressionProperties = [AVVideoQualityKey: 1.0]
+      compressionProperties = [AVVideoAverageBitRateKey: pixels * exportFPS * 0.04]
     } else {
-      let pixels = Double(renderSize.width * renderSize.height)
-      compressionProperties = [AVVideoAverageBitRateKey: pixels * exportFPS * 0.15]
+      compressionProperties = [AVVideoAverageBitRateKey: pixels * exportFPS * 0.06]
     }
     let videoSettings: [String: Any] = [
       AVVideoCodecKey: codec,

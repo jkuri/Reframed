@@ -88,7 +88,7 @@ final class WebcamCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
 
     let output = AVCaptureVideoDataOutput()
     output.videoSettings = [
-      kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA,
+      kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_420YpCbCr8BiPlanarFullRange,
       kCVPixelBufferWidthKey as String: formatW,
       kCVPixelBufferHeightKey as String: formatH,
     ]

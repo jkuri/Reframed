@@ -43,7 +43,7 @@ final class VideoTrackWriter: @unchecked Sendable {
         AVVideoYCbCrMatrixKey: AVVideoYCbCrMatrix_ITU_R_709_2,
       ] as [String: Any],
       AVVideoCompressionPropertiesKey: [
-        AVVideoAverageBitRateKey: width * height * 12,
+        AVVideoAverageBitRateKey: width * height * 5,
         AVVideoProfileLevelKey: AVVideoProfileLevelH264MainAutoLevel,
         AVVideoExpectedSourceFrameRateKey: fps,
         AVVideoAllowFrameReorderingKey: false,

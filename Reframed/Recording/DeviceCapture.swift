@@ -46,7 +46,7 @@ final class DeviceCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
 
     let videoOutput = AVCaptureVideoDataOutput()
     videoOutput.videoSettings = [
-      kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
+      kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
     ]
     videoOutput.setSampleBufferDelegate(self, queue: verifyQueue)
     guard session.canAddOutput(videoOutput) else {

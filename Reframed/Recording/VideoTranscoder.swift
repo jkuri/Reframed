@@ -131,7 +131,7 @@ enum VideoTranscoder {
     let readerOutput = AVAssetReaderTrackOutput(
       track: videoTrack,
       outputSettings: [
-        kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA
+        kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
       ]
     )
     readerOutput.alwaysCopiesSampleData = false
@@ -143,7 +143,7 @@ enum VideoTranscoder {
       AVVideoWidthKey: width,
       AVVideoHeightKey: height,
       AVVideoCompressionPropertiesKey: [
-        AVVideoAverageBitRateKey: width * height * 12,
+        AVVideoAverageBitRateKey: width * height * 5,
         AVVideoExpectedSourceFrameRateKey: 60,
         AVVideoMaxKeyFrameIntervalKey: 120,
       ] as [String: Any],
