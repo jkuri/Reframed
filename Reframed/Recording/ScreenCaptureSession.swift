@@ -1,4 +1,5 @@
 import CoreGraphics
+import CoreMedia
 import Foundation
 import Logging
 @preconcurrency import ScreenCaptureKit
@@ -9,11 +10,10 @@ final class ScreenCaptureSession: NSObject, SCStreamDelegate, SCStreamOutput, @u
   private let logger = Logger(label: "eu.jankuri.reframed.capture-session")
   private var totalCallbacks = 0
   private var completeFrames = 0
-  private var acceptedFrames = 0
+  private var idleFrames = 0
   private var lastLogTime: CFAbsoluteTime = 0
-  private var nextTargetPTS: CMTime = .invalid
-  private var targetFrameInterval: CMTime = .invalid
   private var isPaused = false
+  private var lastPixelBuffer: CVPixelBuffer?
 
   init(videoWriter: VideoTrackWriter) {
     self.videoWriter = videoWriter
@@ -37,24 +37,25 @@ final class ScreenCaptureSession: NSObject, SCStreamDelegate, SCStreamOutput, @u
       filter = SCContentFilter(display: display, excludingApplications: [], exceptingWindows: [])
       sourceRect = CGRect(origin: .zero, size: display.frame.size)
     }
+
     let pixelW = Int(sourceRect.width * displayScale) & ~1
     let pixelH = Int(sourceRect.height * displayScale) & ~1
 
     let captureFps = Int(round(Double(fps) * 1.2))
-    targetFrameInterval = CMTime(value: 1, timescale: CMTimeScale(fps))
-    nextTargetPTS = .invalid
 
     let config = SCStreamConfiguration()
     config.sourceRect = sourceRect
     config.width = pixelW
     config.height = pixelH
     config.minimumFrameInterval = CMTime(value: 1, timescale: CMTimeScale(captureFps))
-    config.pixelFormat = kCVPixelFormatType_420YpCbCr8BiPlanarFullRange
+    config.pixelFormat = kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange
     config.showsCursor = !hideCursor
     config.capturesAudio = false
     config.queueDepth = 8
     config.scalesToFit = false
     config.colorSpaceName = CGColorSpace.sRGB as CFString
+
+    lastPixelBuffer = nil
 
     let stream = SCStream(filter: filter, configuration: config, delegate: self)
     try stream.addStreamOutput(self, type: .screen, sampleHandlerQueue: videoWriter.queue)
@@ -69,7 +70,6 @@ final class ScreenCaptureSession: NSObject, SCStreamDelegate, SCStreamOutput, @u
         "sourceRect": "\(sourceRect)",
         "displayScale": "\(displayScale)",
         "targetFps": "\(fps)",
-        "captureFps": "\(captureFps)",
         "output_size": "\(config.width)x\(config.height)",
       ]
     )
@@ -84,14 +84,13 @@ final class ScreenCaptureSession: NSObject, SCStreamDelegate, SCStreamOutput, @u
   func resume() {
     videoWriter.queue.async {
       self.isPaused = false
-      self.nextTargetPTS = .invalid
     }
   }
 
   func stop() async throws {
     try await stream?.stopCapture()
     stream = nil
-    nextTargetPTS = .invalid
+    lastPixelBuffer = nil
     logger.info("Capture stopped")
   }
 
@@ -105,41 +104,60 @@ final class ScreenCaptureSession: NSObject, SCStreamDelegate, SCStreamOutput, @u
 
     guard let attachments = CMSampleBufferGetSampleAttachmentsArray(sampleBuffer, createIfNecessary: false) as? [[SCStreamFrameInfo: Any]],
       let statusValue = attachments.first?[.status] as? Int,
-      let status = SCFrameStatus(rawValue: statusValue),
-      status == .complete
-    else {
-      return
-    }
-
-    completeFrames += 1
+      let status = SCFrameStatus(rawValue: statusValue)
+    else { return }
 
     if isPaused { return }
 
-    let pts = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
-    if nextTargetPTS.isValid {
-      if CMTimeCompare(pts, nextTargetPTS) < 0 {
-        return
+    if status == .complete {
+      completeFrames += 1
+      if let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) {
+        lastPixelBuffer = imageBuffer
       }
-      nextTargetPTS = CMTimeAdd(nextTargetPTS, targetFrameInterval)
-    } else {
-      nextTargetPTS = CMTimeAdd(pts, targetFrameInterval)
+      videoWriter.appendSampleBuffer(sampleBuffer)
+    } else if status == .idle {
+      idleFrames += 1
+      guard let pixelBuffer = lastPixelBuffer else { return }
+      let pts = CMSampleBufferGetPresentationTimeStamp(sampleBuffer)
+      if let duplicatedSampleBuffer = createSampleBuffer(from: pixelBuffer, pts: pts) {
+        videoWriter.appendSampleBuffer(duplicatedSampleBuffer)
+      }
     }
-
-    acceptedFrames += 1
 
     let now = CFAbsoluteTimeGetCurrent()
     if now - lastLogTime >= 2.0 {
       logger.info(
-        "Frame stats: \(totalCallbacks) callbacks, \(completeFrames) complete, \(acceptedFrames) accepted, \(videoWriter.writtenFrames) written, \(videoWriter.droppedFrames) dropped"
+        "Frame stats: \(totalCallbacks) callbacks, \(completeFrames) complete, \(idleFrames) idle duplicated, \(videoWriter.writtenFrames) written, \(videoWriter.droppedFrames) dropped"
       )
       totalCallbacks = 0
       completeFrames = 0
-      acceptedFrames = 0
+      idleFrames = 0
       videoWriter.resetStats()
       lastLogTime = now
     }
+  }
 
-    videoWriter.appendSampleBuffer(sampleBuffer)
+  private func createSampleBuffer(from pixelBuffer: CVPixelBuffer, pts: CMTime) -> CMSampleBuffer? {
+    var formatDesc: CMVideoFormatDescription?
+    guard CMVideoFormatDescriptionCreateForImageBuffer(allocator: kCFAllocatorDefault, imageBuffer: pixelBuffer, formatDescriptionOut: &formatDesc) == noErr,
+          let formatDescription = formatDesc else {
+      return nil
+    }
+
+    var timingInfo = CMSampleTimingInfo(duration: .invalid, presentationTimeStamp: pts, decodeTimeStamp: .invalid)
+    var newSampleBuffer: CMSampleBuffer?
+
+    guard CMSampleBufferCreateReadyWithImageBuffer(
+      allocator: kCFAllocatorDefault,
+      imageBuffer: pixelBuffer,
+      formatDescription: formatDescription,
+      sampleTiming: &timingInfo,
+      sampleBufferOut: &newSampleBuffer
+    ) == noErr else {
+      return nil
+    }
+
+    return newSampleBuffer
   }
 
   func stream(_ stream: SCStream, didStopWithError error: any Error) {

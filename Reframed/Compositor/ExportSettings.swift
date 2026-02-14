@@ -5,7 +5,7 @@ struct ExportSettings: Sendable {
   var format: ExportFormat = .mp4
   var fps: ExportFPS = .original
   var resolution: ExportResolution = .original
-  var codec: ExportCodec = .h264
+  var codec: ExportCodec = .h265
 }
 
 enum ExportFormat: Sendable, CaseIterable, Identifiable {
@@ -108,8 +108,8 @@ enum ExportResolution: Sendable, CaseIterable, Identifiable {
 }
 
 enum ExportCodec: Sendable, CaseIterable, Identifiable {
-  case h264
   case h265
+  case h264
 
   var id: Self { self }
 
@@ -117,6 +117,13 @@ enum ExportCodec: Sendable, CaseIterable, Identifiable {
     switch self {
     case .h264: "H.264"
     case .h265: "H.265 (HEVC)"
+    }
+  }
+
+  var description: String {
+    switch self {
+    case .h264: "Widely compatible. Larger file size, works everywhere."
+    case .h265: "Better compression. Smaller file size, same quality."
     }
   }
 

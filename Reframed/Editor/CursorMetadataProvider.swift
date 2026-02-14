@@ -18,7 +18,13 @@ final class CursorMetadataProvider: @unchecked Sendable {
     let samples = metadata.samples
     guard !samples.isEmpty else { return CGPoint(x: 0.5, y: 0.5) }
     let idx = binarySearch(samples: samples, time: time)
-    return CGPoint(x: samples[idx].x, y: samples[idx].y)
+    let s0 = samples[idx]
+    guard idx + 1 < samples.count else { return CGPoint(x: s0.x, y: s0.y) }
+    let s1 = samples[idx + 1]
+    let dt = s1.t - s0.t
+    guard dt > 0 else { return CGPoint(x: s0.x, y: s0.y) }
+    let t = (time - s0.t) / dt
+    return CGPoint(x: s0.x + (s1.x - s0.x) * t, y: s0.y + (s1.y - s0.y) * t)
   }
 
   func isPressed(at time: Double) -> Bool {
@@ -80,7 +86,13 @@ final class CursorMetadataSnapshot: @unchecked Sendable {
   func sample(at time: Double) -> CGPoint {
     guard !samples.isEmpty else { return CGPoint(x: 0.5, y: 0.5) }
     let idx = binarySearch(time: time)
-    return CGPoint(x: samples[idx].x, y: samples[idx].y)
+    let s0 = samples[idx]
+    guard idx + 1 < samples.count else { return CGPoint(x: s0.x, y: s0.y) }
+    let s1 = samples[idx + 1]
+    let dt = s1.t - s0.t
+    guard dt > 0 else { return CGPoint(x: s0.x, y: s0.y) }
+    let t = (time - s0.t) / dt
+    return CGPoint(x: s0.x + (s1.x - s0.x) * t, y: s0.y + (s1.y - s0.y) * t)
   }
 
   func activeClicks(at time: Double, within duration: Double = 0.4) -> [(point: CGPoint, progress: Double)] {

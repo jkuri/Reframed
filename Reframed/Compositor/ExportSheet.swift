@@ -22,6 +22,7 @@ struct ExportSheet: View {
             }
           }
           .pickerStyle(.segmented)
+          .labelsHidden()
         }
 
         settingsRow(label: "Codec") {
@@ -31,7 +32,13 @@ struct ExportSheet: View {
             }
           }
           .pickerStyle(.segmented)
+          .labelsHidden()
         }
+
+        Text(settings.codec.description)
+          .font(.system(size: 11))
+          .foregroundStyle(ReframedColors.dimLabel)
+          .padding(.top, -10)
 
         settingsRow(label: "Frame Rate") {
           Picker("", selection: $settings.fps) {
@@ -40,6 +47,7 @@ struct ExportSheet: View {
             }
           }
           .pickerStyle(.segmented)
+          .labelsHidden()
           .disabled(false)
           .onChange(of: settings.fps) { _, newValue in
             if let fpsVal = newValue.numericValue, fpsVal > sourceFPS {
@@ -52,7 +60,6 @@ struct ExportSheet: View {
           Text("Source recorded at \(sourceFPS) fps. Higher frame rates are not available.")
             .font(.system(size: 11))
             .foregroundStyle(ReframedColors.dimLabel)
-            .padding(.leading, 2)
             .padding(.top, -10)
         }
 
@@ -63,6 +70,7 @@ struct ExportSheet: View {
             }
           }
           .pickerStyle(.segmented)
+          .labelsHidden()
         }
       }
       .padding(.horizontal, 28)
@@ -109,7 +117,7 @@ private struct ExportSheetButtonStyle: ButtonStyle {
       .frame(height: 30)
       .background(
         isPrimary
-          ? (configuration.isPressed ? Color.blue.opacity(0.8) : Color.blue)
+          ? (configuration.isPressed ? ReframedColors.buttonPressed : ReframedColors.buttonBackground)
           : (configuration.isPressed ? ReframedColors.buttonPressed : ReframedColors.buttonBackground)
       )
       .clipShape(RoundedRectangle(cornerRadius: 6))
