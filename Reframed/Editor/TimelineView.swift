@@ -284,7 +284,7 @@ struct TimelineView: View {
       Color.clear
 
       RoundedRectangle(cornerRadius: 10)
-        .fill(accentColor.opacity(0.1))
+        .fill(accentColor.opacity(0.6))
         .frame(width: max(0, width * (trimEnd - trimStart)), height: height)
         .offset(x: width * trimStart)
     }
