@@ -277,12 +277,16 @@ final class EditorState {
 
   func syncAudioRegionsToPlayer() {
     playerController.systemAudioRegions = systemAudioRegions.map { region in
-      (start: CMTime(seconds: region.startSeconds, preferredTimescale: 600),
-       end: CMTime(seconds: region.endSeconds, preferredTimescale: 600))
+      (
+        start: CMTime(seconds: region.startSeconds, preferredTimescale: 600),
+        end: CMTime(seconds: region.endSeconds, preferredTimescale: 600)
+      )
     }
     playerController.micAudioRegions = micAudioRegions.map { region in
-      (start: CMTime(seconds: region.startSeconds, preferredTimescale: 600),
-       end: CMTime(seconds: region.endSeconds, preferredTimescale: 600))
+      (
+        start: CMTime(seconds: region.startSeconds, preferredTimescale: 600),
+        end: CMTime(seconds: region.endSeconds, preferredTimescale: 600)
+      )
     }
   }
 
@@ -337,8 +341,18 @@ final class EditorState {
 
     let cursorSnapshot = showCursor ? cursorMetadataProvider?.makeSnapshot() : nil
 
-    let sysRegions = systemAudioRegions.map { CMTimeRange(start: CMTime(seconds: $0.startSeconds, preferredTimescale: 600), end: CMTime(seconds: $0.endSeconds, preferredTimescale: 600)) }
-    let micRegions = micAudioRegions.map { CMTimeRange(start: CMTime(seconds: $0.startSeconds, preferredTimescale: 600), end: CMTime(seconds: $0.endSeconds, preferredTimescale: 600)) }
+    let sysRegions = systemAudioRegions.map {
+      CMTimeRange(
+        start: CMTime(seconds: $0.startSeconds, preferredTimescale: 600),
+        end: CMTime(seconds: $0.endSeconds, preferredTimescale: 600)
+      )
+    }
+    let micRegions = micAudioRegions.map {
+      CMTimeRange(
+        start: CMTime(seconds: $0.startSeconds, preferredTimescale: 600),
+        end: CMTime(seconds: $0.endSeconds, preferredTimescale: 600)
+      )
+    }
 
     let state = self
     let url = try await VideoCompositor.export(

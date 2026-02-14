@@ -47,7 +47,8 @@ struct TimelineView: View {
             icon: "display",
             rowIndex: 0,
             borderColor: ReframedColors.screenTrackColor,
-            content: { width, height in videoTrackBackground(width: width, height: height, trimStart: videoTrimStart, trimEnd: videoTrimEnd) },
+            content: { width, height in videoTrackBackground(width: width, height: height, trimStart: videoTrimStart, trimEnd: videoTrimEnd)
+            },
             trimStart: videoTrimStart,
             trimEnd: videoTrimEnd,
             onTrimStart: { f in
@@ -64,7 +65,9 @@ struct TimelineView: View {
               icon: "web.camera",
               rowIndex: 1,
               borderColor: ReframedColors.webcamTrackColor,
-              content: { width, height in videoTrackBackground(width: width, height: height, isWebcam: true, trimStart: videoTrimStart, trimEnd: videoTrimEnd) },
+              content: { width, height in
+                videoTrackBackground(width: width, height: height, isWebcam: true, trimStart: videoTrimStart, trimEnd: videoTrimEnd)
+              },
               trimStart: videoTrimStart,
               trimEnd: videoTrimEnd,
               onTrimStart: { f in
@@ -252,7 +255,13 @@ struct TimelineView: View {
 
   // MARK: - Video Content
 
-  private func videoTrackBackground(width: CGFloat, height: CGFloat, isWebcam: Bool = false, trimStart: Double, trimEnd: Double) -> some View {
+  private func videoTrackBackground(
+    width: CGFloat,
+    height: CGFloat,
+    isWebcam: Bool = false,
+    trimStart: Double,
+    trimEnd: Double
+  ) -> some View {
     let accentColor = isWebcam ? ReframedColors.webcamTrackColor : ReframedColors.screenTrackColor
 
     return ZStack(alignment: .leading) {

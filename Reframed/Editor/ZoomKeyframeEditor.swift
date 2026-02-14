@@ -45,16 +45,18 @@ func groupZoomRegions(from keyframes: [ZoomKeyframe]) -> [ZoomRegion] {
           zoomEnd = keyframes[regionEnd].t
         }
 
-        regions.append(ZoomRegion(
-          startIndex: regionStart,
-          count: count,
-          startTime: keyframes[regionStart].t,
-          zoomStartTime: zoomStart,
-          zoomEndTime: zoomEnd,
-          endTime: keyframes[regionEnd].t,
-          isAuto: keyframes[regionStart].isAuto,
-          peakZoom: peak
-        ))
+        regions.append(
+          ZoomRegion(
+            startIndex: regionStart,
+            count: count,
+            startTime: keyframes[regionStart].t,
+            zoomStartTime: zoomStart,
+            zoomEndTime: zoomEnd,
+            endTime: keyframes[regionEnd].t,
+            isAuto: keyframes[regionStart].isAuto,
+            peakZoom: peak
+          )
+        )
       }
 
       i = regionEnd + 1
@@ -83,16 +85,18 @@ func groupZoomRegions(from keyframes: [ZoomKeyframe]) -> [ZoomRegion] {
         zoomEnd = keyframes[regionEnd].t
       }
 
-      regions.append(ZoomRegion(
-        startIndex: regionStart,
-        count: count,
-        startTime: keyframes[regionStart].t,
-        zoomStartTime: keyframes[regionStart].t,
-        zoomEndTime: zoomEnd,
-        endTime: keyframes[regionEnd].t,
-        isAuto: keyframes[regionStart].isAuto,
-        peakZoom: peak
-      ))
+      regions.append(
+        ZoomRegion(
+          startIndex: regionStart,
+          count: count,
+          startTime: keyframes[regionStart].t,
+          zoomStartTime: keyframes[regionStart].t,
+          zoomEndTime: zoomEnd,
+          endTime: keyframes[regionEnd].t,
+          isAuto: keyframes[regionStart].isAuto,
+          peakZoom: peak
+        )
+      )
 
       i = regionEnd + 1
     } else {

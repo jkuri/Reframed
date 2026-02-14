@@ -39,13 +39,15 @@ enum ZoomDetector {
         }
       }
 
-      regions.append(ClickRegion(
-        startTime: click.t,
-        endTime: click.t,
-        centerX: click.x,
-        centerY: click.y,
-        clickCount: 1
-      ))
+      regions.append(
+        ClickRegion(
+          startTime: click.t,
+          endTime: click.t,
+          centerX: click.x,
+          centerY: click.y,
+          clickCount: 1
+        )
+      )
     }
 
     var keyframes: [ZoomKeyframe] = []
