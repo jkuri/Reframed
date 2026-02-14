@@ -33,6 +33,12 @@ struct ZoomSettingsData: Codable, Sendable {
   var keyframes: [ZoomKeyframe]
 }
 
+struct AudioRegionData: Codable, Sendable, Identifiable {
+  var id: UUID = UUID()
+  var startSeconds: Double
+  var endSeconds: Double
+}
+
 struct EditorStateData: Codable, Sendable {
   var trimStartSeconds: Double
   var trimEndSeconds: Double
@@ -45,6 +51,8 @@ struct EditorStateData: Codable, Sendable {
   var cameraLayout: CameraLayout
   var cursorSettings: CursorSettingsData?
   var zoomSettings: ZoomSettingsData?
+  var systemAudioRegions: [AudioRegionData]?
+  var micAudioRegions: [AudioRegionData]?
 }
 
 struct CodableSize: Codable, Sendable {

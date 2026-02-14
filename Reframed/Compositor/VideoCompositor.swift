@@ -8,15 +8,15 @@ enum VideoCompositor {
 
   private struct AudioSource {
     let url: URL
-    let trimRange: CMTimeRange
+    let regions: [CMTimeRange]
   }
 
   static func export(
     result: RecordingResult,
     cameraLayout: CameraLayout,
     trimRange: CMTimeRange,
-    systemAudioTrimRange: CMTimeRange? = nil,
-    micAudioTrimRange: CMTimeRange? = nil,
+    systemAudioRegions: [CMTimeRange]? = nil,
+    micAudioRegions: [CMTimeRange]? = nil,
     backgroundStyle: BackgroundStyle = .none,
     canvasAspect: CanvasAspect = .original,
     padding: CGFloat = 0,
@@ -59,10 +59,10 @@ enum VideoCompositor {
 
     var audioSources: [AudioSource] = []
     if let sysURL = result.systemAudioURL {
-      audioSources.append(AudioSource(url: sysURL, trimRange: systemAudioTrimRange ?? effectiveTrim))
+      audioSources.append(AudioSource(url: sysURL, regions: systemAudioRegions ?? [effectiveTrim]))
     }
     if let micURL = result.microphoneAudioURL {
-      audioSources.append(AudioSource(url: micURL, trimRange: micAudioTrimRange ?? effectiveTrim))
+      audioSources.append(AudioSource(url: micURL, regions: micAudioRegions ?? [effectiveTrim]))
     }
 
     let hasVisualEffects =
@@ -286,18 +286,21 @@ enum VideoCompositor {
       let asset = AVURLAsset(url: source.url)
       guard let audioTrack = try await asset.loadTracks(withMediaType: .audio).first else { continue }
 
-      let overlapStart = CMTimeMaximum(source.trimRange.start, videoTrimRange.start)
-      let overlapEnd = CMTimeMinimum(source.trimRange.end, videoTrimRange.end)
-      guard CMTimeCompare(overlapEnd, overlapStart) > 0 else { continue }
-
-      let sourceRange = CMTimeRange(start: overlapStart, end: overlapEnd)
-      let insertionTime = CMTimeSubtract(overlapStart, videoTrimRange.start)
-
       let compTrack = composition.addMutableTrack(
         withMediaType: .audio,
         preferredTrackID: kCMPersistentTrackID_Invalid
       )
-      try compTrack?.insertTimeRange(sourceRange, of: audioTrack, at: insertionTime)
+
+      for region in source.regions {
+        let overlapStart = CMTimeMaximum(region.start, videoTrimRange.start)
+        let overlapEnd = CMTimeMinimum(region.end, videoTrimRange.end)
+        guard CMTimeCompare(overlapEnd, overlapStart) > 0 else { continue }
+
+        let sourceRange = CMTimeRange(start: overlapStart, end: overlapEnd)
+        let insertionTime = CMTimeSubtract(overlapStart, videoTrimRange.start)
+
+        try compTrack?.insertTimeRange(sourceRange, of: audioTrack, at: insertionTime)
+      }
     }
   }
 }

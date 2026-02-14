@@ -103,11 +103,11 @@ func groupZoomRegions(from keyframes: [ZoomKeyframe]) -> [ZoomRegion] {
   return regions
 }
 
-private enum RegionDragType {
+enum RegionDragType {
   case move, resizeLeft, resizeRight
 }
 
-private struct RightClickOverlay: NSViewRepresentable {
+struct RightClickOverlay: NSViewRepresentable {
   let action: () -> Void
 
   func makeNSView(context: Context) -> RightClickNSView {

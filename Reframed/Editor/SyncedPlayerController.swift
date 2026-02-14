@@ -15,10 +15,8 @@ final class SyncedPlayerController {
   private var timeObserver: Any?
   private var boundaryObserver: Any?
   var trimEnd: CMTime = .zero
-  var systemAudioTrimStart: CMTime = .zero
-  var systemAudioTrimEnd: CMTime = .zero
-  var micAudioTrimStart: CMTime = .zero
-  var micAudioTrimEnd: CMTime = .zero
+  var systemAudioRegions: [(start: CMTime, end: CMTime)] = []
+  var micAudioRegions: [(start: CMTime, end: CMTime)] = []
 
   init(result: RecordingResult) {
     let screenAsset = AVURLAsset(url: result.screenVideoURL)
@@ -77,11 +75,15 @@ final class SyncedPlayerController {
 
   private func updateAudioMuting(at time: CMTime) {
     if let sysPlayer = systemAudioPlayer {
-      let inRange = CMTimeCompare(time, systemAudioTrimStart) >= 0 && CMTimeCompare(time, systemAudioTrimEnd) < 0
+      let inRange = systemAudioRegions.contains { region in
+        CMTimeCompare(time, region.start) >= 0 && CMTimeCompare(time, region.end) < 0
+      }
       sysPlayer.isMuted = !inRange
     }
     if let micPlayer = micAudioPlayer {
-      let inRange = CMTimeCompare(time, micAudioTrimStart) >= 0 && CMTimeCompare(time, micAudioTrimEnd) < 0
+      let inRange = micAudioRegions.contains { region in
+        CMTimeCompare(time, region.start) >= 0 && CMTimeCompare(time, region.end) < 0
+      }
       micPlayer.isMuted = !inRange
     }
   }

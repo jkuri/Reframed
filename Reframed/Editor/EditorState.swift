@@ -34,6 +34,10 @@ enum CanvasAspect: String, Codable, Sendable, CaseIterable, Identifiable {
   }
 }
 
+enum AudioTrackType {
+  case system, mic
+}
+
 @MainActor
 @Observable
 final class EditorState {
@@ -43,10 +47,8 @@ final class EditorState {
   var cameraLayout = CameraLayout()
   var trimStart: CMTime = .zero
   var trimEnd: CMTime = .zero
-  var systemAudioTrimStart: CMTime = .zero
-  var systemAudioTrimEnd: CMTime = .zero
-  var micAudioTrimStart: CMTime = .zero
-  var micAudioTrimEnd: CMTime = .zero
+  var systemAudioRegions: [AudioRegionData] = []
+  var micAudioRegions: [AudioRegionData] = []
   var isExporting = false
   var exportProgress: Double = 0
 
@@ -115,11 +117,15 @@ final class EditorState {
   func setup() async {
     await playerController.loadDuration()
     trimEnd = playerController.duration
-    systemAudioTrimEnd = playerController.duration
-    micAudioTrimEnd = playerController.duration
+    let dur = CMTimeGetSeconds(playerController.duration)
+    if result.systemAudioURL != nil {
+      systemAudioRegions = [AudioRegionData(startSeconds: 0, endSeconds: dur)]
+    }
+    if result.microphoneAudioURL != nil {
+      micAudioRegions = [AudioRegionData(startSeconds: 0, endSeconds: dur)]
+    }
     playerController.trimEnd = trimEnd
-    playerController.systemAudioTrimEnd = systemAudioTrimEnd
-    playerController.micAudioTrimEnd = micAudioTrimEnd
+    syncAudioRegionsToPlayer()
     playerController.setupTimeObserver()
 
     if let cursorURL = project?.cursorMetadataURL ?? result.cursorMetadataURL {
@@ -155,6 +161,13 @@ final class EditorState {
           zoomTimeline = ZoomTimeline(keyframes: zoomSettings.keyframes)
         }
       }
+      if let savedSysRegions = saved.systemAudioRegions, !savedSysRegions.isEmpty {
+        systemAudioRegions = savedSysRegions
+      }
+      if let savedMicRegions = saved.micAudioRegions, !savedMicRegions.isEmpty {
+        micAudioRegions = savedMicRegions
+      }
+      syncAudioRegionsToPlayer()
     } else if hasWebcam {
       setCameraCorner(.bottomRight)
     }
@@ -176,24 +189,101 @@ final class EditorState {
     playerController.trimEnd = time
   }
 
-  func updateSystemAudioTrimStart(_ time: CMTime) {
-    systemAudioTrimStart = time
-    playerController.systemAudioTrimStart = time
+  private func regions(for trackType: AudioTrackType) -> [AudioRegionData] {
+    switch trackType {
+    case .system: return systemAudioRegions
+    case .mic: return micAudioRegions
+    }
   }
 
-  func updateSystemAudioTrimEnd(_ time: CMTime) {
-    systemAudioTrimEnd = time
-    playerController.systemAudioTrimEnd = time
+  private func setRegions(_ regions: [AudioRegionData], for trackType: AudioTrackType) {
+    let sorted = regions.sorted { $0.startSeconds < $1.startSeconds }
+    switch trackType {
+    case .system: systemAudioRegions = sorted
+    case .mic: micAudioRegions = sorted
+    }
+    syncAudioRegionsToPlayer()
   }
 
-  func updateMicAudioTrimStart(_ time: CMTime) {
-    micAudioTrimStart = time
-    playerController.micAudioTrimStart = time
+  func updateRegionStart(trackType: AudioTrackType, regionId: UUID, newStart: Double) {
+    var regs = regions(for: trackType)
+    guard let idx = regs.firstIndex(where: { $0.id == regionId }) else { return }
+    let minStart: Double = idx > 0 ? regs[idx - 1].endSeconds : 0
+    let maxStart = regs[idx].endSeconds - 0.01
+    regs[idx].startSeconds = max(minStart, min(maxStart, newStart))
+    setRegions(regs, for: trackType)
   }
 
-  func updateMicAudioTrimEnd(_ time: CMTime) {
-    micAudioTrimEnd = time
-    playerController.micAudioTrimEnd = time
+  func updateRegionEnd(trackType: AudioTrackType, regionId: UUID, newEnd: Double) {
+    var regs = regions(for: trackType)
+    guard let idx = regs.firstIndex(where: { $0.id == regionId }) else { return }
+    let dur = CMTimeGetSeconds(duration)
+    let maxEnd: Double = idx < regs.count - 1 ? regs[idx + 1].startSeconds : dur
+    let minEnd = regs[idx].startSeconds + 0.01
+    regs[idx].endSeconds = max(minEnd, min(maxEnd, newEnd))
+    setRegions(regs, for: trackType)
+  }
+
+  func moveRegion(trackType: AudioTrackType, regionId: UUID, newStart: Double) {
+    var regs = regions(for: trackType)
+    guard let idx = regs.firstIndex(where: { $0.id == regionId }) else { return }
+    let dur = CMTimeGetSeconds(duration)
+    let regionDuration = regs[idx].endSeconds - regs[idx].startSeconds
+    let minStart: Double = idx > 0 ? regs[idx - 1].endSeconds : 0
+    let maxStart: Double = (idx < regs.count - 1 ? regs[idx + 1].startSeconds : dur) - regionDuration
+    let clampedStart = max(minStart, min(maxStart, newStart))
+    regs[idx].startSeconds = clampedStart
+    regs[idx].endSeconds = clampedStart + regionDuration
+    setRegions(regs, for: trackType)
+  }
+
+  func addRegion(trackType: AudioTrackType, atTime time: Double) {
+    var regs = regions(for: trackType)
+    let dur = CMTimeGetSeconds(duration)
+    let desiredHalf: Double = 1.0
+
+    var gapStart: Double = 0
+    var gapEnd: Double = dur
+    var insertIdx = regs.count
+
+    for i in 0..<regs.count {
+      if time < regs[i].startSeconds {
+        gapEnd = regs[i].startSeconds
+        insertIdx = i
+        break
+      }
+      gapStart = regs[i].endSeconds
+    }
+    if insertIdx == regs.count {
+      gapEnd = dur
+    }
+
+    guard gapEnd - gapStart >= 0.05 else { return }
+
+    let regionStart = max(gapStart, time - desiredHalf)
+    let regionEnd = min(gapEnd, time + desiredHalf)
+    let finalStart = max(gapStart, min(regionStart, regionEnd - 0.05))
+    let finalEnd = min(gapEnd, max(regionEnd, finalStart + 0.05))
+
+    regs.insert(AudioRegionData(startSeconds: finalStart, endSeconds: finalEnd), at: insertIdx)
+    setRegions(regs, for: trackType)
+  }
+
+  func removeRegion(trackType: AudioTrackType, regionId: UUID) {
+    var regs = regions(for: trackType)
+    regs.removeAll { $0.id == regionId }
+    setRegions(regs, for: trackType)
+  }
+
+  func syncAudioRegionsToPlayer() {
+    playerController.systemAudioRegions = systemAudioRegions.map { region in
+      (start: CMTime(seconds: region.startSeconds, preferredTimescale: 600),
+       end: CMTime(seconds: region.endSeconds, preferredTimescale: 600))
+    }
+    playerController.micAudioRegions = micAudioRegions.map { region in
+      (start: CMTime(seconds: region.startSeconds, preferredTimescale: 600),
+       end: CMTime(seconds: region.endSeconds, preferredTimescale: 600))
+    }
   }
 
   func setCameraCorner(_ corner: CameraCorner) {
@@ -247,13 +337,16 @@ final class EditorState {
 
     let cursorSnapshot = showCursor ? cursorMetadataProvider?.makeSnapshot() : nil
 
+    let sysRegions = systemAudioRegions.map { CMTimeRange(start: CMTime(seconds: $0.startSeconds, preferredTimescale: 600), end: CMTime(seconds: $0.endSeconds, preferredTimescale: 600)) }
+    let micRegions = micAudioRegions.map { CMTimeRange(start: CMTime(seconds: $0.startSeconds, preferredTimescale: 600), end: CMTime(seconds: $0.endSeconds, preferredTimescale: 600)) }
+
     let state = self
     let url = try await VideoCompositor.export(
       result: result,
       cameraLayout: cameraLayout,
       trimRange: CMTimeRange(start: trimStart, end: trimEnd),
-      systemAudioTrimRange: CMTimeRange(start: systemAudioTrimStart, end: systemAudioTrimEnd),
-      micAudioTrimRange: CMTimeRange(start: micAudioTrimStart, end: micAudioTrimEnd),
+      systemAudioRegions: sysRegions.isEmpty ? nil : sysRegions,
+      micAudioRegions: micRegions.isEmpty ? nil : micRegions,
       backgroundStyle: backgroundStyle,
       canvasAspect: canvasAspect,
       padding: padding,
@@ -359,7 +452,9 @@ final class EditorState {
       cameraBorderWidth: cameraBorderWidth,
       cameraLayout: cameraLayout,
       cursorSettings: cursorSettings,
-      zoomSettings: zoomSettings
+      zoomSettings: zoomSettings,
+      systemAudioRegions: systemAudioRegions.isEmpty ? nil : systemAudioRegions,
+      micAudioRegions: micAudioRegions.isEmpty ? nil : micAudioRegions
     )
     try? project.saveEditorState(data)
   }
