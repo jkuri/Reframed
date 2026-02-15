@@ -1,3 +1,4 @@
+import AVFoundation
 import SwiftUI
 
 struct RecentProject: Identifiable {
@@ -5,6 +6,11 @@ struct RecentProject: Identifiable {
   let url: URL
   let name: String
   let createdAt: Date
+  let captureMode: CaptureMode?
+  let hasWebcam: Bool
+  let hasSystemAudio: Bool
+  let hasMicrophoneAudio: Bool
+  let duration: Int?
 }
 
 struct MenuBarView: View {
@@ -87,12 +93,12 @@ struct MenuBarView: View {
       .frame(width: 320)
     }
     .background(ReframedColors.panelBackground)
-    .onAppear {
-      loadRecentProjects()
+    .task {
+      await loadRecentProjects()
     }
   }
 
-  private func loadRecentProjects() {
+  private func loadRecentProjects() async {
     let path = (ConfigService.shared.projectFolder as NSString).expandingTildeInPath
     let folderURL = URL(fileURLWithPath: path)
     let fm = FileManager.default
@@ -119,7 +125,23 @@ struct MenuBarView: View {
       else { continue }
 
       let name = metadata.name ?? url.deletingPathExtension().lastPathComponent
-      projects.append(RecentProject(url: url, name: name, createdAt: metadata.createdAt))
+      let screenURL = url.appendingPathComponent("screen.mp4")
+      let asset = AVURLAsset(url: screenURL)
+      let duration = try? await asset.load(.duration)
+      let durationSeconds = duration.map { Int(CMTimeGetSeconds($0)) }
+
+      projects.append(
+        RecentProject(
+          url: url,
+          name: name,
+          createdAt: metadata.createdAt,
+          captureMode: metadata.captureMode,
+          hasWebcam: metadata.hasWebcam || metadata.webcamSize != nil,
+          hasSystemAudio: metadata.hasSystemAudio,
+          hasMicrophoneAudio: metadata.hasMicrophoneAudio,
+          duration: durationSeconds.flatMap { $0 > 0 ? $0 : nil }
+        )
+      )
     }
 
     let sorted = projects.sorted { $0.createdAt > $1.createdAt }
@@ -141,11 +163,20 @@ private struct ProjectRow: View {
     return f
   }()
 
+  private var sourceIcon: String {
+    switch project.captureMode {
+    case .device:
+      return "iphone"
+    default:
+      return "macbook"
+    }
+  }
+
   var body: some View {
     let _ = colorScheme
     Button(action: action) {
       HStack(spacing: 10) {
-        Image(systemName: "film")
+        Image(systemName: sourceIcon)
           .font(.system(size: 18))
           .foregroundStyle(ReframedColors.secondaryText)
           .frame(width: 24)
@@ -156,9 +187,45 @@ private struct ProjectRow: View {
             .foregroundStyle(ReframedColors.primaryText)
             .lineLimit(1)
 
-          Text(Self.dateFormatter.string(from: project.createdAt))
-            .font(.system(size: 10))
-            .foregroundStyle(ReframedColors.tertiaryText)
+          HStack(spacing: 4) {
+            Text(Self.dateFormatter.string(from: project.createdAt))
+              .font(.system(size: 10))
+              .foregroundStyle(ReframedColors.tertiaryText)
+
+            if let duration = project.duration {
+              Text("·")
+                .font(.system(size: 10))
+                .foregroundStyle(ReframedColors.tertiaryText)
+
+              Text(formatDuration(seconds: duration))
+                .font(.system(size: 10))
+                .foregroundStyle(ReframedColors.tertiaryText)
+            }
+
+            if project.hasWebcam || project.hasSystemAudio || project.hasMicrophoneAudio {
+              Text("·")
+                .font(.system(size: 10))
+                .foregroundStyle(ReframedColors.tertiaryText)
+            }
+
+            if project.hasWebcam {
+              Image(systemName: "web.camera")
+                .font(.system(size: 9))
+                .foregroundStyle(ReframedColors.tertiaryText)
+            }
+
+            if project.hasSystemAudio {
+              Image(systemName: "speaker.wave.2")
+                .font(.system(size: 9))
+                .foregroundStyle(ReframedColors.tertiaryText)
+            }
+
+            if project.hasMicrophoneAudio {
+              Image(systemName: "mic")
+                .font(.system(size: 9))
+                .foregroundStyle(ReframedColors.tertiaryText)
+            }
+          }
         }
 
         Spacer()

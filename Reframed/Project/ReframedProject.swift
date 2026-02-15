@@ -46,7 +46,14 @@ struct ReframedProject: Sendable {
     )
   }
 
-  static func create(from result: RecordingResult, fps: Int, in directory: URL) throws -> ReframedProject {
+  static func create(
+    from result: RecordingResult,
+    fps: Int,
+    captureMode: CaptureMode,
+    in directory: URL
+  ) throws
+    -> ReframedProject
+  {
     let fm = FileManager.default
     let bundleName = "recording-\(timestamp()).frm"
     let bundleURL = directory.appendingPathComponent(bundleName)
@@ -79,7 +86,9 @@ struct ReframedProject: Sendable {
       webcamSize: result.webcamSize.map { CodableSize($0) },
       hasSystemAudio: result.systemAudioURL != nil,
       hasMicrophoneAudio: result.microphoneAudioURL != nil,
-      hasCursorMetadata: result.cursorMetadataURL != nil
+      hasCursorMetadata: result.cursorMetadataURL != nil,
+      hasWebcam: result.webcamVideoURL != nil,
+      captureMode: captureMode
     )
 
     let encoder = JSONEncoder()

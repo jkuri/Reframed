@@ -11,6 +11,8 @@ struct ProjectMetadata: Codable, Sendable {
   var hasSystemAudio: Bool
   var hasMicrophoneAudio: Bool
   var hasCursorMetadata: Bool = false
+  var hasWebcam: Bool = false
+  var captureMode: CaptureMode?
   var editorState: EditorStateData?
 }
 

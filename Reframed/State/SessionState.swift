@@ -496,7 +496,7 @@ final class SessionState {
 
     let saveDir = FileManager.default.projectSaveDirectory()
     do {
-      let project = try ReframedProject.create(from: result, fps: result.fps, in: saveDir)
+      let project = try ReframedProject.create(from: result, fps: result.fps, captureMode: captureMode, in: saveDir)
       openEditor(project: project)
     } catch {
       logger.error("Failed to create project bundle: \(error)")
