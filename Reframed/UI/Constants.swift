@@ -1,4 +1,9 @@
+import AppKit
 import SwiftUI
+
+enum Window {
+  static let sharingType: NSWindow.SharingType = .none
+}
 
 enum Layout {
   static let sectionSpacing: CGFloat = 32

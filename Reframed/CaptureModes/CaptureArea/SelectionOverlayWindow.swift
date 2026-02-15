@@ -19,7 +19,7 @@ final class SelectionOverlayWindow: NSWindow {
     ignoresMouseEvents = false
     acceptsMouseMovedEvents = true
     hasShadow = false
-    sharingType = .none
+    sharingType = Window.sharingType
 
     let overlayView = SelectionOverlayView(frame: unionRect, session: session)
     session.overlayView = overlayView

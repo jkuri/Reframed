@@ -73,7 +73,7 @@ final class DevicePreviewWindow {
     panel.hasShadow = true
     panel.backgroundColor = .clear
     panel.isOpaque = false
-    panel.sharingType = .none
+    panel.sharingType = Window.sharingType
     panel.collectionBehavior = [.canJoinAllSpaces]
 
     let contentView = NSView(frame: NSRect(origin: .zero, size: NSSize(width: totalWidth, height: totalHeight)))
