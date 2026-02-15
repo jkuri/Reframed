@@ -15,6 +15,7 @@ enum VideoCompositor {
   static func export(
     result: RecordingResult,
     cameraLayout: CameraLayout,
+    cameraAspect: CameraAspect = .original,
     trimRange: CMTimeRange,
     systemAudioRegions: [CMTimeRange]? = nil,
     micAudioRegions: [CMTimeRange]? = nil,
@@ -25,6 +26,8 @@ enum VideoCompositor {
     videoCornerRadius: CGFloat = 0,
     cameraCornerRadius: CGFloat = 12,
     cameraBorderWidth: CGFloat = 0,
+    videoShadow: CGFloat = 0,
+    cameraShadow: CGFloat = 0,
     exportSettings: ExportSettings = ExportSettings(),
     cursorSnapshot: CursorMetadataSnapshot? = nil,
     cursorStyle: CursorStyle = .defaultArrow,
@@ -67,8 +70,16 @@ enum VideoCompositor {
       audioSources.append(AudioSource(url: micURL, regions: micAudioRegions ?? [effectiveTrim]))
     }
 
+    let hasNonDefaultBackground: Bool = {
+      switch backgroundStyle {
+      case .none: return false
+      case .solidColor(let c): return !(c.r == 0 && c.g == 0 && c.b == 0)
+      case .gradient: return true
+      }
+    }()
     let hasVisualEffects =
-      backgroundStyle != .none || canvasAspect != .original || padding > 0 || videoCornerRadius > 0
+      hasNonDefaultBackground || canvasAspect != .original || padding > 0 || videoCornerRadius > 0
+      || videoShadow > 0
     let hasWebcam = result.webcamVideoURL != nil
     let hasCursor = cursorSnapshot != nil
     let hasZoom = zoomTimeline != nil
@@ -110,7 +121,7 @@ enum VideoCompositor {
           )
           try wTrack?.insertTimeRange(effectiveTrim, of: webcamVideoTrack, at: .zero)
           webcamTrackID = 2
-          cameraRect = cameraLayout.pixelRect(screenSize: canvasSize, webcamSize: webcamSize)
+          cameraRect = cameraLayout.pixelRect(screenSize: canvasSize, webcamSize: webcamSize, cameraAspect: cameraAspect)
         }
       }
 
@@ -129,7 +140,14 @@ enum VideoCompositor {
       let scaleY = renderSize.height / canvasSize.height
       let paddingHPx = padding * screenNaturalSize.width * scaleX
       let paddingVPx = padding * screenNaturalSize.height * scaleY
-      let scaledCornerRadius = videoCornerRadius * scaleX
+
+      let scaledCornerRadius: CGFloat = {
+        let paddedW = renderSize.width - 2 * paddingHPx
+        let paddedH = renderSize.height - 2 * paddingVPx
+        let paddedArea = CGRect(x: 0, y: 0, width: paddedW, height: paddedH)
+        let videoFitRect = AVMakeRect(aspectRatio: screenNaturalSize, insideRect: paddedArea)
+        return min(videoFitRect.width, videoFitRect.height) * (videoCornerRadius / 100.0)
+      }()
 
       let instruction = CompositionInstruction(
         timeRange: CMTimeRange(start: .zero, duration: effectiveTrim.duration),
@@ -154,6 +172,8 @@ enum VideoCompositor {
           return min(scaledW, scaledH) * (cameraCornerRadius / 100.0)
         }(),
         cameraBorderWidth: cameraBorderWidth * (renderSize.width / canvasSize.width),
+        videoShadow: videoShadow,
+        cameraShadow: cameraShadow,
         outputSize: renderSize,
         backgroundColors: bgColors,
         backgroundStartPoint: bgStartPoint,

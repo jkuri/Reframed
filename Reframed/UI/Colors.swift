@@ -20,6 +20,8 @@ struct ColorPreset: Identifiable, Sendable {
 
 enum TailwindColors {
   static let all: [ColorPreset] = [
+    ColorPreset("Black", r: 0, g: 0, b: 0),
+    ColorPreset("White", r: 1, g: 1, b: 1),
     ColorPreset("Amber", r: 0.961, g: 0.620, b: 0.043),
     ColorPreset("Blue", r: 0.231, g: 0.510, b: 0.965),
     ColorPreset("Cyan", r: 0.024, g: 0.714, b: 0.831),

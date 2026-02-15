@@ -94,6 +94,30 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
       let screenAspect = CGSize(width: img.width, height: img.height)
       let videoRect = AVMakeRect(aspectRatio: screenAspect, insideRect: paddedArea)
 
+      if instruction.videoShadow > 0 {
+        let blur = min(videoRect.width, videoRect.height) * instruction.videoShadow / 2000.0
+        context.saveGState()
+        context.setShadow(
+          offset: .zero,
+          blur: blur,
+          color: CGColor(red: 0, green: 0, blue: 0, alpha: 0.6)
+        )
+        if instruction.videoCornerRadius > 0 {
+          let shadowPath = CGPath(
+            roundedRect: videoRect,
+            cornerWidth: instruction.videoCornerRadius,
+            cornerHeight: instruction.videoCornerRadius,
+            transform: nil
+          )
+          context.addPath(shadowPath)
+        } else {
+          context.addRect(videoRect)
+        }
+        context.setFillColor(CGColor(red: 0, green: 0, blue: 0, alpha: 1))
+        context.fillPath()
+        context.restoreGState()
+      }
+
       let metadataTime = CMTimeGetSeconds(compositionTime) + instruction.trimStartSeconds
       var zoomRect = instruction.zoomTimeline?.zoomRect(at: metadataTime)
       if instruction.zoomFollowCursor, let zr = zoomRect, zr.width < 1.0 || zr.height < 1.0,
@@ -224,6 +248,26 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
             height: cameraRect.height
           )
 
+          if instruction.cameraShadow > 0 {
+            let blur = min(drawRect.width, drawRect.height) * instruction.cameraShadow / 2000.0
+            context.saveGState()
+            context.setShadow(
+              offset: .zero,
+              blur: blur,
+              color: CGColor(red: 0, green: 0, blue: 0, alpha: 0.6)
+            )
+            let shadowPath = CGPath(
+              roundedRect: drawRect,
+              cornerWidth: instruction.cameraCornerRadius,
+              cornerHeight: instruction.cameraCornerRadius,
+              transform: nil
+            )
+            context.addPath(shadowPath)
+            context.setFillColor(CGColor(red: 0, green: 0, blue: 0, alpha: 1))
+            context.fillPath()
+            context.restoreGState()
+          }
+
           let bw = instruction.cameraBorderWidth
           if bw > 0 {
             let borderPath = CGPath(
@@ -249,7 +293,8 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
             context.saveGState()
             context.addPath(innerPath)
             context.clip()
-            context.draw(webcamImage, in: insetRect)
+            let innerFill = aspectFillRect(imageSize: CGSize(width: webcamImage.width, height: webcamImage.height), in: insetRect)
+            context.draw(webcamImage, in: innerFill)
             context.restoreGState()
           } else {
             let path = CGPath(
@@ -261,11 +306,24 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
             context.saveGState()
             context.addPath(path)
             context.clip()
-            context.draw(webcamImage, in: drawRect)
+            let fillRect = aspectFillRect(imageSize: CGSize(width: webcamImage.width, height: webcamImage.height), in: drawRect)
+            context.draw(webcamImage, in: fillRect)
             context.restoreGState()
           }
         }
       }
+    }
+  }
+
+  private static func aspectFillRect(imageSize: CGSize, in rect: CGRect) -> CGRect {
+    let imageAspect = imageSize.width / max(imageSize.height, 1)
+    let rectAspect = rect.width / max(rect.height, 1)
+    if imageAspect > rectAspect {
+      let w = rect.height * imageAspect
+      return CGRect(x: rect.midX - w / 2, y: rect.origin.y, width: w, height: rect.height)
+    } else {
+      let h = rect.width / max(imageAspect, 0.001)
+      return CGRect(x: rect.origin.x, y: rect.midY - h / 2, width: rect.width, height: h)
     }
   }
 

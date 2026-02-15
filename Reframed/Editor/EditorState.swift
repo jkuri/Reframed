@@ -34,6 +34,36 @@ enum CanvasAspect: String, Codable, Sendable, CaseIterable, Identifiable {
   }
 }
 
+enum CameraAspect: String, Codable, Sendable, CaseIterable, Identifiable {
+  case original
+  case ratio16x9
+  case ratio1x1
+  case ratio4x3
+  case ratio9x16
+
+  var id: String { rawValue }
+
+  var label: String {
+    switch self {
+    case .original: "Original"
+    case .ratio16x9: "16:9"
+    case .ratio1x1: "1:1"
+    case .ratio4x3: "4:3"
+    case .ratio9x16: "9:16"
+    }
+  }
+
+  func heightToWidthRatio(webcamSize: CGSize) -> CGFloat {
+    switch self {
+    case .original: webcamSize.height / max(webcamSize.width, 1)
+    case .ratio16x9: 9.0 / 16.0
+    case .ratio1x1: 1.0
+    case .ratio4x3: 3.0 / 4.0
+    case .ratio9x16: 16.0 / 9.0
+    }
+  }
+}
+
 enum AudioTrackType {
   case system, mic
 }
@@ -56,12 +86,15 @@ final class EditorState {
   var exportTask: Task<Void, Never>?
   var isPreviewMode = false
 
-  var backgroundStyle: BackgroundStyle = .none
+  var backgroundStyle: BackgroundStyle = .solidColor(CodableColor(r: 0, g: 0, b: 0))
   var canvasAspect: CanvasAspect = .original
   var padding: CGFloat = 0
   var videoCornerRadius: CGFloat = 0
+  var cameraAspect: CameraAspect = .original
   var cameraCornerRadius: CGFloat = 8
   var cameraBorderWidth: CGFloat = 0
+  var videoShadow: CGFloat = 0
+  var cameraShadow: CGFloat = 0
   var projectName: String = ""
   var showExportSheet = false
   var showDeleteConfirmation = false
@@ -105,8 +138,11 @@ final class EditorState {
       self.canvasAspect = saved.canvasAspect ?? .original
       self.padding = saved.padding
       self.videoCornerRadius = saved.videoCornerRadius
+      self.cameraAspect = saved.cameraAspect ?? .original
       self.cameraCornerRadius = saved.cameraCornerRadius
       self.cameraBorderWidth = saved.cameraBorderWidth
+      self.videoShadow = saved.videoShadow ?? 0
+      self.cameraShadow = saved.cameraShadow ?? 0
       self.cameraLayout = saved.cameraLayout
     }
   }
@@ -415,15 +451,24 @@ final class EditorState {
   }
 
   func clampCameraPosition() {
+    cameraLayout.relativeWidth = min(cameraLayout.relativeWidth, maxCameraRelativeWidth)
     let relH = cameraRelativeHeight
     cameraLayout.relativeX = max(0, min(1 - cameraLayout.relativeWidth, cameraLayout.relativeX))
     cameraLayout.relativeY = max(0, min(1 - relH, cameraLayout.relativeY))
   }
 
+  var maxCameraRelativeWidth: CGFloat {
+    guard let ws = result.webcamSize else { return 1.0 }
+    let canvas = canvasSize(for: result.screenSize)
+    let hwRatio = cameraAspect.heightToWidthRatio(webcamSize: ws)
+    let canvasRatio = canvas.width / max(canvas.height, 1)
+    return min(1.0, 1.0 / max(hwRatio * canvasRatio, 0.001))
+  }
+
   private var cameraRelativeHeight: CGFloat {
     guard let ws = result.webcamSize else { return cameraLayout.relativeWidth * 0.75 }
     let canvas = canvasSize(for: result.screenSize)
-    let aspect = ws.height / max(ws.width, 1)
+    let aspect = cameraAspect.heightToWidthRatio(webcamSize: ws)
     return cameraLayout.relativeWidth * aspect * (canvas.width / max(canvas.height, 1))
   }
 
@@ -472,6 +517,7 @@ final class EditorState {
     let url = try await VideoCompositor.export(
       result: result,
       cameraLayout: cameraLayout,
+      cameraAspect: cameraAspect,
       trimRange: CMTimeRange(start: trimStart, end: trimEnd),
       systemAudioRegions: sysRegions.isEmpty ? nil : sysRegions,
       micAudioRegions: micRegions.isEmpty ? nil : micRegions,
@@ -482,6 +528,8 @@ final class EditorState {
       videoCornerRadius: videoCornerRadius,
       cameraCornerRadius: cameraCornerRadius,
       cameraBorderWidth: cameraBorderWidth,
+      videoShadow: videoShadow,
+      cameraShadow: cameraShadow,
       exportSettings: settings,
       cursorSnapshot: cursorSnapshot,
       cursorStyle: cursorStyle,
@@ -583,8 +631,11 @@ final class EditorState {
       canvasAspect: canvasAspect,
       padding: padding,
       videoCornerRadius: videoCornerRadius,
+      cameraAspect: cameraAspect,
       cameraCornerRadius: cameraCornerRadius,
       cameraBorderWidth: cameraBorderWidth,
+      videoShadow: videoShadow,
+      cameraShadow: cameraShadow,
       cameraLayout: cameraLayout,
       cursorSettings: cursorSettings,
       zoomSettings: zoomSettings,

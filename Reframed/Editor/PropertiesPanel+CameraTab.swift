@@ -29,10 +29,12 @@ extension PropertiesPanel {
         }
       }
 
+      cameraAspectSection
+
       SliderRow(
         label: "Size",
         value: $editorState.cameraLayout.relativeWidth,
-        range: 0.1...1.0,
+        range: 0.1...editorState.maxCameraRelativeWidth,
         step: 0.01
       )
       .onChange(of: editorState.cameraLayout.relativeWidth) { _, _ in
@@ -53,6 +55,26 @@ extension PropertiesPanel {
         step: 0.5,
         formattedValue: String(format: "%.1f", editorState.cameraBorderWidth)
       )
+
+      SliderRow(
+        label: "Shadow",
+        value: $editorState.cameraShadow,
+        range: 0...100,
+        formattedValue: "\(Int(editorState.cameraShadow))"
+      )
+    }
+  }
+
+  private var cameraAspectSection: some View {
+    Picker("", selection: $editorState.cameraAspect) {
+      ForEach(CameraAspect.allCases) { aspect in
+        Text(aspect.label).tag(aspect)
+      }
+    }
+    .pickerStyle(.segmented)
+    .labelsHidden()
+    .onChange(of: editorState.cameraAspect) { _, _ in
+      editorState.clampCameraPosition()
     }
   }
 }

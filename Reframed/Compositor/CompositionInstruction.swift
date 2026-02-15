@@ -13,6 +13,8 @@ final class CompositionInstruction: NSObject, AVVideoCompositionInstructionProto
   let cameraRect: CGRect?
   let cameraCornerRadius: CGFloat
   let cameraBorderWidth: CGFloat
+  let videoShadow: CGFloat
+  let cameraShadow: CGFloat
   let outputSize: CGSize
 
   let backgroundColors: [(r: CGFloat, g: CGFloat, b: CGFloat, a: CGFloat)]
@@ -42,6 +44,8 @@ final class CompositionInstruction: NSObject, AVVideoCompositionInstructionProto
     cameraRect: CGRect?,
     cameraCornerRadius: CGFloat,
     cameraBorderWidth: CGFloat = 0,
+    videoShadow: CGFloat = 0,
+    cameraShadow: CGFloat = 0,
     outputSize: CGSize,
     backgroundColors: [(r: CGFloat, g: CGFloat, b: CGFloat, a: CGFloat)] = [],
     backgroundStartPoint: CGPoint = .zero,
@@ -68,6 +72,8 @@ final class CompositionInstruction: NSObject, AVVideoCompositionInstructionProto
     self.cameraRect = cameraRect
     self.cameraCornerRadius = cameraCornerRadius
     self.cameraBorderWidth = cameraBorderWidth
+    self.videoShadow = videoShadow
+    self.cameraShadow = cameraShadow
     self.outputSize = outputSize
     self.backgroundColors = backgroundColors
     self.backgroundStartPoint = backgroundStartPoint

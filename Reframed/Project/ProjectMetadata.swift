@@ -48,8 +48,11 @@ struct EditorStateData: Codable, Sendable {
   var canvasAspect: CanvasAspect?
   var padding: CGFloat
   var videoCornerRadius: CGFloat
+  var cameraAspect: CameraAspect?
   var cameraCornerRadius: CGFloat
   var cameraBorderWidth: CGFloat
+  var videoShadow: CGFloat?
+  var cameraShadow: CGFloat?
   var cameraLayout: CameraLayout
   var cursorSettings: CursorSettingsData?
   var zoomSettings: ZoomSettingsData?

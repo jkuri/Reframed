@@ -14,23 +14,25 @@ extension PropertiesPanel {
       .labelsHidden()
 
       switch backgroundMode {
-      case .none:
-        EmptyView()
+      case .color:
+        solidColorGrid
       case .gradient:
         gradientGrid
-      case .color:
-        solidColorPicker
       }
     }
   }
 
+  private var swatchColumns: [GridItem] {
+    Array(repeating: GridItem(.flexible(), spacing: 6), count: 8)
+  }
+
   var gradientGrid: some View {
-    LazyVGrid(columns: Array(repeating: GridItem(.flexible(), spacing: Layout.gridSpacing), count: 4), spacing: Layout.gridSpacing) {
+    LazyVGrid(columns: swatchColumns, spacing: 6) {
       ForEach(GradientPresets.all) { preset in
         Button {
           selectedGradientId = preset.id
         } label: {
-          Circle()
+          RoundedRectangle(cornerRadius: 10)
             .fill(
               LinearGradient(
                 colors: preset.colors,
@@ -38,9 +40,9 @@ extension PropertiesPanel {
                 endPoint: preset.endPoint
               )
             )
-            .frame(width: 36, height: 36)
+            .aspectRatio(1.0, contentMode: .fit)
             .overlay(
-              Circle()
+              RoundedRectangle(cornerRadius: 10)
                 .stroke(selectedGradientId == preset.id ? Color.blue : Color.clear, lineWidth: 2)
                 .padding(1)
             )
@@ -50,21 +52,24 @@ extension PropertiesPanel {
     }
   }
 
-  var solidColorPicker: some View {
-    TailwindColorPicker(
-      displayColor: solidColorDisplay,
-      displayName: selectedColorId ?? "Blue",
-      isPresented: $showColorPopover,
-      isSelected: { $0.id == selectedColorId },
-      onSelect: { selectedColorId = $0.id }
-    )
-  }
-
-  var solidColorDisplay: Color {
-    guard let id = selectedColorId, let preset = TailwindColors.all.first(where: { $0.id == id }) else {
-      return TailwindColors.all[0].swiftUIColor
+  var solidColorGrid: some View {
+    LazyVGrid(columns: swatchColumns, spacing: 6) {
+      ForEach(TailwindColors.all) { preset in
+        Button {
+          selectedColorId = preset.id
+        } label: {
+          RoundedRectangle(cornerRadius: 10)
+            .fill(preset.swiftUIColor)
+            .aspectRatio(1.0, contentMode: .fit)
+            .overlay(
+              RoundedRectangle(cornerRadius: 10)
+                .stroke(selectedColorId == preset.id ? Color.blue : Color.clear, lineWidth: 2)
+                .padding(1)
+            )
+        }
+        .buttonStyle(.plain)
+      }
     }
-    return preset.swiftUIColor
   }
 
   var paddingSection: some View {
@@ -108,8 +113,31 @@ extension PropertiesPanel {
 
       SliderRow(
         value: $editorState.videoCornerRadius,
-        range: 0...40,
-        formattedValue: "\(Int(editorState.videoCornerRadius))px"
+        range: 0...20,
+        formattedValue: "\(Int(editorState.videoCornerRadius))%"
+      )
+    }
+  }
+
+  var videoShadowSection: some View {
+    VStack(alignment: .leading, spacing: Layout.itemSpacing) {
+      HStack {
+        sectionHeader(icon: "shadow", title: "Shadow")
+        Spacer()
+        if editorState.videoShadow > 0 {
+          Button("Reset") {
+            editorState.videoShadow = 0
+          }
+          .font(.system(size: 11))
+          .foregroundStyle(ReframedColors.dimLabel)
+          .buttonStyle(.plain)
+        }
+      }
+
+      SliderRow(
+        value: $editorState.videoShadow,
+        range: 0...100,
+        formattedValue: "\(Int(editorState.videoShadow))"
       )
     }
   }

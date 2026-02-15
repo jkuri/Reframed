@@ -170,9 +170,17 @@ struct EditorView: View {
 
   private var videoPreview: some View {
     let screenSize = editorState.result.screenSize
+    let hasNonDefaultBg: Bool = {
+      switch editorState.backgroundStyle {
+      case .none: return false
+      case .solidColor(let c): return !(c.r == 0 && c.g == 0 && c.b == 0)
+      case .gradient: return true
+      }
+    }()
     let hasEffects =
-      editorState.backgroundStyle != .none || editorState.canvasAspect != .original
+      hasNonDefaultBg || editorState.canvasAspect != .original
       || editorState.padding > 0 || editorState.videoCornerRadius > 0
+      || editorState.videoShadow > 0
     let canvasAspect: CGFloat = {
       let canvas = editorState.canvasSize(for: screenSize)
       return canvas.width / max(canvas.height, 1)
@@ -193,8 +201,11 @@ struct EditorView: View {
           canvasSize: editorState.canvasSize(for: screenSize),
           padding: editorState.padding,
           videoCornerRadius: editorState.videoCornerRadius,
+          cameraAspect: editorState.cameraAspect,
           cameraCornerRadius: editorState.cameraCornerRadius,
           cameraBorderWidth: editorState.cameraBorderWidth,
+          videoShadow: editorState.videoShadow,
+          cameraShadow: editorState.cameraShadow,
           cursorMetadataProvider: editorState.cursorMetadataProvider,
           showCursor: editorState.showCursor,
           cursorStyle: editorState.cursorStyle,
@@ -221,7 +232,7 @@ struct EditorView: View {
   private var backgroundView: some View {
     switch editorState.backgroundStyle {
     case .none:
-      editorState.canvasAspect != .original ? Color.black : Color.clear
+      Color.black
     case .gradient(let id):
       if let preset = GradientPresets.preset(for: id) {
         LinearGradient(

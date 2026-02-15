@@ -11,8 +11,11 @@ struct VideoPreviewView: NSViewRepresentable {
   let canvasSize: CGSize
   var padding: CGFloat = 0
   var videoCornerRadius: CGFloat = 0
+  var cameraAspect: CameraAspect = .original
   var cameraCornerRadius: CGFloat = 12
   var cameraBorderWidth: CGFloat = 0
+  var videoShadow: CGFloat = 0
+  var cameraShadow: CGFloat = 0
   var cursorMetadataProvider: CursorMetadataProvider?
   var showCursor: Bool = false
   var cursorStyle: CursorStyle = .defaultArrow
@@ -47,8 +50,11 @@ struct VideoPreviewView: NSViewRepresentable {
       canvasSize: canvasSize,
       padding: padding,
       videoCornerRadius: videoCornerRadius,
+      cameraAspect: cameraAspect,
       cameraCornerRadius: cameraCornerRadius,
-      cameraBorderWidth: cameraBorderWidth
+      cameraBorderWidth: cameraBorderWidth,
+      videoShadow: videoShadow,
+      cameraShadow: cameraShadow
     )
 
     if let zoom = zoomTimeline {
@@ -112,6 +118,7 @@ struct VideoPreviewView: NSViewRepresentable {
 final class VideoPreviewContainer: NSView {
   let screenPlayerLayer = AVPlayerLayer()
   let webcamPlayerLayer = AVPlayerLayer()
+  private let webcamWrapper = NSView()
   private let webcamView = WebcamCameraView()
   private let cursorOverlay = CursorOverlayLayer()
   private let screenContainerLayer = CALayer()
@@ -123,9 +130,13 @@ final class VideoPreviewContainer: NSView {
   private var currentCanvasSize: CGSize = .zero
   private var currentPadding: CGFloat = 0
   private var currentVideoCornerRadius: CGFloat = 0
+  private var currentCameraAspect: CameraAspect = .original
   private var currentCameraCornerRadius: CGFloat = 12
   private var currentCameraBorderWidth: CGFloat = 0
+  private var currentVideoShadow: CGFloat = 0
+  private var currentCameraShadow: CGFloat = 0
   private let screenMaskLayer = CAShapeLayer()
+  private let screenShadowLayer = CALayer()
   private var trackingArea: NSTrackingArea?
   private var currentZoomRect = CGRect(x: 0, y: 0, width: 1, height: 1)
 
@@ -133,6 +144,12 @@ final class VideoPreviewContainer: NSView {
     super.init(frame: frame)
     wantsLayer = true
     layer?.backgroundColor = NSColor.clear.cgColor
+
+    screenShadowLayer.shadowColor = NSColor.black.cgColor
+    screenShadowLayer.shadowOffset = .zero
+    screenShadowLayer.shadowOpacity = 0
+    screenShadowLayer.isHidden = true
+    layer?.addSublayer(screenShadowLayer)
 
     screenContainerLayer.masksToBounds = true
     layer?.addSublayer(screenContainerLayer)
@@ -143,6 +160,9 @@ final class VideoPreviewContainer: NSView {
     cursorOverlay.zPosition = 10
     layer?.addSublayer(cursorOverlay)
 
+    webcamWrapper.wantsLayer = true
+    webcamWrapper.layer?.masksToBounds = false
+
     webcamView.wantsLayer = true
     webcamView.layer?.cornerRadius = 12
     webcamView.layer?.masksToBounds = true
@@ -151,14 +171,16 @@ final class VideoPreviewContainer: NSView {
     webcamPlayerLayer.videoGravity = .resizeAspectFill
     webcamView.layer?.addSublayer(webcamPlayerLayer)
     webcamPlayerLayer.isHidden = true
-    addSubview(webcamView)
+
+    webcamWrapper.addSubview(webcamView)
+    addSubview(webcamWrapper)
   }
 
   required init?(coder: NSCoder) { nil }
 
   override func hitTest(_ point: NSPoint) -> NSView? {
     let loc = convert(point, from: superview)
-    if !webcamView.isHidden && webcamView.frame.contains(loc) {
+    if !webcamWrapper.isHidden && webcamWrapper.frame.contains(loc) {
       return self
     }
     return super.hitTest(point)
@@ -190,8 +212,11 @@ final class VideoPreviewContainer: NSView {
     canvasSize: CGSize,
     padding: CGFloat = 0,
     videoCornerRadius: CGFloat = 0,
+    cameraAspect: CameraAspect = .original,
     cameraCornerRadius: CGFloat = 12,
-    cameraBorderWidth: CGFloat = 0
+    cameraBorderWidth: CGFloat = 0,
+    videoShadow: CGFloat = 0,
+    cameraShadow: CGFloat = 0
   ) {
     currentLayout = layout
     currentWebcamSize = webcamSize
@@ -199,8 +224,11 @@ final class VideoPreviewContainer: NSView {
     currentCanvasSize = canvasSize.width > 0 ? canvasSize : screenSize
     currentPadding = padding
     currentVideoCornerRadius = videoCornerRadius
+    currentCameraAspect = cameraAspect
     currentCameraCornerRadius = cameraCornerRadius
     currentCameraBorderWidth = cameraBorderWidth
+    currentVideoShadow = videoShadow
+    currentCameraShadow = cameraShadow
     layoutAll()
   }
 
@@ -301,15 +329,33 @@ final class VideoPreviewContainer: NSView {
     let screenRect = AVMakeRect(aspectRatio: currentScreenSize, insideRect: paddedArea)
 
     screenContainerLayer.frame = screenRect
+    let cornerRadius = min(screenRect.width, screenRect.height) * (currentVideoCornerRadius / 100.0)
     let maskPath = CGPath(
       roundedRect: CGRect(origin: .zero, size: screenRect.size),
-      cornerWidth: currentVideoCornerRadius * min(scaleX, scaleY),
-      cornerHeight: currentVideoCornerRadius * min(scaleX, scaleY),
+      cornerWidth: cornerRadius,
+      cornerHeight: cornerRadius,
       transform: nil
     )
     screenMaskLayer.frame = CGRect(origin: .zero, size: screenRect.size)
     screenMaskLayer.path = maskPath
     screenContainerLayer.mask = screenMaskLayer
+
+    if currentVideoShadow > 0 {
+      let blur = min(screenRect.width, screenRect.height) * currentVideoShadow / 2000.0
+      screenShadowLayer.frame = screenRect
+      screenShadowLayer.shadowPath = CGPath(
+        roundedRect: CGRect(origin: .zero, size: screenRect.size),
+        cornerWidth: cornerRadius,
+        cornerHeight: cornerRadius,
+        transform: nil
+      )
+      screenShadowLayer.shadowRadius = blur
+      screenShadowLayer.shadowOpacity = 0.6
+      screenShadowLayer.isHidden = false
+    } else {
+      screenShadowLayer.isHidden = true
+      screenShadowLayer.shadowOpacity = 0
+    }
 
     let zr = currentZoomRect
     if zr.width < 1.0 || zr.height < 1.0 {
@@ -325,16 +371,18 @@ final class VideoPreviewContainer: NSView {
     }
 
     guard let ws = currentWebcamSize, webcamPlayerLayer.player != nil else {
-      webcamView.isHidden = true
+      webcamWrapper.isHidden = true
       CATransaction.commit()
       return
     }
-    webcamView.isHidden = false
+    webcamWrapper.isHidden = false
 
     if isCameraFullscreen {
+      webcamWrapper.layer?.shadowOpacity = 0
       screenContainerLayer.isHidden = true
       cursorOverlay.isHidden = true
-      webcamView.frame = canvasRect
+      webcamWrapper.frame = canvasRect
+      webcamView.frame = webcamWrapper.bounds
       webcamView.layer?.cornerRadius = 0
       webcamView.layer?.borderWidth = 0
       webcamView.layer?.borderColor = NSColor.clear.cgColor
@@ -350,9 +398,9 @@ final class VideoPreviewContainer: NSView {
     webcamPlayerLayer.videoGravity = .resizeAspectFill
     webcamView.layer?.backgroundColor = NSColor.clear.cgColor
 
-    let aspect = ws.height / max(ws.width, 1)
+    let camAspect = currentCameraAspect.heightToWidthRatio(webcamSize: ws)
     let w = canvasRect.width * currentLayout.relativeWidth
-    let h = w * aspect
+    let h = w * camAspect
     let x = canvasRect.origin.x + canvasRect.width * currentLayout.relativeX
     let y = canvasRect.origin.y + canvasRect.height * currentLayout.relativeY
 
@@ -360,7 +408,9 @@ final class VideoPreviewContainer: NSView {
     let scaledRadius = minDim * (currentCameraCornerRadius / 100.0)
     let scaledBorder = currentCameraBorderWidth * min(scaleX, scaleY)
 
-    webcamView.frame = CGRect(x: x, y: bounds.height - y - h, width: w, height: h)
+    let webcamFrame = CGRect(x: x, y: bounds.height - y - h, width: w, height: h)
+    webcamWrapper.frame = webcamFrame
+    webcamView.frame = webcamWrapper.bounds
     webcamView.layer?.cornerRadius = scaledRadius
     webcamView.layer?.borderWidth = scaledBorder
     webcamView.layer?.borderColor =
@@ -369,16 +419,32 @@ final class VideoPreviewContainer: NSView {
       : NSColor.clear.cgColor
     webcamPlayerLayer.frame = webcamView.bounds
 
+    if currentCameraShadow > 0 {
+      let camBlur = minDim * currentCameraShadow / 2000.0
+      webcamWrapper.layer?.shadowColor = NSColor.black.cgColor
+      webcamWrapper.layer?.shadowOffset = .zero
+      webcamWrapper.layer?.shadowRadius = camBlur
+      webcamWrapper.layer?.shadowOpacity = 0.6
+      webcamWrapper.layer?.shadowPath = CGPath(
+        roundedRect: webcamView.bounds,
+        cornerWidth: scaledRadius,
+        cornerHeight: scaledRadius,
+        transform: nil
+      )
+    } else {
+      webcamWrapper.layer?.shadowOpacity = 0
+    }
+
     CATransaction.commit()
   }
 
   override func mouseMoved(with event: NSEvent) {
-    guard !webcamView.isHidden else {
+    guard !webcamWrapper.isHidden else {
       NSCursor.arrow.set()
       return
     }
     let loc = convert(event.locationInWindow, from: nil)
-    if webcamView.frame.contains(loc) {
+    if webcamWrapper.frame.contains(loc) {
       NSCursor.openHand.set()
     } else {
       NSCursor.arrow.set()
@@ -393,7 +459,7 @@ final class VideoPreviewContainer: NSView {
     guard let coord = coordinator else { return super.mouseDown(with: event) }
     let loc = convert(event.locationInWindow, from: nil)
 
-    if webcamView.frame.contains(loc) && !webcamView.isHidden {
+    if webcamWrapper.frame.contains(loc) && !webcamWrapper.isHidden {
       coord.isDragging = true
       NSCursor.closedHand.set()
       coord.dragStart = loc
@@ -418,20 +484,13 @@ final class VideoPreviewContainer: NSView {
 
     let relW = coord.cameraLayout.wrappedValue.relativeWidth
     let relH: CGFloat = {
-      guard let ws = coord.webcamSize else { return relW * 0.75 }
-      let aspect = ws.height / max(ws.width, 1)
-      return relW * aspect * (coord.canvasSize.width / max(coord.canvasSize.height, 1))
+      guard let ws = currentWebcamSize else { return relW * 0.75 }
+      let aspect = currentCameraAspect.heightToWidthRatio(webcamSize: ws)
+      return relW * aspect * (currentCanvasSize.width / max(currentCanvasSize.height, 1))
     }()
 
     newX = max(0, min(1 - relW, newX))
     newY = max(0, min(1 - relH, newY))
-
-    let snapDistX: CGFloat = 20 / canvasRect.width
-    let snapDistY: CGFloat = 20 / canvasRect.height
-    if newX < snapDistX { newX = 0.02 }
-    if newX > 1 - relW - snapDistX { newX = 1 - relW - 0.02 }
-    if newY < snapDistY { newY = 0.02 }
-    if newY > 1 - relH - snapDistY { newY = 1 - relH - 0.02 }
 
     coord.cameraLayout.wrappedValue.relativeX = newX
     coord.cameraLayout.wrappedValue.relativeY = newY
@@ -442,7 +501,7 @@ final class VideoPreviewContainer: NSView {
     coordinator?.isDragging = false
     if wasDragging {
       let loc = convert(event.locationInWindow, from: nil)
-      if webcamView.frame.contains(loc) {
+      if webcamWrapper.frame.contains(loc) {
         NSCursor.openHand.set()
       } else {
         NSCursor.arrow.set()

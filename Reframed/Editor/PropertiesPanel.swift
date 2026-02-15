@@ -6,22 +6,20 @@ struct PropertiesPanel: View {
   @Environment(\.colorScheme) private var colorScheme
 
   enum BackgroundMode: Int, CaseIterable {
-    case none, gradient, color
+    case color, gradient
 
     var label: String {
       switch self {
-      case .none: "None"
-      case .gradient: "Gradient"
       case .color: "Color"
+      case .gradient: "Gradient"
       }
     }
   }
 
-  @State var backgroundMode: BackgroundMode = .none
+  @State var backgroundMode: BackgroundMode = .color
   @State var selectedGradientId: Int = 0
-  @State var selectedColorId: String? = "Blue"
+  @State var selectedColorId: String? = "Black"
   @State private var editingProjectName: String = ""
-  @State var showColorPopover = false
   @State var showClickColorPopover = false
   @FocusState private var projectNameFocused: Bool
 
@@ -34,9 +32,10 @@ struct PropertiesPanel: View {
           projectSection
         case .video:
           canvasSection
-          backgroundSection
           paddingSection
           cornerRadiusSection
+          videoShadowSection
+          backgroundSection
         case .camera:
           cameraSection
         case .cursor:
@@ -64,6 +63,26 @@ struct PropertiesPanel: View {
         let preset = TailwindColors.all.first(where: { $0.id == id })
       {
         editorState.backgroundStyle = .solidColor(preset.color)
+      }
+    }
+    .onAppear {
+      syncBackgroundMode()
+    }
+  }
+
+  private func syncBackgroundMode() {
+    switch editorState.backgroundStyle {
+    case .none:
+      backgroundMode = .color
+      selectedColorId = "Black"
+      editorState.backgroundStyle = .solidColor(CodableColor(r: 0, g: 0, b: 0))
+    case .gradient(let id):
+      backgroundMode = .gradient
+      selectedGradientId = id
+    case .solidColor(let color):
+      backgroundMode = .color
+      if let preset = TailwindColors.all.first(where: { $0.color == color }) {
+        selectedColorId = preset.id
       }
     }
   }
@@ -148,6 +167,9 @@ struct PropertiesPanel: View {
       }
       .pickerStyle(.segmented)
       .labelsHidden()
+      .onChange(of: editorState.canvasAspect) { _, _ in
+        editorState.clampCameraPosition()
+      }
     }
   }
 
@@ -174,8 +196,6 @@ struct PropertiesPanel: View {
 
   private func updateBackgroundStyle(mode: BackgroundMode) {
     switch mode {
-    case .none:
-      editorState.backgroundStyle = .none
     case .gradient:
       editorState.backgroundStyle = .gradient(selectedGradientId)
     case .color:
