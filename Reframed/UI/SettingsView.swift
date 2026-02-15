@@ -5,12 +5,14 @@ private enum SettingsTab: String, CaseIterable {
   case general = "General"
   case recording = "Recording"
   case devices = "Devices"
+  case shortcuts = "Shortcuts"
 
   var icon: String {
     switch self {
     case .general: "gearshape"
     case .recording: "record.circle"
     case .devices: "mic.and.signal.meter"
+    case .shortcuts: "keyboard"
     }
   }
 }
@@ -60,12 +62,14 @@ struct SettingsView: View {
             recordingContent
           case .devices:
             devicesContent
+          case .shortcuts:
+            shortcutsContent
           }
         }
         .padding(Layout.settingsPadding)
       }
     }
-    .frame(width: 500, height: 480)
+    .frame(width: 600, height: 500)
     .background(ReframedColors.panelBackground)
   }
 

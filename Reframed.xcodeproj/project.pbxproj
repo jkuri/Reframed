@@ -123,6 +123,12 @@
 		A1000000000000000000003B /* TailwindColorPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000003B /* TailwindColorPicker.swift */; };
 		A1000000000000000000003C /* SegmentPicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000003C /* SegmentPicker.swift */; };
 		A1000000000000000000003D /* Constants.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000003D /* Constants.swift */; };
+		A1000000000000000000003E /* KeyboardShortcut.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000003E /* KeyboardShortcut.swift */; };
+		A1000000000000000000003F /* KeyboardShortcutManager.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000003F /* KeyboardShortcutManager.swift */; };
+		A10000000000000000000040 /* SettingsShortcutsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000040 /* SettingsShortcutsTab.swift */; };
+		A10000000000000000000041 /* ShortcutRow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000041 /* ShortcutRow.swift */; };
+		A10000000000000000000042 /* ShortcutRecorderButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000042 /* ShortcutRecorderButton.swift */; };
+		A10000000000000000000043 /* ShortcutCaptureView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000043 /* ShortcutCaptureView.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -244,6 +250,12 @@
 		B1000000000000000000003A /* SliderRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SliderRow.swift; sourceTree = "<group>"; };
 		B1000000000000000000003B /* TailwindColorPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TailwindColorPicker.swift; sourceTree = "<group>"; };
 		B1000000000000000000003C /* SegmentPicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SegmentPicker.swift; sourceTree = "<group>"; };
+		B1000000000000000000003E /* KeyboardShortcut.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardShortcut.swift; sourceTree = "<group>"; };
+		B1000000000000000000003F /* KeyboardShortcutManager.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = KeyboardShortcutManager.swift; sourceTree = "<group>"; };
+		B10000000000000000000040 /* SettingsShortcutsTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsShortcutsTab.swift; sourceTree = "<group>"; };
+		B10000000000000000000041 /* ShortcutRow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutRow.swift; sourceTree = "<group>"; };
+		B10000000000000000000042 /* ShortcutRecorderButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutRecorderButton.swift; sourceTree = "<group>"; };
+		B10000000000000000000043 /* ShortcutCaptureView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ShortcutCaptureView.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -322,6 +334,7 @@
 				B10000000000000000000025 /* CaptureMode.swift */,
 				B10000000000000000000030 /* ConfigService.swift */,
 				B10000000000000000000031 /* StateService.swift */,
+				B1000000000000000000003F /* KeyboardShortcutManager.swift */,
 			);
 			path = State;
 			sourceTree = "<group>";
@@ -362,6 +375,7 @@
 				B40000000000000000000001 /* SoundEffect.swift */,
 				B40000000000000000000002 /* TimeFormatting.swift */,
 				B60000000000000000000001 /* CodableColor.swift */,
+				B1000000000000000000003E /* KeyboardShortcut.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -410,6 +424,10 @@
 				B1000000000000000000003B /* TailwindColorPicker.swift */,
 				B1000000000000000000003C /* SegmentPicker.swift */,
 				B1000000000000000000003D /* Constants.swift */,
+				B10000000000000000000040 /* SettingsShortcutsTab.swift */,
+				B10000000000000000000041 /* ShortcutRow.swift */,
+				B10000000000000000000042 /* ShortcutRecorderButton.swift */,
+				B10000000000000000000043 /* ShortcutCaptureView.swift */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -704,6 +722,12 @@
 				A1000000000000000000003A /* SliderRow.swift in Sources */,
 				A1000000000000000000003B /* TailwindColorPicker.swift in Sources */,
 				A1000000000000000000003C /* SegmentPicker.swift in Sources */,
+				A1000000000000000000003E /* KeyboardShortcut.swift in Sources */,
+				A1000000000000000000003F /* KeyboardShortcutManager.swift in Sources */,
+				A10000000000000000000040 /* SettingsShortcutsTab.swift in Sources */,
+				A10000000000000000000041 /* ShortcutRow.swift in Sources */,
+				A10000000000000000000042 /* ShortcutRecorderButton.swift in Sources */,
+				A10000000000000000000043 /* ShortcutCaptureView.swift in Sources */,
 			);
 		};
 /* End PBXSourcesBuildPhase section */

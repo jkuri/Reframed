@@ -95,6 +95,25 @@ final class ConfigService {
     guard let raw = try? encoder.encode(data) else { return }
     try? raw.write(to: fileURL, options: .atomic)
   }
+
+  func shortcut(for action: ShortcutAction) -> KeyboardShortcut {
+    data.shortcuts[action.rawValue] ?? action.defaultShortcut
+  }
+
+  func setShortcut(_ shortcut: KeyboardShortcut, for action: ShortcutAction) {
+    data.shortcuts[action.rawValue] = shortcut
+    save()
+  }
+
+  func resetShortcut(for action: ShortcutAction) {
+    data.shortcuts.removeValue(forKey: action.rawValue)
+    save()
+  }
+
+  func resetAllShortcuts() {
+    data.shortcuts.removeAll()
+    save()
+  }
 }
 
 private struct ConfigData: Codable {
@@ -108,4 +127,5 @@ private struct ConfigData: Codable {
   var cameraMaximumResolution: String = "1080p"
   var projectFolder: String = "~/Reframed"
   var appearance: String = "system"
+  var shortcuts: [String: KeyboardShortcut] = [:]
 }

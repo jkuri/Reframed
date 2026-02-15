@@ -5,10 +5,16 @@ import SwiftUI
 final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
   let session = SessionState()
   private var permissionsWindow: NSWindow?
+  private var shortcutManager: KeyboardShortcutManager?
 
   func applicationDidFinishLaunching(_ notification: Notification) {
     ConfigService.shared.applyAppearance()
     DeviceDiscovery.shared.enable()
+
+    let manager = KeyboardShortcutManager(session: session)
+    manager.start()
+    shortcutManager = manager
+
     if Permissions.allPermissionsGranted {
       session.showToolbar()
     }

@@ -39,6 +39,45 @@ struct MenuBarView: View {
         .hoverEffect(id: "menu.newRecording")
         .padding(.horizontal, 12)
 
+        MenuBarActionRow(
+          icon: "rectangle.dashed",
+          title: "Display Mode",
+          shortcut: ConfigService.shared.shortcut(for: .switchToDisplay).displayString
+        ) {
+          onDismiss()
+          guard case .idle = session.state else { return }
+          session.showToolbar()
+          session.selectMode(.entireScreen)
+        }
+        .hoverEffect(id: "menu.displayMode")
+        .padding(.horizontal, 12)
+
+        MenuBarActionRow(
+          icon: "macwindow",
+          title: "Window Mode",
+          shortcut: ConfigService.shared.shortcut(for: .switchToWindow).displayString
+        ) {
+          onDismiss()
+          guard case .idle = session.state else { return }
+          session.showToolbar()
+          session.selectMode(.selectedWindow)
+        }
+        .hoverEffect(id: "menu.windowMode")
+        .padding(.horizontal, 12)
+
+        MenuBarActionRow(
+          icon: "rectangle.dashed.badge.record",
+          title: "Area Mode",
+          shortcut: ConfigService.shared.shortcut(for: .switchToArea).displayString
+        ) {
+          onDismiss()
+          guard case .idle = session.state else { return }
+          session.showToolbar()
+          session.selectMode(.selectedArea)
+        }
+        .hoverEffect(id: "menu.areaMode")
+        .padding(.horizontal, 12)
+
         MenuBarDivider()
 
         SectionHeader(title: "Recent Projects")
@@ -247,6 +286,14 @@ private struct MenuBarActionRow: View {
 
   @Environment(\.colorScheme) private var colorScheme
 
+  private var shortcutLabel: String? {
+    guard let shortcut else { return nil }
+    if shortcut.count == 1 {
+      return "\u{2318}\(shortcut)"
+    }
+    return shortcut
+  }
+
   var body: some View {
     let _ = colorScheme
     Button(action: action) {
@@ -274,8 +321,8 @@ private struct MenuBarActionRow: View {
 
         Spacer()
 
-        if let shortcut {
-          Text("\u{2318}\(shortcut)")
+        if let shortcutLabel {
+          Text(shortcutLabel)
             .font(.system(size: 12))
             .foregroundStyle(ReframedColors.tertiaryText)
         }
