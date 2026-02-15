@@ -26,7 +26,7 @@ final class RecordingBorderWindow: NSWindow {
     collectionBehavior = [.canJoinAllSpaces, .fullScreenAuxiliary]
     ignoresMouseEvents = true
     hasShadow = false
-    sharingType = Window.sharingType
+    sharingType = .none
 
     let windowOrigin = screen.frame.origin
     let localCaptureRect = CGRect(
