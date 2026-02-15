@@ -65,7 +65,7 @@ struct SettingsView: View {
         .padding(Layout.settingsPadding)
       }
     }
-    .frame(width: 600, height: 520)
+    .frame(width: 500, height: 480)
     .background(ReframedColors.panelBackground)
   }
 
