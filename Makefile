@@ -3,10 +3,11 @@ SCHEME = Reframed
 ARCH = $(shell uname -m)
 DESTINATION = platform=macOS,arch=$(ARCH)
 BUILD_DIR = .build
+VERSION = $(shell grep MARKETING_VERSION Config.xcconfig | cut -d'=' -f2 | tr -d ' ')
 RELEASE_DIR = $(BUILD_DIR)/Build/Products/Release
 DEBUG_DIR = $(BUILD_DIR)/Build/Products/Debug
 
-.PHONY: build release run dev dmg format clean help install uninstall
+.PHONY: build release run dev dmg format clean help install uninstall changelog tag
 
 all: help
 
@@ -31,6 +32,17 @@ install: uninstall release
 uninstall:
 	@rm -rf /Applications/$(APP_NAME).app
 
+tag:
+	@if git rev-parse "v$(VERSION)" >/dev/null 2>&1; then \
+		echo "Tag v$(VERSION) already exists"; exit 1; \
+	fi
+	@git tag "v$(VERSION)"
+	@echo "Created tag v$(VERSION)"
+	@$(MAKE) changelog
+
+changelog:
+	@./scripts/changelog.sh --unreleased
+
 format:
 	@swift format -i -r Reframed/
 
@@ -52,4 +64,6 @@ help:
 	@echo "  dev       - Build debug and run"
 	@echo "  format    - Format Swift source files"
 	@echo "  clean     - Clean build artifacts"
+	@echo "  tag       - Create git tag from Config.xcconfig version and generate changelog"
+	@echo "  changelog - Generate CHANGELOG.md"
 	@echo "  help      - Show this help"
