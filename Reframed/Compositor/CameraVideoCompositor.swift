@@ -212,8 +212,7 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
           let webcamAspect = CGSize(width: webcamImage.width, height: webcamImage.height)
           let fitRect = AVMakeRect(aspectRatio: webcamAspect, insideRect: fullRect)
           context.saveGState()
-          context.setFillColor(CGColor(red: 0, green: 0, blue: 0, alpha: 1))
-          context.fill([fullRect])
+          drawBackground(in: context, rect: fullRect, instruction: instruction, colorSpace: colorSpace)
           context.draw(webcamImage, in: fitRect)
           context.restoreGState()
         } else if let cameraRect = instruction.cameraRect {

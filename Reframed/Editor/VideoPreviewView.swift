@@ -332,14 +332,23 @@ final class VideoPreviewContainer: NSView {
     webcamView.isHidden = false
 
     if isCameraFullscreen {
+      screenContainerLayer.isHidden = true
+      cursorOverlay.isHidden = true
       webcamView.frame = canvasRect
       webcamView.layer?.cornerRadius = 0
       webcamView.layer?.borderWidth = 0
       webcamView.layer?.borderColor = NSColor.clear.cgColor
+      webcamView.layer?.backgroundColor = NSColor.clear.cgColor
+      webcamPlayerLayer.videoGravity = .resizeAspect
       webcamPlayerLayer.frame = webcamView.bounds
       CATransaction.commit()
       return
     }
+
+    screenContainerLayer.isHidden = false
+    cursorOverlay.isHidden = false
+    webcamPlayerLayer.videoGravity = .resizeAspectFill
+    webcamView.layer?.backgroundColor = NSColor.clear.cgColor
 
     let aspect = ws.height / max(ws.width, 1)
     let w = canvasRect.width * currentLayout.relativeWidth
