@@ -16,6 +16,7 @@ struct VideoPreviewView: NSViewRepresentable {
   var cameraBorderWidth: CGFloat = 0
   var videoShadow: CGFloat = 0
   var cameraShadow: CGFloat = 0
+  var cameraMirrored: Bool = false
   var cursorMetadataProvider: CursorMetadataProvider?
   var showCursor: Bool = false
   var cursorStyle: CursorStyle = .defaultArrow
@@ -54,7 +55,8 @@ struct VideoPreviewView: NSViewRepresentable {
       cameraCornerRadius: cameraCornerRadius,
       cameraBorderWidth: cameraBorderWidth,
       videoShadow: videoShadow,
-      cameraShadow: cameraShadow
+      cameraShadow: cameraShadow,
+      cameraMirrored: cameraMirrored
     )
 
     if let zoom = zoomTimeline {
@@ -135,6 +137,7 @@ final class VideoPreviewContainer: NSView {
   private var currentCameraBorderWidth: CGFloat = 0
   private var currentVideoShadow: CGFloat = 0
   private var currentCameraShadow: CGFloat = 0
+  private var currentCameraMirrored: Bool = false
   private let screenMaskLayer = CAShapeLayer()
   private let screenShadowLayer = CALayer()
   private var trackingArea: NSTrackingArea?
@@ -216,7 +219,8 @@ final class VideoPreviewContainer: NSView {
     cameraCornerRadius: CGFloat = 12,
     cameraBorderWidth: CGFloat = 0,
     videoShadow: CGFloat = 0,
-    cameraShadow: CGFloat = 0
+    cameraShadow: CGFloat = 0,
+    cameraMirrored: Bool = false
   ) {
     currentLayout = layout
     currentWebcamSize = webcamSize
@@ -229,6 +233,7 @@ final class VideoPreviewContainer: NSView {
     currentCameraBorderWidth = cameraBorderWidth
     currentVideoShadow = videoShadow
     currentCameraShadow = cameraShadow
+    currentCameraMirrored = cameraMirrored
     layoutAll()
   }
 
@@ -392,6 +397,9 @@ final class VideoPreviewContainer: NSView {
       webcamView.layer?.backgroundColor = NSColor.clear.cgColor
       webcamPlayerLayer.videoGravity = .resizeAspect
       webcamPlayerLayer.frame = webcamView.bounds
+      webcamPlayerLayer.setAffineTransform(
+        currentCameraMirrored ? CGAffineTransform(scaleX: -1, y: 1) : .identity
+      )
       CATransaction.commit()
       return
     }
@@ -421,6 +429,9 @@ final class VideoPreviewContainer: NSView {
       ? NSColor.white.withAlphaComponent(0.3).cgColor
       : NSColor.clear.cgColor
     webcamPlayerLayer.frame = webcamView.bounds
+    webcamPlayerLayer.setAffineTransform(
+      currentCameraMirrored ? CGAffineTransform(scaleX: -1, y: 1) : .identity
+    )
 
     if currentCameraShadow > 0 {
       let camBlur = minDim * currentCameraShadow / 2000.0

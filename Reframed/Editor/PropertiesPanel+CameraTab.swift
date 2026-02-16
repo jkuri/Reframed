@@ -8,6 +8,8 @@ extension PropertiesPanel {
       toggleRow("Enabled", isOn: $editorState.webcamEnabled)
 
       Group {
+        toggleRow("Mirror", isOn: $editorState.cameraMirrored)
+
         HStack(spacing: 4) {
           ForEach(
             Array(

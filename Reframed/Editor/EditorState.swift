@@ -95,6 +95,7 @@ final class EditorState {
   var cameraBorderWidth: CGFloat = 0
   var videoShadow: CGFloat = 0
   var cameraShadow: CGFloat = 0
+  var cameraMirrored: Bool = false
   var projectName: String = ""
   var showExportSheet = false
   var showDeleteConfirmation = false
@@ -163,6 +164,7 @@ final class EditorState {
       self.cameraBorderWidth = saved.cameraBorderWidth
       self.videoShadow = saved.videoShadow ?? 0
       self.cameraShadow = saved.cameraShadow ?? 0
+      self.cameraMirrored = saved.cameraMirrored ?? false
       self.cameraLayout = saved.cameraLayout
       self.webcamEnabled = saved.webcamEnabled ?? true
     }
@@ -595,6 +597,7 @@ final class EditorState {
       cameraBorderWidth: cameraBorderWidth,
       videoShadow: videoShadow,
       cameraShadow: cameraShadow,
+      cameraMirrored: cameraMirrored,
       exportSettings: settings,
       cursorSnapshot: cursorSnapshot,
       cursorStyle: cursorStyle,
@@ -723,6 +726,7 @@ final class EditorState {
       cameraBorderWidth: cameraBorderWidth,
       videoShadow: videoShadow,
       cameraShadow: cameraShadow,
+      cameraMirrored: cameraMirrored,
       cameraLayout: cameraLayout,
       webcamEnabled: webcamEnabled,
       cursorSettings: cursorSettings,
@@ -884,6 +888,7 @@ final class EditorState {
       _ = self.cameraBorderWidth
       _ = self.videoShadow
       _ = self.cameraShadow
+      _ = self.cameraMirrored
       _ = self.cameraLayout
       _ = self.webcamEnabled
       _ = self.showCursor

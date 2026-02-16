@@ -241,6 +241,11 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
           let fitRect = AVMakeRect(aspectRatio: webcamAspect, insideRect: fullRect)
           context.saveGState()
           drawBackground(in: context, rect: fullRect, instruction: instruction, colorSpace: colorSpace)
+          if instruction.cameraMirrored {
+            context.translateBy(x: fitRect.midX, y: 0)
+            context.scaleBy(x: -1, y: 1)
+            context.translateBy(x: -fitRect.midX, y: 0)
+          }
           context.draw(webcamImage, in: fitRect)
           context.restoreGState()
         } else if let cameraRect = instruction.cameraRect {
@@ -297,6 +302,11 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
             context.saveGState()
             context.addPath(innerPath)
             context.clip()
+            if instruction.cameraMirrored {
+              context.translateBy(x: insetRect.midX, y: 0)
+              context.scaleBy(x: -1, y: 1)
+              context.translateBy(x: -insetRect.midX, y: 0)
+            }
             let innerFill = aspectFillRect(imageSize: CGSize(width: webcamImage.width, height: webcamImage.height), in: insetRect)
             context.draw(webcamImage, in: innerFill)
             context.restoreGState()
@@ -310,6 +320,11 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
             context.saveGState()
             context.addPath(path)
             context.clip()
+            if instruction.cameraMirrored {
+              context.translateBy(x: drawRect.midX, y: 0)
+              context.scaleBy(x: -1, y: 1)
+              context.translateBy(x: -drawRect.midX, y: 0)
+            }
             let fillRect = aspectFillRect(imageSize: CGSize(width: webcamImage.width, height: webcamImage.height), in: drawRect)
             context.draw(webcamImage, in: fillRect)
             context.restoreGState()

@@ -220,6 +220,7 @@ struct EditorView: View {
           cameraBorderWidth: editorState.cameraBorderWidth,
           videoShadow: editorState.videoShadow,
           cameraShadow: editorState.cameraShadow,
+          cameraMirrored: editorState.cameraMirrored,
           cursorMetadataProvider: editorState.activeCursorProvider,
           showCursor: editorState.showCursor,
           cursorStyle: editorState.cursorStyle,

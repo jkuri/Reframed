@@ -15,6 +15,7 @@ final class CompositionInstruction: NSObject, AVVideoCompositionInstructionProto
   let cameraBorderWidth: CGFloat
   let videoShadow: CGFloat
   let cameraShadow: CGFloat
+  let cameraMirrored: Bool
   let outputSize: CGSize
 
   let backgroundColors: [(r: CGFloat, g: CGFloat, b: CGFloat, a: CGFloat)]
@@ -46,6 +47,7 @@ final class CompositionInstruction: NSObject, AVVideoCompositionInstructionProto
     cameraBorderWidth: CGFloat = 0,
     videoShadow: CGFloat = 0,
     cameraShadow: CGFloat = 0,
+    cameraMirrored: Bool = false,
     outputSize: CGSize,
     backgroundColors: [(r: CGFloat, g: CGFloat, b: CGFloat, a: CGFloat)] = [],
     backgroundStartPoint: CGPoint = .zero,
@@ -74,6 +76,7 @@ final class CompositionInstruction: NSObject, AVVideoCompositionInstructionProto
     self.cameraBorderWidth = cameraBorderWidth
     self.videoShadow = videoShadow
     self.cameraShadow = cameraShadow
+    self.cameraMirrored = cameraMirrored
     self.outputSize = outputSize
     self.backgroundColors = backgroundColors
     self.backgroundStartPoint = backgroundStartPoint
