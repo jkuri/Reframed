@@ -43,8 +43,6 @@ enum VideoCompositor {
     micAudioVolume: Float = 1.0,
     micNoiseReductionEnabled: Bool = false,
     micNoiseReductionIntensity: Float = 0.5,
-    cameraBackgroundStyle: CameraBackgroundStyle = .none,
-    cameraBackgroundImage: CGImage? = nil,
     progressHandler: (@MainActor @Sendable (Double, Double?) -> Void)? = nil
   ) async throws -> URL {
     let composition = AVMutableComposition()
@@ -113,16 +111,12 @@ enum VideoCompositor {
       hasNonDefaultBackground || canvasAspect != .original || padding > 0 || videoCornerRadius > 0
       || videoShadow > 0
     let hasWebcam = result.webcamVideoURL != nil
-    let hasCameraBackground: Bool = {
-      if case .none = cameraBackgroundStyle { return false }
-      return true
-    }()
     let hasCursor = cursorSnapshot != nil
     let hasZoom = zoomTimeline != nil
     let needsReencode =
       exportSettings.codec != .h264 || exportSettings.resolution != .original
       || exportSettings.fps != .original
-    let needsCompositor = hasVisualEffects || hasWebcam || needsReencode || hasCursor || hasZoom || hasCameraBackground
+    let needsCompositor = hasVisualEffects || hasWebcam || needsReencode || hasCursor || hasZoom
 
     let canvasSize: CGSize
     if let baseSize = canvasAspect.size(for: screenNaturalSize) {
@@ -238,8 +232,6 @@ enum VideoCompositor {
             end: CMTimeSubtract(overlapEnd, effectiveTrim.start)
           )
         },
-        cameraBackgroundStyle: cameraBackgroundStyle,
-        cameraBackgroundImage: cameraBackgroundImage
       )
 
       let videoComposition = AVMutableVideoComposition()

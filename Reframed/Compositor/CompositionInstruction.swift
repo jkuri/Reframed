@@ -37,8 +37,6 @@ final class CompositionInstruction: NSObject, AVVideoCompositionInstructionProto
   let zoomTimeline: ZoomTimeline?
   let trimStartSeconds: Double
   let cameraFullscreenRegions: [CMTimeRange]
-  let cameraBackgroundStyle: CameraBackgroundStyle
-  let cameraBackgroundImage: CGImage?
 
   init(
     timeRange: CMTimeRange,
@@ -68,9 +66,7 @@ final class CompositionInstruction: NSObject, AVVideoCompositionInstructionProto
     zoomFollowCursor: Bool = true,
     zoomTimeline: ZoomTimeline? = nil,
     trimStartSeconds: Double = 0,
-    cameraFullscreenRegions: [CMTimeRange] = [],
-    cameraBackgroundStyle: CameraBackgroundStyle = .none,
-    cameraBackgroundImage: CGImage? = nil
+    cameraFullscreenRegions: [CMTimeRange] = []
   ) {
     self.timeRange = timeRange
     self.screenTrackID = screenTrackID
@@ -100,8 +96,6 @@ final class CompositionInstruction: NSObject, AVVideoCompositionInstructionProto
     self.zoomTimeline = zoomTimeline
     self.trimStartSeconds = trimStartSeconds
     self.cameraFullscreenRegions = cameraFullscreenRegions
-    self.cameraBackgroundStyle = cameraBackgroundStyle
-    self.cameraBackgroundImage = cameraBackgroundImage
 
     var trackIDs: [NSValue] = [NSNumber(value: screenTrackID)]
     if let wid = webcamTrackID {

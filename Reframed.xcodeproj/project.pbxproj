@@ -133,10 +133,7 @@
 		A9000000000000000000000C /* CursorSmoothing.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9000000000000000000000C /* CursorSmoothing.swift */; };
 		A20000000000000000000020 /* PropertiesPanel+AnimationsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000020 /* PropertiesPanel+AnimationsTab.swift */; };
 		A20000000000000000000021 /* PropertiesPanel+AudioTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000021 /* PropertiesPanel+AudioTab.swift */; };
-		CA0000000000000000000001 /* CameraBackgroundStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB0000000000000000000001 /* CameraBackgroundStyle.swift */; };
 		CA0000000000000000000002 /* CIImageExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB0000000000000000000002 /* CIImageExtensions.swift */; };
-		CA0000000000000000000003 /* WebcamFrameProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB0000000000000000000003 /* WebcamFrameProcessor.swift */; };
-		CA0000000000000000000004 /* PropertiesPanel+CameraBackgroundSection.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB0000000000000000000004 /* PropertiesPanel+CameraBackgroundSection.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -268,10 +265,7 @@
 		B9000000000000000000000C /* CursorSmoothing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CursorSmoothing.swift; sourceTree = "<group>"; };
 		B20000000000000000000020 /* PropertiesPanel+AnimationsTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PropertiesPanel+AnimationsTab.swift"; sourceTree = "<group>"; };
 		B20000000000000000000021 /* PropertiesPanel+AudioTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PropertiesPanel+AudioTab.swift"; sourceTree = "<group>"; };
-		CB0000000000000000000001 /* CameraBackgroundStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraBackgroundStyle.swift; sourceTree = "<group>"; };
 		CB0000000000000000000002 /* CIImageExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CIImageExtensions.swift; sourceTree = "<group>"; };
-		CB0000000000000000000003 /* WebcamFrameProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebcamFrameProcessor.swift; sourceTree = "<group>"; };
-		CB0000000000000000000004 /* PropertiesPanel+CameraBackgroundSection.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PropertiesPanel+CameraBackgroundSection.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -541,8 +535,6 @@
 				B9000000000000000000000C /* CursorSmoothing.swift */,
 				B20000000000000000000020 /* PropertiesPanel+AnimationsTab.swift */,
 				B20000000000000000000021 /* PropertiesPanel+AudioTab.swift */,
-				CB0000000000000000000003 /* WebcamFrameProcessor.swift */,
-				CB0000000000000000000004 /* PropertiesPanel+CameraBackgroundSection.swift */,
 			);
 			path = Editor;
 			sourceTree = "<group>";
@@ -551,7 +543,6 @@
 			isa = PBXGroup;
 			children = (
 				B20000000000000000000013 /* BackgroundStyle.swift */,
-				CB0000000000000000000001 /* CameraBackgroundStyle.swift */,
 				B20000000000000000000004 /* CameraLayout.swift */,
 				B2000000000000000000000F /* CameraVideoCompositor.swift */,
 				B2000000000000000000001A /* CompositionInstruction.swift */,
@@ -756,10 +747,7 @@
 				A9000000000000000000000C /* CursorSmoothing.swift in Sources */,
 				A20000000000000000000020 /* PropertiesPanel+AnimationsTab.swift in Sources */,
 				A20000000000000000000021 /* PropertiesPanel+AudioTab.swift in Sources */,
-				CA0000000000000000000001 /* CameraBackgroundStyle.swift in Sources */,
 				CA0000000000000000000002 /* CIImageExtensions.swift in Sources */,
-				CA0000000000000000000003 /* WebcamFrameProcessor.swift in Sources */,
-				CA0000000000000000000004 /* PropertiesPanel+CameraBackgroundSection.swift in Sources */,
 			);
 		};
 /* End PBXSourcesBuildPhase section */

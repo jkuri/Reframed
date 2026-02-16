@@ -137,16 +137,6 @@ final class EditorState {
 
   var webcamEnabled: Bool = true
 
-  var cameraBackgroundStyle: CameraBackgroundStyle = .none
-  var cameraBackgroundImageData: Data?
-  var webcamFrameProcessor: WebcamFrameProcessor?
-  var latestProcessedWebcamFrame: CGImage?
-
-  var isCameraBackgroundProcessingActive: Bool {
-    if case .none = cameraBackgroundStyle { return false }
-    return true
-  }
-
   var hasSystemAudio: Bool { result.systemAudioURL != nil }
   var hasMicAudio: Bool { result.microphoneAudioURL != nil }
 
@@ -177,7 +167,6 @@ final class EditorState {
       self.cameraMirrored = saved.cameraMirrored ?? false
       self.cameraLayout = saved.cameraLayout
       self.webcamEnabled = saved.webcamEnabled ?? true
-      self.cameraBackgroundStyle = saved.cameraBackgroundStyle ?? .none
     }
   }
 
@@ -263,8 +252,6 @@ final class EditorState {
     } else if hasWebcam {
       setCameraCorner(.bottomRight)
     }
-    loadCameraBackgroundImage()
-    updateCameraBackgroundProcessing()
     startAutoSave()
   }
 
@@ -593,14 +580,6 @@ final class EditorState {
       )
     }
 
-    var cameraBackgroundImage: CGImage?
-    if case .image = cameraBackgroundStyle, let data = cameraBackgroundImageData {
-      if let nsImage = NSImage(data: data) {
-        var rect = CGRect(x: 0, y: 0, width: nsImage.size.width, height: nsImage.size.height)
-        cameraBackgroundImage = nsImage.cgImage(forProposedRect: &rect, context: nil, hints: nil)
-      }
-    }
-
     let state = self
     let url = try await VideoCompositor.export(
       result: exportResult,
@@ -632,8 +611,6 @@ final class EditorState {
       micAudioVolume: effectiveMicAudioVolume,
       micNoiseReductionEnabled: micNoiseReductionEnabled,
       micNoiseReductionIntensity: micNoiseReductionIntensity,
-      cameraBackgroundStyle: cameraBackgroundStyle,
-      cameraBackgroundImage: cameraBackgroundImage,
       progressHandler: { progress, eta in
         state.exportProgress = progress
         state.exportETA = eta
@@ -758,11 +735,7 @@ final class EditorState {
       audioSettings: audioSettings,
       systemAudioRegions: systemAudioRegions.isEmpty ? nil : systemAudioRegions,
       micAudioRegions: micAudioRegions.isEmpty ? nil : micAudioRegions,
-      cameraFullscreenRegions: cameraFullscreenRegions.isEmpty ? nil : cameraFullscreenRegions,
-      cameraBackgroundStyle: {
-        if case .none = cameraBackgroundStyle { return nil }
-        return cameraBackgroundStyle
-      }()
+      cameraFullscreenRegions: cameraFullscreenRegions.isEmpty ? nil : cameraFullscreenRegions
     )
     try? project.saveEditorState(data)
   }
@@ -891,50 +864,6 @@ final class EditorState {
     smoothedCursorProvider = CursorMetadataProvider(metadata: smoothedMetadata)
   }
 
-  func setCameraBackgroundImage(from url: URL) {
-    guard let project else { return }
-    let filename = "camera-background.\(url.pathExtension.lowercased())"
-    let destURL = project.bundleURL.appendingPathComponent(filename)
-    try? FileManager.default.removeItem(at: destURL)
-    try? FileManager.default.copyItem(at: url, to: destURL)
-    cameraBackgroundStyle = .image(filename)
-    cameraBackgroundImageData = try? Data(contentsOf: destURL)
-    updateCameraBackgroundProcessing()
-  }
-
-  func loadCameraBackgroundImage() {
-    guard let project else { return }
-    if case .image(let filename) = cameraBackgroundStyle {
-      let fileURL = project.bundleURL.appendingPathComponent(filename)
-      cameraBackgroundImageData = try? Data(contentsOf: fileURL)
-    }
-  }
-
-  func updateCameraBackgroundProcessing() {
-    guard hasWebcam, webcamEnabled, isCameraBackgroundProcessingActive else {
-      webcamFrameProcessor?.stop()
-      webcamFrameProcessor = nil
-      latestProcessedWebcamFrame = nil
-      return
-    }
-
-    guard let webcamPlayer = playerController.webcamPlayer else { return }
-
-    if webcamFrameProcessor == nil {
-      let processor = WebcamFrameProcessor(player: webcamPlayer)
-      processor.onFrameReady = { [weak self] image in
-        self?.latestProcessedWebcamFrame = image
-      }
-      webcamFrameProcessor = processor
-      processor.start()
-    }
-
-    webcamFrameProcessor?.backgroundStyle = cameraBackgroundStyle
-    webcamFrameProcessor?.backgroundImageData = cameraBackgroundImageData
-    webcamFrameProcessor?.cameraMirrored = cameraMirrored
-    webcamFrameProcessor?.reprocessCurrentFrame()
-  }
-
   func scheduleSave() {
     pendingSaveTask?.cancel()
     pendingSaveTask = Task {
@@ -946,20 +875,6 @@ final class EditorState {
 
   private func startAutoSave() {
     observeChanges()
-    observeCameraBackgroundChanges()
-  }
-
-  private func observeCameraBackgroundChanges() {
-    withObservationTracking {
-      _ = self.cameraBackgroundStyle
-      _ = self.cameraMirrored
-      _ = self.webcamEnabled
-    } onChange: {
-      Task { @MainActor [weak self] in
-        self?.updateCameraBackgroundProcessing()
-        self?.observeCameraBackgroundChanges()
-      }
-    }
   }
 
   private func observeChanges() {
@@ -1002,7 +917,6 @@ final class EditorState {
       _ = self.micAudioMuted
       _ = self.micNoiseReductionEnabled
       _ = self.micNoiseReductionIntensity
-      _ = self.cameraBackgroundStyle
     } onChange: {
       Task { @MainActor [weak self] in
         self?.scheduleSave()
@@ -1014,8 +928,6 @@ final class EditorState {
   func teardown() {
     pendingSaveTask?.cancel()
     saveState()
-    webcamFrameProcessor?.stop()
-    webcamFrameProcessor = nil
     playerController.teardown()
   }
 }
