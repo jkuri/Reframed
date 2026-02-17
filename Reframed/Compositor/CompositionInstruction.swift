@@ -22,6 +22,8 @@ final class CompositionInstruction: NSObject, AVVideoCompositionInstructionProto
   let backgroundColors: [(r: CGFloat, g: CGFloat, b: CGFloat, a: CGFloat)]
   let backgroundStartPoint: CGPoint
   let backgroundEndPoint: CGPoint
+  let backgroundImage: CGImage?
+  let backgroundImageFillMode: BackgroundImageFillMode
   let paddingH: CGFloat
   let paddingV: CGFloat
   let videoCornerRadius: CGFloat
@@ -54,6 +56,8 @@ final class CompositionInstruction: NSObject, AVVideoCompositionInstructionProto
     backgroundColors: [(r: CGFloat, g: CGFloat, b: CGFloat, a: CGFloat)] = [],
     backgroundStartPoint: CGPoint = .zero,
     backgroundEndPoint: CGPoint = CGPoint(x: 0, y: 1),
+    backgroundImage: CGImage? = nil,
+    backgroundImageFillMode: BackgroundImageFillMode = .fill,
     paddingH: CGFloat = 0,
     paddingV: CGFloat = 0,
     videoCornerRadius: CGFloat = 0,
@@ -84,6 +88,8 @@ final class CompositionInstruction: NSObject, AVVideoCompositionInstructionProto
     self.backgroundColors = backgroundColors
     self.backgroundStartPoint = backgroundStartPoint
     self.backgroundEndPoint = backgroundEndPoint
+    self.backgroundImage = backgroundImage
+    self.backgroundImageFillMode = backgroundImageFillMode
     self.paddingH = paddingH
     self.paddingV = paddingV
     self.videoCornerRadius = videoCornerRadius

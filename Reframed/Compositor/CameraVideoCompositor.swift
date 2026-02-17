@@ -354,6 +354,38 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
     instruction: CompositionInstruction,
     colorSpace: CGColorSpace
   ) {
+    if let bgImage = instruction.backgroundImage {
+      context.saveGState()
+      context.addRect(rect)
+      context.clip()
+      let imageAspect = CGFloat(bgImage.width) / CGFloat(max(bgImage.height, 1))
+      let rectAspect = rect.width / max(rect.height, 1)
+      let drawRect: CGRect
+      switch instruction.backgroundImageFillMode {
+      case .fill:
+        if imageAspect > rectAspect {
+          let w = rect.height * imageAspect
+          drawRect = CGRect(x: rect.midX - w / 2, y: rect.origin.y, width: w, height: rect.height)
+        } else {
+          let h = rect.width / max(imageAspect, 0.001)
+          drawRect = CGRect(x: rect.origin.x, y: rect.midY - h / 2, width: rect.width, height: h)
+        }
+      case .fit:
+        if imageAspect > rectAspect {
+          let h = rect.width / max(imageAspect, 0.001)
+          drawRect = CGRect(x: rect.origin.x, y: rect.midY - h / 2, width: rect.width, height: h)
+        } else {
+          let w = rect.height * imageAspect
+          drawRect = CGRect(x: rect.midX - w / 2, y: rect.origin.y, width: w, height: rect.height)
+        }
+      }
+      context.setFillColor(CGColor(red: 0, green: 0, blue: 0, alpha: 1))
+      context.fill([rect])
+      context.draw(bgImage, in: drawRect)
+      context.restoreGState()
+      return
+    }
+
     let colors = instruction.backgroundColors
     guard !colors.isEmpty else {
       context.setFillColor(CGColor(red: 0, green: 0, blue: 0, alpha: 1))

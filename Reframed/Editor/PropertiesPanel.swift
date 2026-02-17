@@ -1,4 +1,5 @@
 import SwiftUI
+import UniformTypeIdentifiers
 
 struct PropertiesPanel: View {
   @Bindable var editorState: EditorState
@@ -6,12 +7,13 @@ struct PropertiesPanel: View {
   @Environment(\.colorScheme) private var colorScheme
 
   enum BackgroundMode: Int, CaseIterable {
-    case color, gradient
+    case color, gradient, image
 
     var label: String {
       switch self {
       case .color: "Color"
       case .gradient: "Gradient"
+      case .image: "Image"
       }
     }
   }
@@ -19,6 +21,7 @@ struct PropertiesPanel: View {
   @State var backgroundMode: BackgroundMode = .color
   @State var selectedGradientId: Int = 0
   @State var selectedColorId: String? = "Black"
+  @State var backgroundImageFilename: String?
   @State private var editingProjectName: String = ""
   @State var showClickColorPopover = false
   @State var showBorderColorPopover = false
@@ -92,6 +95,9 @@ struct PropertiesPanel: View {
       if let preset = TailwindColors.all.first(where: { $0.color == color }) {
         selectedColorId = preset.id
       }
+    case .image(let filename):
+      backgroundMode = .image
+      backgroundImageFilename = filename
     }
   }
 
@@ -213,6 +219,29 @@ struct PropertiesPanel: View {
         let first = TailwindColors.all[0]
         selectedColorId = first.id
         editorState.backgroundStyle = .solidColor(first.color)
+      }
+    case .image:
+      if case .image = editorState.backgroundStyle {
+        return
+      }
+      if let filename = backgroundImageFilename {
+        editorState.backgroundStyle = .image(filename)
+      }
+    }
+  }
+
+  func pickBackgroundImage() {
+    let panel = NSOpenPanel()
+    panel.allowedContentTypes = [.png, .jpeg, .heic, .tiff]
+    panel.allowsMultipleSelection = false
+    panel.canChooseDirectories = false
+    panel.begin { response in
+      guard response == .OK, let url = panel.url else { return }
+      DispatchQueue.main.async {
+        self.editorState.setBackgroundImage(from: url)
+        if case .image(let f) = self.editorState.backgroundStyle {
+          self.backgroundImageFilename = f
+        }
       }
     }
   }

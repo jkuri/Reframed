@@ -87,6 +87,8 @@ final class EditorState {
   var isPreviewMode = false
 
   var backgroundStyle: BackgroundStyle = .solidColor(CodableColor(r: 0, g: 0, b: 0))
+  var backgroundImage: NSImage?
+  var backgroundImageFillMode: BackgroundImageFillMode = .fill
   var canvasAspect: CanvasAspect = .original
   var padding: CGFloat = 0
   var videoCornerRadius: CGFloat = 0
@@ -169,6 +171,11 @@ final class EditorState {
       self.cameraMirrored = saved.cameraMirrored ?? false
       self.cameraLayout = saved.cameraLayout
       self.webcamEnabled = saved.webcamEnabled ?? true
+      self.backgroundImageFillMode = saved.backgroundImageFillMode ?? .fill
+      if case .image(let filename) = saved.backgroundStyle {
+        let url = project.bundleURL.appendingPathComponent(filename)
+        self.backgroundImage = NSImage(contentsOf: url)
+      }
     }
   }
 
@@ -294,6 +301,36 @@ final class EditorState {
   func updateTrimEnd(_ time: CMTime) {
     trimEnd = time
     playerController.trimEnd = time
+  }
+
+  func setBackgroundImage(from sourceURL: URL) {
+    guard let bundleURL = project?.bundleURL else { return }
+    let fm = FileManager.default
+    let contents = (try? fm.contentsOfDirectory(atPath: bundleURL.path)) ?? []
+    for file in contents where file.hasPrefix("background-image.") {
+      try? fm.removeItem(at: bundleURL.appendingPathComponent(file))
+    }
+    let filename = "background-image.\(sourceURL.pathExtension.lowercased())"
+    let destURL = bundleURL.appendingPathComponent(filename)
+    guard (try? fm.copyItem(at: sourceURL, to: destURL)) != nil else { return }
+    backgroundImage = NSImage(contentsOf: destURL)
+    backgroundStyle = .image(filename)
+  }
+
+  func removeBackgroundImage() {
+    if case .image(let filename) = backgroundStyle, let bundleURL = project?.bundleURL {
+      let fileURL = bundleURL.appendingPathComponent(filename)
+      try? FileManager.default.removeItem(at: fileURL)
+    }
+    backgroundImage = nil
+    backgroundStyle = .solidColor(CodableColor(r: 0, g: 0, b: 0))
+  }
+
+  func backgroundImageURL() -> URL? {
+    guard case .image(let filename) = backgroundStyle, let bundleURL = project?.bundleURL else {
+      return nil
+    }
+    return bundleURL.appendingPathComponent(filename)
   }
 
   private func regions(for trackType: AudioTrackType) -> [AudioRegionData] {
@@ -594,6 +631,8 @@ final class EditorState {
       micAudioRegions: micRegions.isEmpty ? nil : micRegions,
       cameraFullscreenRegions: camFsRegions.isEmpty ? nil : camFsRegions,
       backgroundStyle: backgroundStyle,
+      backgroundImageURL: backgroundImageURL(),
+      backgroundImageFillMode: backgroundImageFillMode,
       canvasAspect: canvasAspect,
       padding: padding,
       videoCornerRadius: videoCornerRadius,
@@ -723,6 +762,7 @@ final class EditorState {
       trimStartSeconds: CMTimeGetSeconds(trimStart),
       trimEndSeconds: CMTimeGetSeconds(trimEnd),
       backgroundStyle: backgroundStyle,
+      backgroundImageFillMode: backgroundImageFillMode,
       canvasAspect: canvasAspect,
       padding: padding,
       videoCornerRadius: videoCornerRadius,
@@ -886,6 +926,7 @@ final class EditorState {
   private func observeChanges() {
     withObservationTracking {
       _ = self.backgroundStyle
+      _ = self.backgroundImageFillMode
       _ = self.canvasAspect
       _ = self.padding
       _ = self.videoCornerRadius

@@ -22,6 +22,8 @@ enum VideoCompositor {
     micAudioRegions: [CMTimeRange]? = nil,
     cameraFullscreenRegions: [CMTimeRange]? = nil,
     backgroundStyle: BackgroundStyle = .none,
+    backgroundImageURL: URL? = nil,
+    backgroundImageFillMode: BackgroundImageFillMode = .fill,
     canvasAspect: CanvasAspect = .original,
     padding: CGFloat = 0,
     videoCornerRadius: CGFloat = 0,
@@ -105,7 +107,7 @@ enum VideoCompositor {
       switch backgroundStyle {
       case .none: return false
       case .solidColor(let c): return !(c.r == 0 && c.g == 0 && c.b == 0)
-      case .gradient: return true
+      case .gradient, .image: return true
       }
     }()
     let hasVisualEffects =
@@ -167,6 +169,15 @@ enum VideoCompositor {
         bgEndPoint = CGPoint(x: 0, y: 1)
       }
 
+      var bgImage: CGImage?
+      if case .image = backgroundStyle, let imageURL = backgroundImageURL,
+        let dataProvider = CGDataProvider(url: imageURL as CFURL),
+        let source = CGImageSourceCreateWithDataProvider(dataProvider, nil),
+        CGImageSourceGetCount(source) > 0
+      {
+        bgImage = CGImageSourceCreateImageAtIndex(source, 0, nil)
+      }
+
       let scaleX = renderSize.width / canvasSize.width
       let scaleY = renderSize.height / canvasSize.height
       let paddingHPx = padding * screenNaturalSize.width * scaleX
@@ -211,6 +222,8 @@ enum VideoCompositor {
         backgroundColors: bgColors,
         backgroundStartPoint: bgStartPoint,
         backgroundEndPoint: bgEndPoint,
+        backgroundImage: bgImage,
+        backgroundImageFillMode: backgroundImageFillMode,
         paddingH: paddingHPx,
         paddingV: paddingVPx,
         videoCornerRadius: scaledCornerRadius,
@@ -989,6 +1002,8 @@ enum VideoCompositor {
       }
     case .solidColor(let color):
       return [(r: color.r, g: color.g, b: color.b, a: color.a)]
+    case .image:
+      return []
     }
   }
 

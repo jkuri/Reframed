@@ -59,6 +59,7 @@ struct EditorStateData: Codable, Sendable {
   var trimStartSeconds: Double
   var trimEndSeconds: Double
   var backgroundStyle: BackgroundStyle
+  var backgroundImageFillMode: BackgroundImageFillMode?
   var canvasAspect: CanvasAspect?
   var padding: CGFloat
   var videoCornerRadius: CGFloat

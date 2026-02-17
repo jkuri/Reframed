@@ -189,7 +189,7 @@ struct EditorView: View {
       switch editorState.backgroundStyle {
       case .none: return false
       case .solidColor(let c): return !(c.r == 0 && c.g == 0 && c.b == 0)
-      case .gradient: return true
+      case .gradient, .image: return true
       }
     }()
     let hasEffects =
@@ -263,6 +263,18 @@ struct EditorView: View {
       }
     case .solidColor(let codableColor):
       Color(cgColor: codableColor.cgColor)
+    case .image:
+      if let nsImage = editorState.backgroundImage {
+        GeometryReader { geo in
+          Image(nsImage: nsImage)
+            .resizable()
+            .aspectRatio(contentMode: editorState.backgroundImageFillMode == .fill ? .fill : .fit)
+            .frame(width: geo.size.width, height: geo.size.height)
+            .clipped()
+        }
+      } else {
+        Color.black
+      }
     }
   }
 

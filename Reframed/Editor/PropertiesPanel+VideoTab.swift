@@ -18,6 +18,8 @@ extension PropertiesPanel {
         solidColorGrid
       case .gradient:
         gradientGrid
+      case .image:
+        imageBackgroundSection
       }
     }
   }
@@ -48,6 +50,46 @@ extension PropertiesPanel {
             )
         }
         .buttonStyle(.plain)
+      }
+    }
+  }
+
+  var imageBackgroundSection: some View {
+    VStack(alignment: .leading, spacing: Layout.itemSpacing) {
+      if let image = editorState.backgroundImage {
+        Image(nsImage: image)
+          .resizable()
+          .aspectRatio(contentMode: .fit)
+          .frame(maxWidth: .infinity, maxHeight: 60)
+          .clipShape(RoundedRectangle(cornerRadius: 8))
+      }
+      Button {
+        pickBackgroundImage()
+      } label: {
+        HStack {
+          Image(systemName: "photo.on.rectangle")
+          Text(editorState.backgroundImage != nil ? "Change Image" : "Choose Image")
+        }
+        .font(.system(size: 12))
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 6)
+        .background(ReframedColors.fieldBackground)
+        .clipShape(RoundedRectangle(cornerRadius: 6))
+      }
+      .buttonStyle(.plain)
+      .foregroundStyle(ReframedColors.primaryText)
+      if editorState.backgroundImage != nil {
+        VStack(alignment: .leading, spacing: Layout.itemSpacing) {
+          sectionHeader(icon: "arrow.up.left.and.arrow.down.right", title: "Fill Mode")
+
+          Picker("", selection: $editorState.backgroundImageFillMode) {
+            ForEach(BackgroundImageFillMode.allCases) { mode in
+              Text(mode.label).tag(mode)
+            }
+          }
+          .pickerStyle(.segmented)
+          .labelsHidden()
+        }
       }
     }
   }

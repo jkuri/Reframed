@@ -1,13 +1,27 @@
 import CoreGraphics
 import Foundation
 
+enum BackgroundImageFillMode: String, Codable, Sendable, CaseIterable, Identifiable {
+  case fill, fit
+
+  var id: String { rawValue }
+
+  var label: String {
+    switch self {
+    case .fill: "Fill"
+    case .fit: "Fit"
+    }
+  }
+}
+
 enum BackgroundStyle: Sendable, Equatable, Codable {
   case none
   case gradient(Int)
   case solidColor(CodableColor)
+  case image(String)
 
   private enum CodingKeys: String, CodingKey {
-    case type, gradientId, color
+    case type, gradientId, color, filename
   }
 
   func encode(to encoder: Encoder) throws {
@@ -21,6 +35,9 @@ enum BackgroundStyle: Sendable, Equatable, Codable {
     case .solidColor(let color):
       try container.encode("solidColor", forKey: .type)
       try container.encode(color, forKey: .color)
+    case .image(let filename):
+      try container.encode("image", forKey: .type)
+      try container.encode(filename, forKey: .filename)
     }
   }
 
@@ -34,6 +51,9 @@ enum BackgroundStyle: Sendable, Equatable, Codable {
     case "solidColor":
       let color = try container.decode(CodableColor.self, forKey: .color)
       self = .solidColor(color)
+    case "image":
+      let filename = try container.decode(String.self, forKey: .filename)
+      self = .image(filename)
     default:
       self = .none
     }
