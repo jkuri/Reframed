@@ -14,6 +14,7 @@ struct VideoPreviewView: NSViewRepresentable {
   var cameraAspect: CameraAspect = .original
   var cameraCornerRadius: CGFloat = 12
   var cameraBorderWidth: CGFloat = 0
+  var cameraBorderColor: CGColor = CGColor(srgbRed: 1, green: 1, blue: 1, alpha: 0.3)
   var videoShadow: CGFloat = 0
   var cameraShadow: CGFloat = 0
   var cameraMirrored: Bool = false
@@ -41,6 +42,8 @@ struct VideoPreviewView: NSViewRepresentable {
   }
 
   func updateNSView(_ nsView: VideoPreviewContainer, context: Context) {
+    context.coordinator.canvasSize = canvasSize
+
     let isFullscreen = cameraFullscreenRegions.contains { currentTime >= $0.start && currentTime <= $0.end }
     nsView.isCameraFullscreen = isFullscreen
 
@@ -54,6 +57,7 @@ struct VideoPreviewView: NSViewRepresentable {
       cameraAspect: cameraAspect,
       cameraCornerRadius: cameraCornerRadius,
       cameraBorderWidth: cameraBorderWidth,
+      cameraBorderColor: cameraBorderColor,
       videoShadow: videoShadow,
       cameraShadow: cameraShadow,
       cameraMirrored: cameraMirrored
@@ -126,6 +130,7 @@ final class VideoPreviewContainer: NSView {
   private let screenContainerLayer = CALayer()
   var coordinator: VideoPreviewView.Coordinator?
   var isCameraFullscreen = false
+  private var isDraggingCamera = false
   private var currentLayout = CameraLayout()
   private var currentWebcamSize: CGSize?
   private var currentScreenSize: CGSize = .zero
@@ -135,6 +140,7 @@ final class VideoPreviewContainer: NSView {
   private var currentCameraAspect: CameraAspect = .original
   private var currentCameraCornerRadius: CGFloat = 12
   private var currentCameraBorderWidth: CGFloat = 0
+  private var currentCameraBorderColor: CGColor = CGColor(srgbRed: 1, green: 1, blue: 1, alpha: 0.3)
   private var currentVideoShadow: CGFloat = 0
   private var currentCameraShadow: CGFloat = 0
   private var currentCameraMirrored: Bool = false
@@ -218,6 +224,7 @@ final class VideoPreviewContainer: NSView {
     cameraAspect: CameraAspect = .original,
     cameraCornerRadius: CGFloat = 12,
     cameraBorderWidth: CGFloat = 0,
+    cameraBorderColor: CGColor = CGColor(srgbRed: 1, green: 1, blue: 1, alpha: 0.3),
     videoShadow: CGFloat = 0,
     cameraShadow: CGFloat = 0,
     cameraMirrored: Bool = false
@@ -231,6 +238,7 @@ final class VideoPreviewContainer: NSView {
     currentCameraAspect = cameraAspect
     currentCameraCornerRadius = cameraCornerRadius
     currentCameraBorderWidth = cameraBorderWidth
+    currentCameraBorderColor = cameraBorderColor
     currentVideoShadow = videoShadow
     currentCameraShadow = cameraShadow
     currentCameraMirrored = cameraMirrored
@@ -383,6 +391,12 @@ final class VideoPreviewContainer: NSView {
       CATransaction.commit()
       return
     }
+
+    if isDraggingCamera {
+      CATransaction.commit()
+      return
+    }
+
     webcamWrapper.isHidden = false
 
     if isCameraFullscreen {
@@ -406,7 +420,6 @@ final class VideoPreviewContainer: NSView {
 
     screenContainerLayer.isHidden = false
     cursorOverlay.isHidden = false
-    webcamPlayerLayer.videoGravity = .resizeAspectFill
     webcamView.layer?.backgroundColor = NSColor.clear.cgColor
 
     let camAspect = currentCameraAspect.heightToWidthRatio(webcamSize: ws)
@@ -426,8 +439,9 @@ final class VideoPreviewContainer: NSView {
     webcamView.layer?.borderWidth = scaledBorder
     webcamView.layer?.borderColor =
       scaledBorder > 0
-      ? NSColor.white.withAlphaComponent(0.3).cgColor
+      ? currentCameraBorderColor
       : NSColor.clear.cgColor
+    webcamPlayerLayer.videoGravity = .resizeAspectFill
     webcamPlayerLayer.frame = webcamView.bounds
     webcamPlayerLayer.setAffineTransform(
       currentCameraMirrored ? CGAffineTransform(scaleX: -1, y: 1) : .identity
@@ -488,7 +502,7 @@ final class VideoPreviewContainer: NSView {
       return super.mouseDragged(with: event)
     }
     let loc = convert(event.locationInWindow, from: nil)
-    let canvasRect = AVMakeRect(aspectRatio: coord.canvasSize, insideRect: bounds)
+    let canvasRect = AVMakeRect(aspectRatio: currentCanvasSize, insideRect: bounds)
     guard canvasRect.width > 0 && canvasRect.height > 0 else { return }
 
     let dx = (loc.x - coord.dragStart.x) / canvasRect.width
@@ -508,12 +522,44 @@ final class VideoPreviewContainer: NSView {
 
     coord.cameraLayout.wrappedValue.relativeX = newX
     coord.cameraLayout.wrappedValue.relativeY = newY
+
+    currentLayout.relativeX = newX
+    currentLayout.relativeY = newY
+
+    isDraggingCamera = true
+    let camAspect = currentCameraAspect.heightToWidthRatio(
+      webcamSize: currentWebcamSize ?? .zero
+    )
+    let w = canvasRect.width * currentLayout.relativeWidth
+    let h = w * camAspect
+    let x = canvasRect.origin.x + canvasRect.width * newX
+    let y = canvasRect.origin.y + canvasRect.height * newY
+
+    CATransaction.begin()
+    CATransaction.setDisableActions(true)
+    webcamWrapper.frame = CGRect(x: x, y: bounds.height - y - h, width: w, height: h)
+    if currentCameraShadow > 0 {
+      let minDim = min(w, h)
+      let scaledRadius = minDim * (currentCameraCornerRadius / 100.0)
+      let camBlur = minDim * currentCameraShadow / 2000.0
+      webcamWrapper.layer?.shadowRadius = camBlur
+      webcamWrapper.layer?.shadowOpacity = 0.6
+      webcamWrapper.layer?.shadowPath = CGPath(
+        roundedRect: webcamView.bounds,
+        cornerWidth: scaledRadius,
+        cornerHeight: scaledRadius,
+        transform: nil
+      )
+    }
+    CATransaction.commit()
   }
 
   override func mouseUp(with event: NSEvent) {
     let wasDragging = coordinator?.isDragging == true
     coordinator?.isDragging = false
+    isDraggingCamera = false
     if wasDragging {
+      layoutAll()
       let loc = convert(event.locationInWindow, from: nil)
       if webcamWrapper.frame.contains(loc) {
         NSCursor.openHand.set()

@@ -93,6 +93,7 @@ final class EditorState {
   var cameraAspect: CameraAspect = .original
   var cameraCornerRadius: CGFloat = 8
   var cameraBorderWidth: CGFloat = 0
+  var cameraBorderColor: CodableColor = CodableColor(r: 1, g: 1, b: 1, a: 0.3)
   var videoShadow: CGFloat = 0
   var cameraShadow: CGFloat = 0
   var cameraMirrored: Bool = false
@@ -162,6 +163,7 @@ final class EditorState {
       self.cameraAspect = saved.cameraAspect ?? .original
       self.cameraCornerRadius = saved.cameraCornerRadius
       self.cameraBorderWidth = saved.cameraBorderWidth
+      self.cameraBorderColor = saved.cameraBorderColor ?? CodableColor(r: 1, g: 1, b: 1, a: 0.3)
       self.videoShadow = saved.videoShadow ?? 0
       self.cameraShadow = saved.cameraShadow ?? 0
       self.cameraMirrored = saved.cameraMirrored ?? false
@@ -483,21 +485,23 @@ final class EditorState {
 
   func setCameraCorner(_ corner: CameraCorner) {
     let margin: CGFloat = 0.02
+    let canvas = canvasSize(for: result.screenSize)
+    let marginY = margin * canvas.width / max(canvas.height, 1)
     let relH = cameraRelativeHeight
 
     switch corner {
     case .topLeft:
       cameraLayout.relativeX = margin
-      cameraLayout.relativeY = margin
+      cameraLayout.relativeY = marginY
     case .topRight:
       cameraLayout.relativeX = 1.0 - cameraLayout.relativeWidth - margin
-      cameraLayout.relativeY = margin
+      cameraLayout.relativeY = marginY
     case .bottomLeft:
       cameraLayout.relativeX = margin
-      cameraLayout.relativeY = 1.0 - relH - margin
+      cameraLayout.relativeY = 1.0 - relH - marginY
     case .bottomRight:
       cameraLayout.relativeX = 1.0 - cameraLayout.relativeWidth - margin
-      cameraLayout.relativeY = 1.0 - relH - margin
+      cameraLayout.relativeY = 1.0 - relH - marginY
     }
   }
 
@@ -595,6 +599,7 @@ final class EditorState {
       videoCornerRadius: videoCornerRadius,
       cameraCornerRadius: cameraCornerRadius,
       cameraBorderWidth: cameraBorderWidth,
+      cameraBorderColor: cameraBorderColor,
       videoShadow: videoShadow,
       cameraShadow: cameraShadow,
       cameraMirrored: cameraMirrored,
@@ -724,6 +729,7 @@ final class EditorState {
       cameraAspect: cameraAspect,
       cameraCornerRadius: cameraCornerRadius,
       cameraBorderWidth: cameraBorderWidth,
+      cameraBorderColor: cameraBorderColor,
       videoShadow: videoShadow,
       cameraShadow: cameraShadow,
       cameraMirrored: cameraMirrored,
@@ -886,6 +892,7 @@ final class EditorState {
       _ = self.cameraAspect
       _ = self.cameraCornerRadius
       _ = self.cameraBorderWidth
+      _ = self.cameraBorderColor
       _ = self.videoShadow
       _ = self.cameraShadow
       _ = self.cameraMirrored

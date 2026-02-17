@@ -65,6 +65,7 @@ struct EditorStateData: Codable, Sendable {
   var cameraAspect: CameraAspect?
   var cameraCornerRadius: CGFloat
   var cameraBorderWidth: CGFloat
+  var cameraBorderColor: CodableColor?
   var videoShadow: CGFloat?
   var cameraShadow: CGFloat?
   var cameraMirrored: Bool?

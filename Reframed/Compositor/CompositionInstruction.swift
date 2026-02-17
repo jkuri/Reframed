@@ -13,6 +13,7 @@ final class CompositionInstruction: NSObject, AVVideoCompositionInstructionProto
   let cameraRect: CGRect?
   let cameraCornerRadius: CGFloat
   let cameraBorderWidth: CGFloat
+  let cameraBorderColor: CGColor
   let videoShadow: CGFloat
   let cameraShadow: CGFloat
   let cameraMirrored: Bool
@@ -45,6 +46,7 @@ final class CompositionInstruction: NSObject, AVVideoCompositionInstructionProto
     cameraRect: CGRect?,
     cameraCornerRadius: CGFloat,
     cameraBorderWidth: CGFloat = 0,
+    cameraBorderColor: CGColor = CGColor(srgbRed: 1, green: 1, blue: 1, alpha: 0.3),
     videoShadow: CGFloat = 0,
     cameraShadow: CGFloat = 0,
     cameraMirrored: Bool = false,
@@ -74,6 +76,7 @@ final class CompositionInstruction: NSObject, AVVideoCompositionInstructionProto
     self.cameraRect = cameraRect
     self.cameraCornerRadius = cameraCornerRadius
     self.cameraBorderWidth = cameraBorderWidth
+    self.cameraBorderColor = cameraBorderColor
     self.videoShadow = videoShadow
     self.cameraShadow = cameraShadow
     self.cameraMirrored = cameraMirrored

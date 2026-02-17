@@ -27,6 +27,7 @@ enum VideoCompositor {
     videoCornerRadius: CGFloat = 0,
     cameraCornerRadius: CGFloat = 12,
     cameraBorderWidth: CGFloat = 0,
+    cameraBorderColor: CodableColor = CodableColor(r: 1, g: 1, b: 1, a: 0.3),
     videoShadow: CGFloat = 0,
     cameraShadow: CGFloat = 0,
     cameraMirrored: Bool = false,
@@ -202,6 +203,7 @@ enum VideoCompositor {
           return min(scaledW, scaledH) * (cameraCornerRadius / 100.0)
         }(),
         cameraBorderWidth: cameraBorderWidth * (renderSize.width / canvasSize.width),
+        cameraBorderColor: cameraBorderColor.cgColor,
         videoShadow: videoShadow,
         cameraShadow: cameraShadow,
         cameraMirrored: cameraMirrored,

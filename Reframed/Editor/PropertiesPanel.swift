@@ -21,6 +21,7 @@ struct PropertiesPanel: View {
   @State var selectedColorId: String? = "Black"
   @State private var editingProjectName: String = ""
   @State var showClickColorPopover = false
+  @State var showBorderColorPopover = false
   @FocusState private var projectNameFocused: Bool
 
   var body: some View {
@@ -38,6 +39,9 @@ struct PropertiesPanel: View {
           backgroundSection
         case .camera:
           cameraSection
+          cameraPositionSection
+          cameraAspectRatioSection
+          cameraStyleSection
         case .audio:
           audioSection
         case .cursor:

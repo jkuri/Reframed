@@ -218,6 +218,7 @@ struct EditorView: View {
           cameraAspect: editorState.cameraAspect,
           cameraCornerRadius: editorState.cameraCornerRadius,
           cameraBorderWidth: editorState.cameraBorderWidth,
+          cameraBorderColor: editorState.cameraBorderColor.cgColor,
           videoShadow: editorState.videoShadow,
           cameraShadow: editorState.cameraShadow,
           cameraMirrored: editorState.cameraMirrored,

@@ -289,7 +289,7 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
             )
             context.saveGState()
             context.addPath(borderPath)
-            context.setFillColor(CGColor(red: 1, green: 1, blue: 1, alpha: 0.3))
+            context.setFillColor(instruction.cameraBorderColor)
             context.fillPath()
             context.restoreGState()
 
