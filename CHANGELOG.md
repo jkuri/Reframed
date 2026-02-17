@@ -1,5 +1,41 @@
 # Changelog
 
+## [v0.8.1](https://github.com/jkuri/Reframed/compare/v0.8.0...v0.8.1) (2026-02-17)
+
+### Features
+
+- **video:** add custom background image possible and make it work in preview and exported video as well ([2b42808](https://github.com/jkuri/Reframed/commit/2b42808fe992790bbd072c504332efafd070664c))
+- **editor:** save editor window state like size and position and restore when reopened ([ddad8b2](https://github.com/jkuri/Reframed/commit/ddad8b2bb46f48d9fc477a24cf5bad7952e2b867))
+- **camera:** improve the camera options in editor and fix some bugs around that topic ([cb22543](https://github.com/jkuri/Reframed/commit/cb22543961ef803609a9709780b1a073b95e5dd6))
+- **camera:** implement webcam background manipulation ([ca93a7b](https://github.com/jkuri/Reframed/commit/ca93a7b6a881947d205fa1a2c168a2d724c586df))
+- **camera:** add webcam mirror toggle and implement the feature ([448ba7a](https://github.com/jkuri/Reframed/commit/448ba7a476dd8fa35419397d90c2cbfb471cbee7))
+- **editor:** make webcam toggle switch in editor and don't include its stream into transcoder when exporting in case its disabled ([3834da1](https://github.com/jkuri/Reframed/commit/3834da1e838b559de277dddb211968e3cae94a5b))
+- **audio:** add microphone audio noise reduction func and re-generate waveform in real-time when changes are updated ([a8caa45](https://github.com/jkuri/Reframed/commit/a8caa4535ac158b1416381a28db3ed3e020db2c5))
+- **audio:** add audio tab in editor settings and make muting and volume control possible ([80b98f4](https://github.com/jkuri/Reframed/commit/80b98f4e1b345a8e917a35ad7eaccdc6e181829b))
+- **cursor:** implement new section for animate and add cursor movement speed based on spring (tension, friction, mass) - some hardcore styles ([6736c09](https://github.com/jkuri/Reframed/commit/6736c092e3bc5b628b1e6712bce5a5ae5c30c368))
+- **editor:** add more gradients, make colors and gradients pickable and visible directly, fix the camera size, make camera aspect ratio configurable, add shadow option for both canvas and camera, make radius configurable in percent unit ([6cb0396](https://github.com/jkuri/Reframed/commit/6cb039693a07064d1c43fc8484129a5135bf69f8))
+
+### Bug Fixes
+
+- **timeline:** do not generate and render mic waveform twice initially ([d7f8381](https://github.com/jkuri/Reframed/commit/d7f8381a060c84fe9593861e5c679f90739209be))
+- **video-compositor:** use .userInitiated QoS for both video and audio queues, matching the priority of the main thread that receives group.notify callback ([a5b2b7b](https://github.com/jkuri/Reframed/commit/a5b2b7bcfb85c19696b81138df9f02b7c01de53b))
+
+### Performance
+
+- **audio:** capture both system and mic audio at 320kbps and make option to reduce the quality in export ([e172bd4](https://github.com/jkuri/Reframed/commit/e172bd44f9c977c6d4dec9830f5ff083cf89ab63))
+
+### Refactoring
+
+- **editor:** make more reusable components for editor so we don't repeat ourselves, also some style improvements and other bug fixes are included in this one ([ff1db77](https://github.com/jkuri/Reframed/commit/ff1db777a5cc38f8310f6a074eceffa4be7c8caa))
+
+### Chores
+
+- **timeline:** make playhead animation look smoother ([9e7a54b](https://github.com/jkuri/Reframed/commit/9e7a54b4c263bb53173bcc843df26542f1b1a61f))
+
+### Reverts
+
+- **camera:** revert backgrounds for webcam as was unable to resolve halo effect ([7b81c12](https://github.com/jkuri/Reframed/commit/7b81c1253304281e736cb157f65f826eb7522a2e))
+
 ## [v0.8.0](https://github.com/jkuri/Reframed/compare/v0.7.0...v0.8.0) (2026-02-15)
 
 ### Features
