@@ -1,5 +1,24 @@
 # Changelog
 
+## [v0.8.2](https://github.com/jkuri/Reframed/compare/v0.8.1...v0.8.2) (2026-02-17)
+
+### Features
+
+- **audio:** add noise reducer for microphone audio stream using RNNoise ([b060695](https://github.com/jkuri/Reframed/commit/b060695eb613b3e06ba712c0c4ad4c3e287dc426))
+
+### Bug Fixes
+
+- **audio:** show loading status while regenerating mic audio waveform ([e33a834](https://github.com/jkuri/Reframed/commit/e33a834eafbd043eba82799a8cfb1bc7ae857783))
+- **audio:** filter out CADefaultDeviceAggregate from mic selection in both options and settings, make sure they are set to nil in teardown procedure ([a60fce6](https://github.com/jkuri/Reframed/commit/a60fce6eb3f677ff93feeaace27f387c9d586dfe))
+
+### Refactoring
+
+- **audio:** remove AudioNoiseReducer file, was just a trivial passthrough to RNNoiseProcessor ([178daf7](https://github.com/jkuri/Reframed/commit/178daf73ec5aac19847fe712480dba1a0dda0522))
+
+### Documentation
+
+- **readme:** update README.md with mic noise reducer description ([4ef3fb1](https://github.com/jkuri/Reframed/commit/4ef3fb1b45df21d14d3cdd8c461e6b038fd02e83))
+
 ## [v0.8.1](https://github.com/jkuri/Reframed/compare/v0.8.0...v0.8.1) (2026-02-17)
 
 ### Features
