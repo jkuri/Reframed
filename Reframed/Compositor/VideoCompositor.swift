@@ -75,7 +75,7 @@ enum VideoCompositor {
     if let micURL = result.microphoneAudioURL, micNoiseReductionEnabled, micAudioVolume > 0 {
       let tempURL = FileManager.default.temporaryDirectory
         .appendingPathComponent("reframed-nr-\(UUID().uuidString).m4a")
-      try await AudioNoiseReducer.processFile(
+      try await RNNoiseProcessor.processFile(
         inputURL: micURL,
         outputURL: tempURL,
         intensity: micNoiseReductionIntensity
