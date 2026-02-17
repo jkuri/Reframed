@@ -1,54 +1,43 @@
 import SwiftUI
 
 extension TimelineView {
-  func cameraTrackLane() -> some View {
-    HStack(spacing: 0) {
-      trackSidebar(label: "Camera", icon: "web.camera")
-        .frame(width: sidebarWidth)
+  func cameraTrackContent(width: CGFloat) -> some View {
+    let h = trackHeight
+    let regions = editorState.cameraFullscreenRegions
 
-      GeometryReader { geo in
-        let width = geo.size.width
-        let h = geo.size.height
-        let regions = editorState.cameraFullscreenRegions
-
-        ZStack(alignment: .leading) {
-          ForEach(regions) { region in
-            cameraRegionView(
-              region: region,
-              width: width,
-              height: h
-            )
-          }
-
-          if regions.isEmpty {
-            Text("Double-click to add fullscreen region")
-              .font(.system(size: 11))
-              .foregroundStyle(ReframedColors.dimLabel)
-              .frame(width: width, height: h)
-              .allowsHitTesting(false)
-          }
-        }
-        .frame(width: width, height: h)
-        .clipped()
-        .coordinateSpace(name: "cameraRegion")
-        .contentShape(Rectangle())
-        .onTapGesture(count: 2) { location in
-          let time = (location.x / width) * totalSeconds
-          let hitRegion = regions.first { r in
-            let eff = effectiveCameraRegion(r, width: width)
-            let startX = (eff.start / totalSeconds) * width
-            let endX = (eff.end / totalSeconds) * width
-            return location.x >= startX && location.x <= endX
-          }
-          if hitRegion == nil {
-            editorState.addCameraRegion(atTime: time)
-          }
-        }
+    return ZStack(alignment: .leading) {
+      ForEach(regions) { region in
+        cameraRegionView(
+          region: region,
+          width: width,
+          height: h
+        )
       }
-      .padding(.trailing, 8)
+
+      if regions.isEmpty {
+        Text("Double-click to add fullscreen region")
+          .font(.system(size: 11))
+          .foregroundStyle(ReframedColors.dimLabel)
+          .frame(width: width, height: h)
+          .allowsHitTesting(false)
+      }
     }
-    .frame(height: trackHeight)
-    .background(ReframedColors.panelBackground)
+    .frame(width: width, height: h)
+    .clipped()
+    .coordinateSpace(name: "cameraRegion")
+    .contentShape(Rectangle())
+    .onTapGesture(count: 2) { location in
+      let time = (location.x / width) * totalSeconds
+      let hitRegion = regions.first { r in
+        let eff = effectiveCameraRegion(r, width: width)
+        let startX = (eff.start / totalSeconds) * width
+        let endX = (eff.end / totalSeconds) * width
+        return location.x >= startX && location.x <= endX
+      }
+      if hitRegion == nil {
+        editorState.addCameraRegion(atTime: time)
+      }
+    }
   }
 
   @ViewBuilder

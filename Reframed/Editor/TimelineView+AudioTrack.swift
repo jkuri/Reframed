@@ -1,113 +1,91 @@
 import SwiftUI
 
 extension TimelineView {
-  func audioTrackLane(
-    label: String,
-    icon: String,
-    rowIndex: Int,
+  func audioTrackContent(
     trackType: AudioTrackType,
     samples: [Float],
-    accentColor: Color
+    accentColor: Color,
+    width: CGFloat
   ) -> some View {
-    HStack(spacing: 0) {
-      trackSidebar(label: label, icon: icon)
-        .frame(width: sidebarWidth)
+    let h = trackHeight
+    let regions = trackType == .system ? editorState.systemAudioRegions : editorState.micAudioRegions
 
-      GeometryReader { geo in
-        let width = geo.size.width
-        let h = geo.size.height
-        let regions = trackType == .system ? editorState.systemAudioRegions : editorState.micAudioRegions
+    return ZStack(alignment: .leading) {
+      audioRegionCanvas(
+        samples: samples,
+        width: width,
+        height: h
+      )
 
-        ZStack(alignment: .leading) {
-          audioRegionCanvas(
-            samples: samples,
-            width: width,
-            height: h
-          )
-
-          ForEach(regions) { region in
-            audioRegionView(
-              region: region,
-              trackType: trackType,
-              samples: samples,
-              width: width,
-              height: h,
-              accentColor: accentColor
-            )
-          }
-
-          if regions.isEmpty {
-            Text("Double-click to add audio region")
-              .font(.system(size: 11))
-              .foregroundStyle(ReframedColors.dimLabel)
-              .frame(width: width, height: h)
-              .allowsHitTesting(false)
-          }
-        }
-        .frame(width: width, height: h)
-        .clipped()
-        .coordinateSpace(name: trackType)
-        .contentShape(Rectangle())
-        .onTapGesture(count: 2) { location in
-          let time = (location.x / width) * totalSeconds
-          let hitRegion = regions.first { r in
-            let eff = effectiveAudioRegion(r, width: width)
-            let startX = (eff.start / totalSeconds) * width
-            let endX = (eff.end / totalSeconds) * width
-            return location.x >= startX && location.x <= endX
-          }
-          if hitRegion == nil {
-            editorState.addRegion(trackType: trackType, atTime: time)
-          }
-        }
+      ForEach(regions) { region in
+        audioRegionView(
+          region: region,
+          trackType: trackType,
+          samples: samples,
+          width: width,
+          height: h,
+          accentColor: accentColor
+        )
       }
-      .padding(.trailing, 8)
+
+      if regions.isEmpty {
+        Text("Double-click to add audio region")
+          .font(.system(size: 11))
+          .foregroundStyle(ReframedColors.dimLabel)
+          .frame(width: width, height: h)
+          .allowsHitTesting(false)
+      }
     }
-    .frame(height: trackHeight)
-    .background(ReframedColors.panelBackground)
+    .frame(width: width, height: h)
+    .clipped()
+    .coordinateSpace(name: trackType)
+    .contentShape(Rectangle())
+    .onTapGesture(count: 2) { location in
+      let time = (location.x / width) * totalSeconds
+      let hitRegion = regions.first { r in
+        let eff = effectiveAudioRegion(r, width: width)
+        let startX = (eff.start / totalSeconds) * width
+        let endX = (eff.end / totalSeconds) * width
+        return location.x >= startX && location.x <= endX
+      }
+      if hitRegion == nil {
+        editorState.addRegion(trackType: trackType, atTime: time)
+      }
+    }
   }
 
-  func audioLoadingLane(
-    label: String,
-    icon: String,
+  func audioLoadingContent(
     progress: Double,
     message: String? = nil,
-    accentColor: Color
+    accentColor: Color,
+    width: CGFloat
   ) -> some View {
-    HStack(spacing: 0) {
-      trackSidebar(label: label, icon: icon)
-        .frame(width: sidebarWidth)
+    let h = trackHeight
 
-      GeometryReader { geo in
-        ZStack {
-          RoundedRectangle(cornerRadius: 10)
-            .fill(accentColor.opacity(0.06))
+    return ZStack {
+      RoundedRectangle(cornerRadius: 10)
+        .fill(accentColor.opacity(0.06))
 
-          HStack(spacing: 10) {
-            ZStack(alignment: .leading) {
-              RoundedRectangle(cornerRadius: 2.5)
-                .fill(accentColor.opacity(0.15))
-                .frame(width: 100, height: 5)
-              RoundedRectangle(cornerRadius: 2.5)
-                .fill(accentColor.opacity(0.6))
-                .frame(width: 100 * max(0, min(1, progress)), height: 5)
-            }
-            .fixedSize()
-
-            Text(message ?? "Generating waveform… \(Int(progress * 100))%")
-              .font(.system(size: 10).monospacedDigit())
-              .foregroundStyle(ReframedColors.dimLabel)
-              .frame(width: 160, alignment: .leading)
-          }
-          .fixedSize()
+      HStack(spacing: 10) {
+        ZStack(alignment: .leading) {
+          RoundedRectangle(cornerRadius: 2.5)
+            .fill(accentColor.opacity(0.15))
+            .frame(width: 100, height: 5)
+          RoundedRectangle(cornerRadius: 2.5)
+            .fill(accentColor.opacity(0.6))
+            .frame(width: 100 * max(0, min(1, progress)), height: 5)
         }
-        .frame(width: geo.size.width, height: geo.size.height)
-        .clipShape(RoundedRectangle(cornerRadius: 10))
+        .fixedSize()
+
+        Text(message ?? "Generating waveform… \(Int(progress * 100))%")
+          .font(.system(size: 10).monospacedDigit())
+          .foregroundStyle(ReframedColors.dimLabel)
+          .frame(width: 160, alignment: .leading)
       }
-      .padding(.trailing, 8)
+      .fixedSize()
     }
-    .frame(height: trackHeight)
-    .background(ReframedColors.panelBackground)
+    .frame(width: width, height: h)
+    .clipShape(RoundedRectangle(cornerRadius: 10))
   }
 
   func audioRegionCanvas(

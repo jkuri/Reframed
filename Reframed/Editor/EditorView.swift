@@ -39,6 +39,8 @@ struct EditorView: View {
   @State private var micWaveformTask: Task<Void, Never>?
   @State private var didFinishSetup = false
   @State private var showHistoryPopover = false
+  @State private var timelineZoom: CGFloat = 1.0
+  @State private var baseZoom: CGFloat = 1.0
   @Environment(\.colorScheme) private var colorScheme
 
   let onSave: (URL) -> Void
@@ -309,6 +311,42 @@ struct EditorView: View {
 
       Spacer()
 
+      Button(action: {
+        timelineZoom = max(1.0, timelineZoom / 1.5)
+        baseZoom = timelineZoom
+      }) {
+        Image(systemName: "minus.magnifyingglass")
+          .font(.system(size: 14))
+          .frame(width: 28, height: 28)
+      }
+      .buttonStyle(.plain)
+      .foregroundStyle(timelineZoom > 1.0 ? ReframedColors.primaryText : ReframedColors.tertiaryText)
+      .disabled(timelineZoom <= 1.0)
+
+      Button(action: {
+        timelineZoom = min(30.0, timelineZoom * 1.5)
+        baseZoom = timelineZoom
+      }) {
+        Image(systemName: "plus.magnifyingglass")
+          .font(.system(size: 14))
+          .frame(width: 28, height: 28)
+      }
+      .buttonStyle(.plain)
+      .foregroundStyle(timelineZoom < 30.0 ? ReframedColors.primaryText : ReframedColors.tertiaryText)
+      .disabled(timelineZoom >= 30.0)
+
+      Button(action: {
+        timelineZoom = 1.0
+        baseZoom = 1.0
+      }) {
+        Image(systemName: "1.magnifyingglass")
+          .font(.system(size: 14))
+          .frame(width: 28, height: 28)
+      }
+      .buttonStyle(.plain)
+      .foregroundStyle(timelineZoom > 1.0 ? ReframedColors.primaryText : ReframedColors.tertiaryText)
+      .disabled(timelineZoom <= 1.0)
+
       Button(action: { showHistoryPopover.toggle() }) {
         Image(systemName: "clock.arrow.circlepath")
           .font(.system(size: 14))
@@ -369,7 +407,9 @@ struct EditorView: View {
       onScrub: { time in
         editorState.pause()
         editorState.seek(to: time)
-      }
+      },
+      timelineZoom: $timelineZoom,
+      baseZoom: $baseZoom
     )
   }
 
