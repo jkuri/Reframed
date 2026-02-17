@@ -2,13 +2,32 @@
 import Foundation
 import RNNoise
 
-private struct AudioChunkParams: @unchecked Sendable {
+private struct ChunkParams: @unchecked Sendable {
   let input: UnsafeMutablePointer<Float>
   let output: UnsafeMutablePointer<Float>
-  let processStart: Int
-  let processEnd: Int
+  let warmupStart: Int
   let outputStart: Int
-  let sampleCount: Int
+  let outputEnd: Int
+  let tracker: RNNoiseProgressTracker
+}
+
+private actor RNNoiseProgressTracker {
+  let total: Int
+  var completed: Int = 0
+  let onProgress: (@MainActor @Sendable (Double) -> Void)?
+
+  init(total: Int, onProgress: (@MainActor @Sendable (Double) -> Void)?) {
+    self.total = total
+    self.onProgress = onProgress
+  }
+
+  func add(_ count: Int) async {
+    completed += count
+    if let onProgress {
+      let p = min(1.0, Double(completed) / Double(total))
+      await onProgress(p)
+    }
+  }
 }
 
 enum RNNoiseProcessor {
@@ -32,11 +51,19 @@ enum RNNoiseProcessor {
       interleaved: false
     )!
 
+    let conversionProgress: (@MainActor @Sendable (Double) -> Void)?
+    if let onProgress {
+      conversionProgress = { p in onProgress(p * 0.05) }
+    } else {
+      conversionProgress = nil
+    }
+
     let convertedBuffer = try convertToMono48k(
       sourceFile: sourceFile,
       sourceFormat: sourceFormat,
       monoFormat: monoFormat,
-      totalFrames: totalFrames
+      totalFrames: totalFrames,
+      onProgress: conversionProgress
     )
 
     let sampleCount = Int(convertedBuffer.frameLength)
@@ -65,17 +92,20 @@ enum RNNoiseProcessor {
     do {
       for pass in 0..<passes {
         let isLastPass = pass == passes - 1
+
         let passProgress: (@MainActor @Sendable (Double) -> Void)?
-        if passes > 1, let onProgress {
+        if let onProgress {
           let passIndex = pass
           let totalPasses = passes
           passProgress = { p in
-            let combined = Double(passIndex) / Double(totalPasses) + p / Double(totalPasses)
-            onProgress(combined)
+            let base = 0.05 + (0.80 * Double(passIndex) / Double(totalPasses))
+            let addition = (0.80 / Double(totalPasses)) * p
+            onProgress(base + addition)
           }
         } else {
-          passProgress = onProgress
+          passProgress = nil
         }
+
         let passOutput = try await processParallel(
           input: currentInput,
           sampleCount: sampleCount,
@@ -136,7 +166,35 @@ enum RNNoiseProcessor {
     ]
 
     let outputFile = try AVAudioFile(forWriting: outputURL, settings: outputSettings)
-    try outputFile.write(from: stereoBuffer)
+    let chunkFrames: AVAudioFrameCount = 48000
+    let totalOutputFrames = stereoBuffer.frameLength
+    var written: AVAudioFrameCount = 0
+
+    while written < totalOutputFrames {
+      let remaining = totalOutputFrames - written
+      let count = min(chunkFrames, remaining)
+
+      let chunk = AVAudioPCMBuffer(pcmFormat: stereoFormat, frameCapacity: count)!
+      chunk.frameLength = count
+      memcpy(
+        chunk.floatChannelData![0],
+        stereoBuffer.floatChannelData![0].advanced(by: Int(written)),
+        Int(count) * MemoryLayout<Float>.size
+      )
+      memcpy(
+        chunk.floatChannelData![1],
+        stereoBuffer.floatChannelData![1].advanced(by: Int(written)),
+        Int(count) * MemoryLayout<Float>.size
+      )
+
+      try outputFile.write(from: chunk)
+      written += count
+
+      if let onProgress {
+        let p = 0.85 + 0.15 * Double(written) / Double(totalOutputFrames)
+        await onProgress(p)
+      }
+    }
   }
 
   private static func processParallel(
@@ -144,14 +202,15 @@ enum RNNoiseProcessor {
     sampleCount: Int,
     onProgress: (@MainActor @Sendable (Double) -> Void)?
   ) async throws -> UnsafeMutablePointer<Float> {
-    let coreCount = max(1, ProcessInfo.processInfo.activeProcessorCount)
+
+    let coreCount = max(1, ProcessInfo.processInfo.activeProcessorCount - 1)
     let chunkCount = min(coreCount, max(1, sampleCount / (frameSize * 100)))
     let baseSamplesPerChunk = sampleCount / chunkCount
     let overlapSamples = overlapFrames * frameSize
 
     let output = UnsafeMutablePointer<Float>.allocate(capacity: sampleCount)
+    let tracker = RNNoiseProgressTracker(total: sampleCount, onProgress: onProgress)
 
-    var completed = 0
     try await withThrowingTaskGroup(of: Void.self) { group in
       for chunkIdx in 0..<chunkCount {
         let outputStart = chunkIdx * baseSamplesPerChunk
@@ -161,72 +220,76 @@ enum RNNoiseProcessor {
         } else {
           outputEnd = (chunkIdx + 1) * baseSamplesPerChunk
         }
-
         let warmupStart = max(0, outputStart - overlapSamples)
-        let params = AudioChunkParams(
+
+        let params = ChunkParams(
           input: input,
           output: output,
-          processStart: warmupStart,
-          processEnd: outputEnd,
+          warmupStart: warmupStart,
           outputStart: outputStart,
-          sampleCount: sampleCount
+          outputEnd: outputEnd,
+          tracker: tracker
         )
 
         group.addTask {
-          try Task.checkCancellation()
-          processChunk(params)
+          guard let state = rnnoise_create(nil) else { return }
+          defer { rnnoise_destroy(state) }
+
+          var inFrame = [Float](repeating: 0, count: frameSize)
+          var outFrame = [Float](repeating: 0, count: frameSize)
+          let scale: Float = 32768.0
+          let invScale: Float = 1.0 / 32768.0
+
+          var offset = params.warmupStart
+          var samplesSinceReport = 0
+
+          while offset < params.outputEnd {
+            try Task.checkCancellation()
+
+            let remaining = params.outputEnd - offset
+            let count = min(remaining, frameSize)
+
+            for i in 0..<count {
+              inFrame[i] = params.input[offset + i] * scale
+            }
+            for i in count..<frameSize {
+              inFrame[i] = 0
+            }
+
+            _ = rnnoise_process_frame(state, &outFrame, inFrame)
+
+            if offset >= params.outputStart {
+              for i in 0..<count {
+                params.output[offset + i] = outFrame[i] * invScale
+              }
+              samplesSinceReport += count
+            }
+
+            offset += count
+
+            if samplesSinceReport >= 48000 {
+              await params.tracker.add(samplesSinceReport)
+              samplesSinceReport = 0
+            }
+          }
+
+          if samplesSinceReport > 0 {
+            await params.tracker.add(samplesSinceReport)
+          }
         }
       }
-
-      for try await _ in group {
-        completed += 1
-        await onProgress?(Double(completed) / Double(chunkCount))
-      }
+      try await group.waitForAll()
     }
 
     return output
-  }
-
-  private static func processChunk(
-    _ p: AudioChunkParams
-  ) {
-    guard let state = rnnoise_create(nil) else { return }
-    defer { rnnoise_destroy(state) }
-
-    var inFrame = [Float](repeating: 0, count: frameSize)
-    var outFrame = [Float](repeating: 0, count: frameSize)
-    let scale: Float = 32768.0
-    let invScale: Float = 1.0 / 32768.0
-
-    var offset = p.processStart
-    while offset < p.processEnd {
-      let remaining = p.processEnd - offset
-      let count = min(remaining, frameSize)
-
-      for i in 0..<count {
-        inFrame[i] = p.input[offset + i] * scale
-      }
-      for i in count..<frameSize {
-        inFrame[i] = 0
-      }
-
-      _ = rnnoise_process_frame(state, &outFrame, inFrame)
-
-      if offset >= p.outputStart {
-        for i in 0..<count {
-          p.output[offset + i] = outFrame[i] * invScale
-        }
-      }
-
-      offset += count
-    }
   }
 
   private static func convertToMono48k(
     sourceFile: AVAudioFile,
     sourceFormat: AVAudioFormat,
     monoFormat: AVAudioFormat,
-    totalFrames: AVAudioFrameCount
+    totalFrames: AVAudioFrameCount,
+    onProgress: (@MainActor @Sendable (Double) -> Void)?
   ) throws -> AVAudioPCMBuffer {
     let converter = AVAudioConverter(from: sourceFormat, to: monoFormat)!
     let readBuffer = AVAudioPCMBuffer(pcmFormat: sourceFormat, frameCapacity: 4096)!
@@ -238,6 +301,8 @@ enum RNNoiseProcessor {
 
     nonisolated(unsafe) let unsafeReadBuffer = readBuffer
     nonisolated(unsafe) var inputDone = false
+    nonisolated(unsafe) var framesRead: AVAudioFrameCount = 0
+    nonisolated(unsafe) var lastReportedProgress: Double = 0
 
     let inputBlock: AVAudioConverterInputBlock = { _, outStatus in
       if inputDone {
@@ -252,6 +317,16 @@ enum RNNoiseProcessor {
           outStatus.pointee = .endOfStream
           return nil
         }
+
+        framesRead += unsafeReadBuffer.frameLength
+        if let onProgress {
+          let progress = min(1.0, Double(framesRead) / Double(totalFrames))
+          if progress - lastReportedProgress >= 0.01 || progress == 1.0 {
+            lastReportedProgress = progress
+            Task { @MainActor in onProgress(progress) }
+          }
+        }
+
         outStatus.pointee = .haveData
         return unsafeReadBuffer
       } catch {
@@ -267,5 +342,4 @@ enum RNNoiseProcessor {
     }
     return convertBuffer
   }
-
 }

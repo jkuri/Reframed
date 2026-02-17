@@ -361,6 +361,11 @@ struct EditorView: View {
       micAudioProgress: editorState.isMicProcessing
         ? editorState.micProcessingProgress * 0.5
         : (micWaveformGenerator.isGenerating ? 0.5 + micWaveformGenerator.progress * 0.5 : nil),
+      micAudioMessage: editorState.isMicProcessing
+        ? "Denoising… \(Int(editorState.micProcessingProgress * 100))%"
+        : (micWaveformGenerator.isGenerating
+          ? "Generating waveform… \(Int(micWaveformGenerator.progress * 100))%"
+          : nil),
       onScrub: { time in
         editorState.pause()
         editorState.seek(to: time)

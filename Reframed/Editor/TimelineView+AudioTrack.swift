@@ -92,11 +92,14 @@ extension TimelineView {
                 .fill(accentColor.opacity(0.6))
                 .frame(width: 100 * max(0, min(1, progress)), height: 5)
             }
+            .fixedSize()
 
             Text(message ?? "Generating waveform… \(Int(progress * 100))%")
-              .font(.system(size: 10))
+              .font(.system(size: 10).monospacedDigit())
               .foregroundStyle(ReframedColors.dimLabel)
+              .frame(width: 160, alignment: .leading)
           }
+          .fixedSize()
         }
         .frame(width: geo.size.width, height: geo.size.height)
         .clipShape(RoundedRectangle(cornerRadius: 10))

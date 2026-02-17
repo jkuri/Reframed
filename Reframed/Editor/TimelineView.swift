@@ -7,6 +7,7 @@ struct TimelineView: View {
   let micAudioSamples: [Float]
   var systemAudioProgress: Double?
   var micAudioProgress: Double?
+  var micAudioMessage: String?
   let onScrub: (CMTime) -> Void
 
   let sidebarWidth: CGFloat = 70
@@ -106,9 +107,7 @@ struct TimelineView: View {
               label: "Mic",
               icon: "mic",
               progress: micAudioProgress ?? 0,
-              message: editorState.isMicProcessing
-                ? "Denoising… \(Int(editorState.micProcessingProgress * 100))%"
-                : nil,
+              message: micAudioMessage,
               accentColor: ReframedColors.micAudioColor
             )
           }
