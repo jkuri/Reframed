@@ -6,6 +6,7 @@ struct ExportSettings: Sendable {
   var fps: ExportFPS = .original
   var resolution: ExportResolution = .original
   var codec: ExportCodec = .h265
+  var audioBitrate: ExportAudioBitrate = .kbps320
   var mode: ExportMode = .normal
 }
 
@@ -125,6 +126,33 @@ enum ExportResolution: Sendable, CaseIterable, Identifiable {
     case .uhd4k: 3840
     case .fhd1080: 1920
     case .hd720: 1280
+    }
+  }
+}
+
+enum ExportAudioBitrate: Sendable, CaseIterable, Identifiable {
+  case kbps128
+  case kbps192
+  case kbps256
+  case kbps320
+
+  var id: Self { self }
+
+  var label: String {
+    switch self {
+    case .kbps128: "128"
+    case .kbps192: "192"
+    case .kbps256: "256"
+    case .kbps320: "320"
+    }
+  }
+
+  var value: Int {
+    switch self {
+    case .kbps128: 128_000
+    case .kbps192: 192_000
+    case .kbps256: 256_000
+    case .kbps320: 320_000
     }
   }
 }

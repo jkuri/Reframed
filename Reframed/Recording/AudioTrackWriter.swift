@@ -26,7 +26,7 @@ final class AudioTrackWriter: @unchecked Sendable {
       AVFormatIDKey: kAudioFormatMPEG4AAC,
       AVSampleRateKey: sampleRate,
       AVNumberOfChannelsKey: channelCount,
-      AVEncoderBitRateKey: 128_000,
+      AVEncoderBitRateKey: 320_000,
     ]
 
     if FileManager.default.fileExists(atPath: outputURL.path) {

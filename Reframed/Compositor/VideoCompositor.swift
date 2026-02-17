@@ -258,6 +258,7 @@ enum VideoCompositor {
           fileType: exportSettings.format.fileType,
           codec: exportSettings.codec,
           audioMix: audioMix,
+          audioBitrate: exportSettings.audioBitrate.value,
           progressHandler: progressHandler
         )
       } else {
@@ -271,6 +272,7 @@ enum VideoCompositor {
           to: outputURL,
           fileType: exportSettings.format.fileType,
           audioMix: audioMix,
+          audioBitrate: exportSettings.audioBitrate.value,
           progressHandler: progressHandler
         )
       }
@@ -354,6 +356,7 @@ enum VideoCompositor {
     to url: URL,
     fileType: AVFileType,
     audioMix: AVAudioMix? = nil,
+    audioBitrate: Int = 320_000,
     progressHandler: (@MainActor @Sendable (Double, Double?) -> Void)?
   ) async throws {
     nonisolated(unsafe) let reader = try AVAssetReader(asset: asset)
@@ -403,7 +406,7 @@ enum VideoCompositor {
         AVFormatIDKey: kAudioFormatMPEG4AAC,
         AVNumberOfChannelsKey: 2,
         AVSampleRateKey: 44100,
-        AVEncoderBitRateKey: 128_000,
+        AVEncoderBitRateKey: audioBitrate,
       ]
       let aInput = AVAssetWriterInput(mediaType: .audio, outputSettings: audioSettings)
       aInput.expectsMediaDataInRealTime = false
@@ -643,6 +646,7 @@ enum VideoCompositor {
     fileType: AVFileType,
     codec: ExportCodec,
     audioMix: AVAudioMix? = nil,
+    audioBitrate: Int = 320_000,
     progressHandler: (@MainActor @Sendable (Double, Double?) -> Void)?
   ) async throws {
     let reader = try AVAssetReader(asset: composition)
@@ -742,7 +746,7 @@ enum VideoCompositor {
           AVFormatIDKey: kAudioFormatMPEG4AAC,
           AVNumberOfChannelsKey: 2,
           AVSampleRateKey: 44100,
-          AVEncoderBitRateKey: 128_000,
+          AVEncoderBitRateKey: audioBitrate,
         ]
       )
       aInput.expectsMediaDataInRealTime = false

@@ -73,6 +73,16 @@ struct ExportSheet: View {
           .labelsHidden()
         }
 
+        settingsRow(label: "Audio Bitrate (kbps)") {
+          Picker("", selection: $settings.audioBitrate) {
+            ForEach(ExportAudioBitrate.allCases) { bitrate in
+              Text(bitrate.label).tag(bitrate)
+            }
+          }
+          .pickerStyle(.segmented)
+          .labelsHidden()
+        }
+
         settingsRow(label: "Renderer") {
           Picker("", selection: $settings.mode) {
             ForEach(ExportMode.allCases) { mode in

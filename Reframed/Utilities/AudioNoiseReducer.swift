@@ -42,7 +42,7 @@ enum AudioNoiseReducer {
         AVFormatIDKey: kAudioFormatMPEG4AAC,
         AVSampleRateKey: format.sampleRate,
         AVNumberOfChannelsKey: format.channelCount,
-        AVEncoderBitRateKey: 128_000,
+        AVEncoderBitRateKey: 320_000,
       ]
     )
 
