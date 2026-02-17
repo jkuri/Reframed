@@ -189,8 +189,17 @@ final class SyncedPlayerController {
     screenPlayer.pause()
     webcamPlayer?.pause()
     systemAudioPlayer?.pause()
-    micPlayerNode?.stop()
-    micAudioEngine?.stop()
+    if let engine = micAudioEngine {
+      micPlayerNode?.stop()
+      engine.stop()
+      if let node = micPlayerNode { engine.detach(node) }
+      if let eq = micEQ { engine.detach(eq) }
+      engine.reset()
+    }
+    micPlayerNode = nil
+    micEQ = nil
+    micAudioEngine = nil
+    micAudioFile = nil
   }
 
   private func scheduleMicPlayback(from time: CMTime) {

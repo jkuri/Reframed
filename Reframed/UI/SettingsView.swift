@@ -37,7 +37,9 @@ struct SettingsView: View {
       mediaType: .audio,
       position: .unspecified
     )
-    return discovery.devices.map { AudioDevice(id: $0.uniqueID, name: $0.localizedName) }
+    return discovery.devices
+      .filter { !$0.uniqueID.contains("CADefaultDeviceAggregate") }
+      .map { AudioDevice(id: $0.uniqueID, name: $0.localizedName) }
   }
 
   var availableCameras: [CaptureDevice] {
