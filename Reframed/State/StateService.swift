@@ -74,6 +74,21 @@ final class StateService {
     }
   }
 
+  var editorWindowFrame: NSRect? {
+    get {
+      guard let r = data.editorWindowFrame else { return nil }
+      return NSRect(x: r.x, y: r.y, width: r.width, height: r.height)
+    }
+    set {
+      if let r = newValue {
+        data.editorWindowFrame = RectData(x: r.origin.x, y: r.origin.y, width: r.width, height: r.height)
+      } else {
+        data.editorWindowFrame = nil
+      }
+      save()
+    }
+  }
+
   private init() {
     let dir = FileManager.default.homeDirectoryForCurrentUser.appendingPathComponent(".reframed", isDirectory: true)
     try? FileManager.default.createDirectory(at: dir, withIntermediateDirectories: true)
@@ -118,4 +133,5 @@ private struct StateData: Codable {
   var webcamPreviewPosition: PointData? = nil
   var devicePreviewPosition: PointData? = nil
   var toolbarPosition: PointData? = nil
+  var editorWindowFrame: RectData? = nil
 }

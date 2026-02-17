@@ -61,7 +61,11 @@ final class EditorWindow: NSObject, NSWindowDelegate {
     window.contentView = hostingView
     window.contentMinSize = NSSize(width: 1200, height: 800)
     window.minSize = NSSize(width: 1200, height: 800)
-    window.center()
+    if let savedFrame = StateService.shared.editorWindowFrame {
+      window.setFrame(savedFrame, display: true)
+    } else {
+      window.center()
+    }
     window.isReleasedWhenClosed = false
     window.delegate = self
     window.title = "Reframed Editor"
@@ -133,6 +137,16 @@ final class EditorWindow: NSObject, NSWindowDelegate {
     window?.close()
     window = nil
     editorState = nil
+  }
+
+  func windowDidResize(_ notification: Notification) {
+    guard let frame = window?.frame else { return }
+    StateService.shared.editorWindowFrame = frame
+  }
+
+  func windowDidMove(_ notification: Notification) {
+    guard let frame = window?.frame else { return }
+    StateService.shared.editorWindowFrame = frame
   }
 
   func windowWillClose(_ notification: Notification) {
