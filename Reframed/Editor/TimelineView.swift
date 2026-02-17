@@ -78,23 +78,16 @@ struct TimelineView: View {
               samples: systemAudioSamples,
               accentColor: ReframedColors.systemAudioColor
             )
-          } else if let progress = systemAudioProgress {
+          } else if editorState.hasSystemAudio {
             audioLoadingLane(
               label: "System",
               icon: "speaker.wave.2",
-              progress: progress,
+              progress: systemAudioProgress ?? 0,
               accentColor: ReframedColors.systemAudioColor
             )
           }
 
-          if let progress = micAudioProgress {
-            audioLoadingLane(
-              label: "Mic",
-              icon: "mic",
-              progress: progress,
-              accentColor: ReframedColors.micAudioColor
-            )
-          } else if !micAudioSamples.isEmpty {
+          if !micAudioSamples.isEmpty {
             audioTrackLane(
               label: "Mic",
               icon: "mic",
@@ -106,6 +99,13 @@ struct TimelineView: View {
               }(),
               trackType: .mic,
               samples: micAudioSamples,
+              accentColor: ReframedColors.micAudioColor
+            )
+          } else if editorState.hasMicAudio {
+            audioLoadingLane(
+              label: "Mic",
+              icon: "mic",
+              progress: micAudioProgress ?? 0,
               accentColor: ReframedColors.micAudioColor
             )
           }

@@ -38,6 +38,7 @@ struct EditorView: View {
   @State private var micWaveformGenerator = AudioWaveformGenerator()
   @State private var selectedTab: EditorTab = .general
   @State private var micWaveformTask: Task<Void, Never>?
+  @State private var didFinishSetup = false
   @Environment(\.colorScheme) private var colorScheme
 
   let onSave: (URL) -> Void
@@ -93,20 +94,20 @@ struct EditorView: View {
     .background(ReframedColors.selectedBackground.opacity(0.55))
     .task {
       await editorState.setup()
-      let sysURL = editorState.result.systemAudioURL
-      let micURL = editorState.result.microphoneAudioURL
-      async let sysTask: Void = {
-        if let url = sysURL { await systemWaveformGenerator.generate(from: url) }
-      }()
-      async let micTask: Void = {
-        if let url = micURL { await micWaveformGenerator.generate(from: url) }
-      }()
-      _ = await (sysTask, micTask)
+      didFinishSetup = true
+      if editorState.result.microphoneAudioURL != nil {
+        regenerateMicWaveform()
+      }
+      if let url = editorState.result.systemAudioURL {
+        await systemWaveformGenerator.generate(from: url)
+      }
     }
     .onChange(of: editorState.micNoiseReductionEnabled) { _, _ in
+      guard didFinishSetup else { return }
       regenerateMicWaveform()
     }
     .onChange(of: editorState.micNoiseReductionIntensity) { _, _ in
+      guard didFinishSetup else { return }
       regenerateMicWaveform()
     }
     .sheet(isPresented: $editorState.showExportSheet) {
