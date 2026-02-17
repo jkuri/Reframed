@@ -107,6 +107,8 @@ enum ShortcutAction: String, CaseIterable, Codable, Sendable {
   case stopRecording
   case pauseResumeRecording
   case restartRecording
+  case editorUndo
+  case editorRedo
 
   var label: String {
     switch self {
@@ -116,6 +118,8 @@ enum ShortcutAction: String, CaseIterable, Codable, Sendable {
     case .stopRecording: return "Stop Recording"
     case .pauseResumeRecording: return "Pause / Resume"
     case .restartRecording: return "Restart Recording"
+    case .editorUndo: return "Undo"
+    case .editorRedo: return "Redo"
     }
   }
 
@@ -125,6 +129,8 @@ enum ShortcutAction: String, CaseIterable, Codable, Sendable {
       return false
     case .stopRecording, .pauseResumeRecording, .restartRecording:
       return true
+    case .editorUndo, .editorRedo:
+      return false
     }
   }
 
@@ -146,6 +152,10 @@ enum ShortcutAction: String, CaseIterable, Codable, Sendable {
       return KeyboardShortcut(keyCode: 35, modifierFlags: cmdShift)
     case .restartRecording:
       return KeyboardShortcut(keyCode: 15, modifierFlags: cmdShift)
+    case .editorUndo:
+      return KeyboardShortcut(keyCode: 6, modifierFlags: cmd)
+    case .editorRedo:
+      return KeyboardShortcut(keyCode: 6, modifierFlags: cmdShift)
     }
   }
 }

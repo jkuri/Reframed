@@ -1,7 +1,7 @@
 import CoreGraphics
 import Foundation
 
-struct CameraLayout: Sendable, Codable {
+struct CameraLayout: Sendable, Codable, Equatable {
   var relativeX: CGFloat = 0.02
   var relativeY: CGFloat = 0.02
   var relativeWidth: CGFloat = 0.25

@@ -92,6 +92,18 @@ final class EditorWindow: NSObject, NSWindowDelegate {
       }
 
       let modifiers = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+
+      let undoShortcut = ConfigService.shared.shortcut(for: .editorUndo)
+      let redoShortcut = ConfigService.shared.shortcut(for: .editorRedo)
+      if redoShortcut.matches(event) {
+        state.redo()
+        return nil
+      }
+      if undoShortcut.matches(event) {
+        state.undo()
+        return nil
+      }
+
       if modifiers.contains(.command) || modifiers.contains(.option) || modifiers.contains(.control) {
         return event
       }

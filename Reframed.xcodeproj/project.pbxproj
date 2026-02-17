@@ -134,6 +134,7 @@
 		A9000000000000000000000C /* CursorSmoothing.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9000000000000000000000C /* CursorSmoothing.swift */; };
 		A20000000000000000000020 /* PropertiesPanel+AnimationsTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000020 /* PropertiesPanel+AnimationsTab.swift */; };
 		A20000000000000000000021 /* PropertiesPanel+AudioTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000021 /* PropertiesPanel+AudioTab.swift */; };
+		A20000000000000000000022 /* History.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000022 /* History.swift */; };
 		CA0000000000000000000002 /* CIImageExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB0000000000000000000002 /* CIImageExtensions.swift */; };
 		DB000000000000000000000A /* RNNoiseProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA000000000000000000001D /* RNNoiseProcessor.swift */; };
 /* End PBXBuildFile section */
@@ -268,6 +269,7 @@
 		B9000000000000000000000C /* CursorSmoothing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CursorSmoothing.swift; sourceTree = "<group>"; };
 		B20000000000000000000020 /* PropertiesPanel+AnimationsTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PropertiesPanel+AnimationsTab.swift"; sourceTree = "<group>"; };
 		B20000000000000000000021 /* PropertiesPanel+AudioTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PropertiesPanel+AudioTab.swift"; sourceTree = "<group>"; };
+		B20000000000000000000022 /* History.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = History.swift; sourceTree = "<group>"; };
 		CB0000000000000000000002 /* CIImageExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CIImageExtensions.swift; sourceTree = "<group>"; };
 		DA000000000000000000001D /* RNNoiseProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RNNoiseProcessor.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
@@ -516,6 +518,7 @@
 				B20000000000000000000019 /* EditorBottomBar.swift */,
 				B20000000000000000000006 /* EditorState.swift */,
 				B20000000000000000000016 /* EditorTopBar.swift */,
+				B20000000000000000000022 /* History.swift */,
 				B2000000000000000000000C /* EditorView.swift */,
 				B2000000000000000000000D /* EditorWindow.swift */,
 				B20000000000000000000018 /* PropertiesPanel.swift */,
@@ -756,6 +759,7 @@
 				A9000000000000000000000C /* CursorSmoothing.swift in Sources */,
 				A20000000000000000000020 /* PropertiesPanel+AnimationsTab.swift in Sources */,
 				A20000000000000000000021 /* PropertiesPanel+AudioTab.swift in Sources */,
+				A20000000000000000000022 /* History.swift in Sources */,
 				CA0000000000000000000002 /* CIImageExtensions.swift in Sources */,
 				DB000000000000000000000A /* RNNoiseProcessor.swift in Sources */,
 			);

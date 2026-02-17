@@ -128,6 +128,10 @@ final class EditorState {
   var cursorMovementSpeed: CursorMovementSpeed = .medium
   private(set) var smoothedCursorProvider: CursorMetadataProvider?
 
+  var history = History()
+  private var isRestoringState = false
+  private var pendingUndoTask: Task<Void, Never>?
+
   private let logger = Logger(label: "eu.jankuri.reframed.editor-state")
   private var pendingSaveTask: Task<Void, Never>?
 
@@ -266,6 +270,13 @@ final class EditorState {
     } else if hasWebcam {
       setCameraCorner(.bottomRight)
     }
+
+    if let proj = project, let historyData = proj.loadHistory() {
+      history.load(from: historyData)
+    } else {
+      history.pushSnapshot(createSnapshot())
+    }
+
     startAutoSave()
   }
 
@@ -773,73 +784,7 @@ final class EditorState {
 
   func saveState() {
     guard let project else { return }
-    var cursorSettings: CursorSettingsData?
-    if cursorMetadataProvider != nil {
-      cursorSettings = CursorSettingsData(
-        showCursor: showCursor,
-        cursorStyleRaw: cursorStyle.rawValue,
-        cursorSize: cursorSize,
-        showClickHighlights: showClickHighlights,
-        clickHighlightColor: clickHighlightColor,
-        clickHighlightSize: clickHighlightSize
-      )
-    }
-    var zoomSettings: ZoomSettingsData?
-    if cursorMetadataProvider != nil {
-      zoomSettings = ZoomSettingsData(
-        zoomEnabled: zoomEnabled,
-        autoZoomEnabled: autoZoomEnabled,
-        zoomFollowCursor: zoomFollowCursor,
-        zoomLevel: zoomLevel,
-        transitionDuration: zoomTransitionSpeed,
-        dwellThreshold: zoomDwellThreshold,
-        keyframes: zoomTimeline?.allKeyframes ?? []
-      )
-    }
-    var animationSettings: AnimationSettingsData?
-    if cursorMetadataProvider != nil {
-      animationSettings = AnimationSettingsData(
-        cursorMovementEnabled: cursorMovementEnabled,
-        cursorMovementSpeed: cursorMovementSpeed
-      )
-    }
-    var audioSettings: AudioSettingsData?
-    if hasSystemAudio || hasMicAudio {
-      audioSettings = AudioSettingsData(
-        systemAudioVolume: systemAudioVolume,
-        micAudioVolume: micAudioVolume,
-        systemAudioMuted: systemAudioMuted,
-        micAudioMuted: micAudioMuted,
-        micNoiseReductionEnabled: micNoiseReductionEnabled,
-        micNoiseReductionIntensity: micNoiseReductionIntensity
-      )
-    }
-    let data = EditorStateData(
-      trimStartSeconds: CMTimeGetSeconds(trimStart),
-      trimEndSeconds: CMTimeGetSeconds(trimEnd),
-      backgroundStyle: backgroundStyle,
-      backgroundImageFillMode: backgroundImageFillMode,
-      canvasAspect: canvasAspect,
-      padding: padding,
-      videoCornerRadius: videoCornerRadius,
-      cameraAspect: cameraAspect,
-      cameraCornerRadius: cameraCornerRadius,
-      cameraBorderWidth: cameraBorderWidth,
-      cameraBorderColor: cameraBorderColor,
-      videoShadow: videoShadow,
-      cameraShadow: cameraShadow,
-      cameraMirrored: cameraMirrored,
-      cameraLayout: cameraLayout,
-      webcamEnabled: webcamEnabled,
-      cursorSettings: cursorSettings,
-      zoomSettings: zoomSettings,
-      animationSettings: animationSettings,
-      audioSettings: audioSettings,
-      systemAudioRegions: systemAudioRegions.isEmpty ? nil : systemAudioRegions,
-      micAudioRegions: micAudioRegions.isEmpty ? nil : micAudioRegions,
-      cameraFullscreenRegions: cameraFullscreenRegions.isEmpty ? nil : cameraFullscreenRegions
-    )
-    try? project.saveEditorState(data)
+    try? project.saveEditorState(createSnapshot())
   }
 
   func generateAutoZoom() {
@@ -975,6 +920,224 @@ final class EditorState {
     }
   }
 
+  func createSnapshot() -> EditorStateData {
+    var cursorSettings: CursorSettingsData?
+    if cursorMetadataProvider != nil {
+      cursorSettings = CursorSettingsData(
+        showCursor: showCursor,
+        cursorStyleRaw: cursorStyle.rawValue,
+        cursorSize: cursorSize,
+        showClickHighlights: showClickHighlights,
+        clickHighlightColor: clickHighlightColor,
+        clickHighlightSize: clickHighlightSize
+      )
+    }
+    var zoomSettings: ZoomSettingsData?
+    if cursorMetadataProvider != nil {
+      zoomSettings = ZoomSettingsData(
+        zoomEnabled: zoomEnabled,
+        autoZoomEnabled: autoZoomEnabled,
+        zoomFollowCursor: zoomFollowCursor,
+        zoomLevel: zoomLevel,
+        transitionDuration: zoomTransitionSpeed,
+        dwellThreshold: zoomDwellThreshold,
+        keyframes: zoomTimeline?.allKeyframes ?? []
+      )
+    }
+    var animationSettings: AnimationSettingsData?
+    if cursorMetadataProvider != nil {
+      animationSettings = AnimationSettingsData(
+        cursorMovementEnabled: cursorMovementEnabled,
+        cursorMovementSpeed: cursorMovementSpeed
+      )
+    }
+    var audioSettings: AudioSettingsData?
+    if hasSystemAudio || hasMicAudio {
+      audioSettings = AudioSettingsData(
+        systemAudioVolume: systemAudioVolume,
+        micAudioVolume: micAudioVolume,
+        systemAudioMuted: systemAudioMuted,
+        micAudioMuted: micAudioMuted,
+        micNoiseReductionEnabled: micNoiseReductionEnabled,
+        micNoiseReductionIntensity: micNoiseReductionIntensity
+      )
+    }
+    return EditorStateData(
+      trimStartSeconds: CMTimeGetSeconds(trimStart),
+      trimEndSeconds: CMTimeGetSeconds(trimEnd),
+      backgroundStyle: backgroundStyle,
+      backgroundImageFillMode: backgroundImageFillMode,
+      canvasAspect: canvasAspect,
+      padding: padding,
+      videoCornerRadius: videoCornerRadius,
+      cameraAspect: cameraAspect,
+      cameraCornerRadius: cameraCornerRadius,
+      cameraBorderWidth: cameraBorderWidth,
+      cameraBorderColor: cameraBorderColor,
+      videoShadow: videoShadow,
+      cameraShadow: cameraShadow,
+      cameraMirrored: cameraMirrored,
+      cameraLayout: cameraLayout,
+      webcamEnabled: webcamEnabled,
+      cursorSettings: cursorSettings,
+      zoomSettings: zoomSettings,
+      animationSettings: animationSettings,
+      audioSettings: audioSettings,
+      systemAudioRegions: systemAudioRegions.isEmpty ? nil : systemAudioRegions,
+      micAudioRegions: micAudioRegions.isEmpty ? nil : micAudioRegions,
+      cameraFullscreenRegions: cameraFullscreenRegions.isEmpty ? nil : cameraFullscreenRegions
+    )
+  }
+
+  func restoreFromSnapshot(_ data: EditorStateData) {
+    isRestoringState = true
+    pendingUndoTask?.cancel()
+
+    let prev = createSnapshot()
+
+    let start = CMTime(seconds: data.trimStartSeconds, preferredTimescale: 600)
+    let end = CMTime(seconds: data.trimEndSeconds, preferredTimescale: 600)
+    if CMTimeCompare(start, .zero) >= 0 && CMTimeCompare(end, start) > 0 {
+      trimStart = start
+      trimEnd = CMTimeMinimum(end, playerController.duration)
+      playerController.trimEnd = trimEnd
+    }
+
+    backgroundStyle = data.backgroundStyle
+    backgroundImageFillMode = data.backgroundImageFillMode ?? .fill
+    canvasAspect = data.canvasAspect ?? .original
+    padding = data.padding
+    videoCornerRadius = data.videoCornerRadius
+    cameraAspect = data.cameraAspect ?? .original
+    cameraCornerRadius = data.cameraCornerRadius
+    cameraBorderWidth = data.cameraBorderWidth
+    cameraBorderColor = data.cameraBorderColor ?? CodableColor(r: 0, g: 0, b: 0, a: 1)
+    videoShadow = data.videoShadow ?? 0
+    cameraShadow = data.cameraShadow ?? 0
+    cameraMirrored = data.cameraMirrored ?? false
+    cameraLayout = data.cameraLayout
+    webcamEnabled = data.webcamEnabled ?? true
+
+    if let cursorSettings = data.cursorSettings {
+      showCursor = cursorSettings.showCursor
+      cursorStyle = CursorStyle(rawValue: cursorSettings.cursorStyleRaw) ?? .defaultArrow
+      cursorSize = cursorSettings.cursorSize
+      showClickHighlights = cursorSettings.showClickHighlights
+      if let savedColor = cursorSettings.clickHighlightColor {
+        clickHighlightColor = savedColor
+      }
+      clickHighlightSize = cursorSettings.clickHighlightSize
+    }
+
+    if let zoomSettings = data.zoomSettings {
+      zoomEnabled = zoomSettings.zoomEnabled
+      autoZoomEnabled = zoomSettings.autoZoomEnabled
+      zoomFollowCursor = zoomSettings.zoomFollowCursor
+      zoomLevel = zoomSettings.zoomLevel
+      zoomTransitionSpeed = zoomSettings.transitionDuration
+      zoomDwellThreshold = zoomSettings.dwellThreshold
+      if !zoomSettings.keyframes.isEmpty {
+        zoomTimeline = ZoomTimeline(keyframes: zoomSettings.keyframes)
+      } else {
+        zoomTimeline = nil
+      }
+    }
+
+    if let animSettings = data.animationSettings {
+      cursorMovementEnabled = animSettings.cursorMovementEnabled
+      cursorMovementSpeed = animSettings.cursorMovementSpeed
+    }
+
+    if let savedSysRegions = data.systemAudioRegions, !savedSysRegions.isEmpty {
+      systemAudioRegions = savedSysRegions
+    }
+    if let savedMicRegions = data.micAudioRegions, !savedMicRegions.isEmpty {
+      micAudioRegions = savedMicRegions
+    }
+    if let savedCameraRegions = data.cameraFullscreenRegions, !savedCameraRegions.isEmpty {
+      cameraFullscreenRegions = savedCameraRegions
+    }
+
+    if let audioSettings = data.audioSettings {
+      systemAudioVolume = audioSettings.systemAudioVolume
+      micAudioVolume = audioSettings.micAudioVolume
+      systemAudioMuted = audioSettings.systemAudioMuted
+      micAudioMuted = audioSettings.micAudioMuted
+      micNoiseReductionEnabled = audioSettings.micNoiseReductionEnabled
+      micNoiseReductionIntensity = audioSettings.micNoiseReductionIntensity
+    }
+
+    if case .image(let filename) = data.backgroundStyle, let bundleURL = project?.bundleURL {
+      let url = bundleURL.appendingPathComponent(filename)
+      backgroundImage = NSImage(contentsOf: url)
+    }
+
+    let volumeChanged =
+      prev.audioSettings?.systemAudioVolume != data.audioSettings?.systemAudioVolume
+      || prev.audioSettings?.micAudioVolume != data.audioSettings?.micAudioVolume
+      || prev.audioSettings?.systemAudioMuted != data.audioSettings?.systemAudioMuted
+      || prev.audioSettings?.micAudioMuted != data.audioSettings?.micAudioMuted
+    if volumeChanged {
+      syncAudioVolumes()
+    }
+
+    let regionsChanged =
+      prev.systemAudioRegions != data.systemAudioRegions
+      || prev.micAudioRegions != data.micAudioRegions
+    if regionsChanged {
+      syncAudioRegionsToPlayer()
+    }
+
+    let noiseChanged =
+      prev.audioSettings?.micNoiseReductionEnabled
+      != data.audioSettings?.micNoiseReductionEnabled
+      || prev.audioSettings?.micNoiseReductionIntensity
+        != data.audioSettings?.micNoiseReductionIntensity
+    if noiseChanged {
+      syncNoiseReduction()
+    }
+
+    let cursorAnimChanged =
+      prev.animationSettings?.cursorMovementEnabled
+      != data.animationSettings?.cursorMovementEnabled
+      || prev.animationSettings?.cursorMovementSpeed != data.animationSettings?.cursorMovementSpeed
+    if cursorAnimChanged {
+      regenerateSmoothedCursor()
+    }
+
+    let cameraChanged =
+      prev.cameraLayout != data.cameraLayout
+      || prev.cameraAspect != data.cameraAspect
+    if cameraChanged {
+      clampCameraPosition()
+    }
+
+    scheduleSave()
+
+    Task { @MainActor [weak self] in
+      self?.isRestoringState = false
+    }
+  }
+
+  func undo() {
+    guard let snapshot = history.undo() else { return }
+    restoreFromSnapshot(snapshot)
+  }
+
+  func redo() {
+    guard let snapshot = history.redo() else { return }
+    restoreFromSnapshot(snapshot)
+  }
+
+  func scheduleUndoSnapshot() {
+    pendingUndoTask?.cancel()
+    pendingUndoTask = Task {
+      try? await Task.sleep(for: .milliseconds(500))
+      guard !Task.isCancelled else { return }
+      history.pushSnapshot(createSnapshot())
+    }
+  }
+
   private func startAutoSave() {
     observeChanges()
   }
@@ -1023,17 +1186,25 @@ final class EditorState {
       _ = self.micNoiseReductionIntensity
     } onChange: {
       Task { @MainActor [weak self] in
-        self?.scheduleSave()
-        self?.observeChanges()
+        guard let self else { return }
+        self.scheduleSave()
+        if !self.isRestoringState {
+          self.scheduleUndoSnapshot()
+        }
+        self.observeChanges()
       }
     }
   }
 
   func teardown() {
     pendingSaveTask?.cancel()
+    pendingUndoTask?.cancel()
     micProcessingTask?.cancel()
     micProcessingTask = nil
     saveState()
+    if let project {
+      try? project.saveHistory(history.toData())
+    }
     playerController.teardown()
     if let url = processedMicAudioURL {
       try? FileManager.default.removeItem(at: url)

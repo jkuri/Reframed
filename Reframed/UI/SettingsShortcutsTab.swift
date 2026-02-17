@@ -5,6 +5,7 @@ extension SettingsView {
     Group {
       modeSelectionShortcutsSection
       recordingControlsShortcutsSection
+      editorShortcutsSection
       resetAllShortcutsSection
     }
   }
@@ -29,6 +30,17 @@ extension SettingsView {
         ShortcutRow(action: .stopRecording)
         ShortcutRow(action: .pauseResumeRecording)
         ShortcutRow(action: .restartRecording)
+      }
+    }
+  }
+
+  private var editorShortcutsSection: some View {
+    VStack(alignment: .leading, spacing: Layout.itemSpacing) {
+      sectionLabel("Editor")
+
+      VStack(spacing: 4) {
+        ShortcutRow(action: .editorUndo)
+        ShortcutRow(action: .editorRedo)
       }
     }
   }

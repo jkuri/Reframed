@@ -97,6 +97,9 @@ final class KeyboardShortcutManager {
       default:
         break
       }
+
+    case .editorUndo, .editorRedo:
+      break
     }
   }
 }

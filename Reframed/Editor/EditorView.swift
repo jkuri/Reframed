@@ -308,6 +308,24 @@ struct EditorView: View {
 
       Spacer()
 
+      Button(action: { editorState.undo() }) {
+        Image(systemName: "arrow.uturn.backward")
+          .font(.system(size: 14))
+          .frame(width: 28, height: 28)
+      }
+      .buttonStyle(.plain)
+      .foregroundStyle(editorState.history.canUndo ? ReframedColors.primaryText : ReframedColors.tertiaryText)
+      .disabled(!editorState.history.canUndo)
+
+      Button(action: { editorState.redo() }) {
+        Image(systemName: "arrow.uturn.forward")
+          .font(.system(size: 14))
+          .frame(width: 28, height: 28)
+      }
+      .buttonStyle(.plain)
+      .foregroundStyle(editorState.history.canRedo ? ReframedColors.primaryText : ReframedColors.tertiaryText)
+      .disabled(!editorState.history.canRedo)
+
       Button(action: { editorState.isPreviewMode.toggle() }) {
         Image(systemName: editorState.isPreviewMode ? "arrow.down.right.and.arrow.up.left" : "arrow.up.left.and.arrow.down.right")
           .font(.system(size: 14))

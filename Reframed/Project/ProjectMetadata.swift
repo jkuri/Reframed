@@ -49,7 +49,7 @@ struct AudioSettingsData: Codable, Sendable {
   var micNoiseReductionIntensity: Float = 0.5
 }
 
-struct AudioRegionData: Codable, Sendable, Identifiable {
+struct AudioRegionData: Codable, Sendable, Identifiable, Equatable {
   var id: UUID = UUID()
   var startSeconds: Double
   var endSeconds: Double

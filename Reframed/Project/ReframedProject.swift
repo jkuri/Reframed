@@ -148,6 +148,19 @@ struct ReframedProject: Sendable {
     try data.write(to: bundleURL.appendingPathComponent("project.json"))
   }
 
+  func saveHistory(_ data: HistoryData) throws {
+    let encoder = JSONEncoder()
+    encoder.outputFormatting = [.sortedKeys]
+    let jsonData = try encoder.encode(data)
+    try jsonData.write(to: bundleURL.appendingPathComponent("history.json"))
+  }
+
+  func loadHistory() -> HistoryData? {
+    let url = bundleURL.appendingPathComponent("history.json")
+    guard let data = try? Data(contentsOf: url) else { return nil }
+    return try? JSONDecoder().decode(HistoryData.self, from: data)
+  }
+
   func delete() throws {
     try FileManager.default.removeItem(at: bundleURL)
   }
