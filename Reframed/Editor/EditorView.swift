@@ -91,6 +91,9 @@ struct EditorView: View {
           .padding(.bottom, 12)
       }
     }
+    .onTapGesture {
+      NSApp.keyWindow?.makeFirstResponder(nil)
+    }
     .ignoresSafeArea(edges: .top)
     .frame(minWidth: 1200, minHeight: 800)
     .background(ReframedColors.selectedBackground.opacity(0.55))
@@ -356,6 +359,7 @@ struct EditorView: View {
       .foregroundStyle(ReframedColors.primaryText)
       .popover(isPresented: $showHistoryPopover, arrowEdge: .top) {
         HistoryPopover(editorState: editorState)
+          .presentationBackground(ReframedColors.panelBackground)
       }
 
       Button(action: { editorState.undo() }) {

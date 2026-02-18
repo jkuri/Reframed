@@ -74,80 +74,71 @@ final class History {
 
     if old.trimStartSeconds != new.trimStartSeconds || old.trimEndSeconds != new.trimEndSeconds {
       changes.append(
-        "Trim range: \(String(format: "%.1f", old.trimStartSeconds))s–\(String(format: "%.1f", old.trimEndSeconds))s → \(String(format: "%.1f", new.trimStartSeconds))s–\(String(format: "%.1f", new.trimEndSeconds))s"
+        "Trim range \(formatTime(old.trimStartSeconds))–\(formatTime(old.trimEndSeconds)) → \(formatTime(new.trimStartSeconds))–\(formatTime(new.trimEndSeconds))"
       )
     }
 
     if old.backgroundStyle != new.backgroundStyle {
-      changes.append("Background changed")
+      changes.append("Background set to \(describeBackground(new.backgroundStyle))")
     }
 
     if old.backgroundImageFillMode != new.backgroundImageFillMode {
-      changes.append("Background fill mode changed")
+      let newMode = (new.backgroundImageFillMode ?? .fill).label.lowercased()
+      changes.append("Background image fill mode set to \(newMode)")
     }
 
     if old.canvasAspect != new.canvasAspect {
-      let oldLabel = (old.canvasAspect ?? .original).label
       let newLabel = (new.canvasAspect ?? .original).label
-      changes.append("Canvas aspect: \(oldLabel) → \(newLabel)")
+      changes.append("Canvas aspect ratio set to \(newLabel)")
     }
 
     if old.padding != new.padding {
-      changes.append("Padding: \(String(format: "%.2f", old.padding)) → \(String(format: "%.2f", new.padding))")
+      changes.append("Padding set to \(Int(new.padding * 100))%")
     }
 
     if old.videoCornerRadius != new.videoCornerRadius {
-      changes.append(
-        "Video corner radius: \(String(format: "%.0f", old.videoCornerRadius)) → \(String(format: "%.0f", new.videoCornerRadius))"
-      )
+      changes.append("Video corner radius set to \(Int(new.videoCornerRadius))px")
     }
 
     if old.cameraAspect != new.cameraAspect {
-      let oldLabel = (old.cameraAspect ?? .original).label
       let newLabel = (new.cameraAspect ?? .original).label
-      changes.append("Camera aspect: \(oldLabel) → \(newLabel)")
+      changes.append("Camera aspect ratio set to \(newLabel)")
     }
 
     if old.cameraCornerRadius != new.cameraCornerRadius {
-      changes.append(
-        "Camera corner radius: \(String(format: "%.0f", old.cameraCornerRadius)) → \(String(format: "%.0f", new.cameraCornerRadius))"
-      )
+      changes.append("Camera corner radius set to \(Int(new.cameraCornerRadius))px")
     }
 
     if old.cameraBorderWidth != new.cameraBorderWidth {
-      changes.append(
-        "Camera border width: \(String(format: "%.1f", old.cameraBorderWidth)) → \(String(format: "%.1f", new.cameraBorderWidth))"
-      )
+      changes.append("Camera border width set to \(String(format: "%.1f", new.cameraBorderWidth))px")
     }
 
     if old.cameraBorderColor != new.cameraBorderColor {
-      changes.append("Camera border color changed")
+      changes.append("Camera border color updated")
     }
 
     if old.videoShadow != new.videoShadow {
-      changes.append(
-        "Video shadow: \(String(format: "%.0f", old.videoShadow ?? 0)) → \(String(format: "%.0f", new.videoShadow ?? 0))"
-      )
+      let val = Int(new.videoShadow ?? 0)
+      changes.append(val == 0 ? "Video shadow removed" : "Video shadow set to \(val)")
     }
 
     if old.cameraShadow != new.cameraShadow {
-      changes.append(
-        "Camera shadow: \(String(format: "%.0f", old.cameraShadow ?? 0)) → \(String(format: "%.0f", new.cameraShadow ?? 0))"
-      )
+      let val = Int(new.cameraShadow ?? 0)
+      changes.append(val == 0 ? "Camera shadow removed" : "Camera shadow set to \(val)")
     }
 
     if old.cameraMirrored != new.cameraMirrored {
       let enabled = (new.cameraMirrored ?? false)
-      changes.append("Camera mirrored \(enabled ? "enabled" : "disabled")")
+      changes.append(enabled ? "Camera mirror enabled" : "Camera mirror disabled")
     }
 
     if old.cameraLayout != new.cameraLayout {
-      changes.append("Camera position changed")
+      changes.append("Camera repositioned")
     }
 
     if old.webcamEnabled != new.webcamEnabled {
       let enabled = (new.webcamEnabled ?? true)
-      changes.append("Webcam \(enabled ? "enabled" : "disabled")")
+      changes.append(enabled ? "Webcam enabled" : "Webcam disabled")
     }
 
     if old.cursorSettings != new.cursorSettings {
@@ -167,18 +158,67 @@ final class History {
     }
 
     if old.systemAudioRegions != new.systemAudioRegions {
-      changes.append("System audio regions changed")
+      let oldCount = old.systemAudioRegions?.count ?? 0
+      let newCount = new.systemAudioRegions?.count ?? 0
+      if newCount > oldCount {
+        changes.append("System audio region added")
+      } else if newCount < oldCount {
+        changes.append("System audio region removed")
+      } else {
+        changes.append("System audio region adjusted")
+      }
     }
 
     if old.micAudioRegions != new.micAudioRegions {
-      changes.append("Mic audio regions changed")
+      let oldCount = old.micAudioRegions?.count ?? 0
+      let newCount = new.micAudioRegions?.count ?? 0
+      if newCount > oldCount {
+        changes.append("Mic audio region added")
+      } else if newCount < oldCount {
+        changes.append("Mic audio region removed")
+      } else {
+        changes.append("Mic audio region adjusted")
+      }
     }
 
     if old.cameraFullscreenRegions != new.cameraFullscreenRegions {
-      changes.append("Camera regions changed")
+      let oldCount = old.cameraFullscreenRegions?.count ?? 0
+      let newCount = new.cameraFullscreenRegions?.count ?? 0
+      if newCount > oldCount {
+        changes.append("Camera fullscreen region added")
+      } else if newCount < oldCount {
+        changes.append("Camera fullscreen region removed")
+      } else {
+        changes.append("Camera fullscreen region adjusted")
+      }
     }
 
     return changes
+  }
+
+  private static func formatTime(_ seconds: Double) -> String {
+    let mins = Int(seconds) / 60
+    let secs = seconds - Double(mins * 60)
+    if mins > 0 {
+      return String(format: "%d:%04.1f", mins, secs)
+    }
+    return String(format: "%.1fs", secs)
+  }
+
+  private static func describeBackground(_ style: BackgroundStyle) -> String {
+    switch style {
+    case .none:
+      return "none"
+    case .gradient(let id):
+      if let preset = GradientPresets.preset(for: id) {
+        return "\(preset.name) gradient"
+      }
+      return "gradient"
+    case .solidColor:
+      return "solid color"
+    case .image:
+      return "image"
+    }
   }
 
   private static func describeCursorChanges(
@@ -189,27 +229,33 @@ final class History {
     let oldShow = old?.showCursor ?? true
     let newShow = new?.showCursor ?? true
     if oldShow != newShow {
-      changes.append("Show cursor \(newShow ? "enabled" : "disabled")")
+      changes.append(newShow ? "Cursor enabled" : "Cursor disabled")
       return
     }
 
     if old?.cursorStyleRaw != new?.cursorStyleRaw {
-      changes.append("Cursor style changed")
+      let style = CursorStyle(rawValue: new?.cursorStyleRaw ?? 0) ?? .defaultArrow
+      changes.append("Cursor style set to \(style.label)")
     }
     if old?.cursorSize != new?.cursorSize {
-      changes.append(
-        "Cursor size: \(String(format: "%.0f", old?.cursorSize ?? 24)) → \(String(format: "%.0f", new?.cursorSize ?? 24))"
-      )
+      changes.append("Cursor size set to \(Int(new?.cursorSize ?? 24))px")
     }
     if old?.showClickHighlights != new?.showClickHighlights {
       let enabled = new?.showClickHighlights ?? false
-      changes.append("Click highlights \(enabled ? "enabled" : "disabled")")
+      changes.append(enabled ? "Click highlights enabled" : "Click highlights disabled")
     }
     if old?.clickHighlightColor != new?.clickHighlightColor
       || old?.clickHighlightSize != new?.clickHighlightSize
     {
       if old?.showClickHighlights == new?.showClickHighlights {
-        changes.append("Click highlight style changed")
+        if old?.clickHighlightColor != new?.clickHighlightColor {
+          changes.append("Click highlight color updated")
+        }
+        if old?.clickHighlightSize != new?.clickHighlightSize {
+          changes.append(
+            "Click highlight size set to \(Int(new?.clickHighlightSize ?? 36))px"
+          )
+        }
       }
     }
   }
@@ -221,19 +267,27 @@ final class History {
   ) {
     if old?.zoomEnabled != new?.zoomEnabled {
       let enabled = new?.zoomEnabled ?? false
-      changes.append("Zoom \(enabled ? "enabled" : "disabled")")
+      changes.append(enabled ? "Zoom enabled" : "Zoom disabled")
     }
     if old?.autoZoomEnabled != new?.autoZoomEnabled {
       let enabled = new?.autoZoomEnabled ?? false
-      changes.append("Auto zoom \(enabled ? "enabled" : "disabled")")
+      changes.append(enabled ? "Auto zoom enabled" : "Auto zoom disabled")
     }
     if old?.zoomLevel != new?.zoomLevel {
       changes.append(
-        "Zoom level: \(String(format: "%.1f", old?.zoomLevel ?? 2.0))x → \(String(format: "%.1f", new?.zoomLevel ?? 2.0))x"
+        "Zoom level set to \(String(format: "%.1f", new?.zoomLevel ?? 2.0))x"
       )
     }
     if old?.keyframes != new?.keyframes {
-      changes.append("Zoom keyframes changed")
+      let oldCount = old?.keyframes.count ?? 0
+      let newCount = new?.keyframes.count ?? 0
+      if newCount > oldCount {
+        changes.append("Zoom keyframe added")
+      } else if newCount < oldCount {
+        changes.append("Zoom keyframe removed")
+      } else {
+        changes.append("Zoom keyframe adjusted")
+      }
     }
   }
 
@@ -244,10 +298,11 @@ final class History {
   ) {
     if old?.cursorMovementEnabled != new?.cursorMovementEnabled {
       let enabled = new?.cursorMovementEnabled ?? false
-      changes.append("Cursor animation \(enabled ? "enabled" : "disabled")")
+      changes.append(enabled ? "Cursor smoothing enabled" : "Cursor smoothing disabled")
     }
     if old?.cursorMovementSpeed != new?.cursorMovementSpeed {
-      changes.append("Cursor animation speed changed")
+      let speed = new?.cursorMovementSpeed ?? .medium
+      changes.append("Cursor smoothing speed set to \(speed.label)")
     }
   }
 
@@ -259,22 +314,32 @@ final class History {
     if old?.systemAudioVolume != new?.systemAudioVolume
       || old?.systemAudioMuted != new?.systemAudioMuted
     {
-      let oldVol = old?.systemAudioMuted == true ? 0 : Int((old?.systemAudioVolume ?? 1.0) * 100)
-      let newVol = new?.systemAudioMuted == true ? 0 : Int((new?.systemAudioVolume ?? 1.0) * 100)
-      changes.append("System audio volume: \(oldVol)% → \(newVol)%")
+      if new?.systemAudioMuted == true && old?.systemAudioMuted != true {
+        changes.append("System audio muted")
+      } else if new?.systemAudioMuted != true && old?.systemAudioMuted == true {
+        changes.append("System audio unmuted")
+      } else {
+        let newVol = Int((new?.systemAudioVolume ?? 1.0) * 100)
+        changes.append("System audio volume set to \(newVol)%")
+      }
     }
     if old?.micAudioVolume != new?.micAudioVolume || old?.micAudioMuted != new?.micAudioMuted {
-      let oldVol = old?.micAudioMuted == true ? 0 : Int((old?.micAudioVolume ?? 1.0) * 100)
-      let newVol = new?.micAudioMuted == true ? 0 : Int((new?.micAudioVolume ?? 1.0) * 100)
-      changes.append("Mic audio volume: \(oldVol)% → \(newVol)%")
+      if new?.micAudioMuted == true && old?.micAudioMuted != true {
+        changes.append("Mic audio muted")
+      } else if new?.micAudioMuted != true && old?.micAudioMuted == true {
+        changes.append("Mic audio unmuted")
+      } else {
+        let newVol = Int((new?.micAudioVolume ?? 1.0) * 100)
+        changes.append("Mic audio volume set to \(newVol)%")
+      }
     }
     if old?.micNoiseReductionEnabled != new?.micNoiseReductionEnabled {
       let enabled = new?.micNoiseReductionEnabled ?? false
-      changes.append("Noise reduction \(enabled ? "enabled" : "disabled")")
+      changes.append(enabled ? "Noise reduction enabled" : "Noise reduction disabled")
     }
     if old?.micNoiseReductionIntensity != new?.micNoiseReductionIntensity {
       changes.append(
-        "Noise reduction intensity: \(Int((old?.micNoiseReductionIntensity ?? 0.5) * 100))% → \(Int((new?.micNoiseReductionIntensity ?? 0.5) * 100))%"
+        "Noise reduction intensity set to \(Int((new?.micNoiseReductionIntensity ?? 0.5) * 100))%"
       )
     }
   }

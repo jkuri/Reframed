@@ -19,17 +19,20 @@ struct HistoryPopover: View {
       } else {
         ScrollViewReader { proxy in
           ScrollView {
-            LazyVStack(spacing: 0) {
+            LazyVStack(spacing: 2) {
               ForEach(Array(editorState.history.entries.enumerated().reversed()), id: \.offset) {
                 index,
                 entry in
                 let isCurrent = index == editorState.history.currentIndex
-                historyRow(entry: entry, index: index, isCurrent: isCurrent)
+                let isFuture = index > editorState.history.currentIndex
+                historyRow(entry: entry, index: index, isCurrent: isCurrent, isFuture: isFuture)
                   .id(index)
               }
             }
+            .padding(.horizontal, 6)
+            .padding(.bottom, 4)
           }
-          .frame(maxHeight: 340)
+          .frame(maxHeight: 380)
           .onAppear {
             proxy.scrollTo(editorState.history.currentIndex, anchor: .center)
           }
@@ -37,7 +40,7 @@ struct HistoryPopover: View {
       }
     }
     .padding(.vertical, 8)
-    .frame(width: 280)
+    .frame(width: 400)
     .background(ReframedColors.panelBackground)
     .clipShape(RoundedRectangle(cornerRadius: 8))
     .overlay(
@@ -46,7 +49,14 @@ struct HistoryPopover: View {
     )
   }
 
-  private func historyRow(entry: HistoryEntry, index: Int, isCurrent: Bool) -> some View {
+  private func historyRow(
+    entry: HistoryEntry,
+    index: Int,
+    isCurrent: Bool,
+    isFuture: Bool
+  )
+    -> some View
+  {
     let entries = editorState.history.entries
     let diffs: [String] =
       index > 0
@@ -55,51 +65,56 @@ struct HistoryPopover: View {
     return Button {
       editorState.jumpToHistory(index: index)
     } label: {
-      VStack(alignment: .leading, spacing: 3) {
-        HStack {
+      HStack(spacing: 8) {
+        Circle()
+          .fill(isCurrent ? ReframedColors.controlAccentColor : ReframedColors.subtleBorder)
+          .frame(width: 6, height: 6)
+
+        VStack(alignment: .leading, spacing: 2) {
           if index == 0 {
             Text("Initial state")
               .font(.system(size: 12, weight: isCurrent ? .semibold : .regular))
-              .foregroundStyle(isCurrent ? ReframedColors.primaryText : ReframedColors.secondaryText)
+              .foregroundStyle(
+                isFuture
+                  ? ReframedColors.tertiaryText
+                  : isCurrent ? ReframedColors.primaryText : ReframedColors.secondaryText
+              )
           } else {
             Text(diffs.isEmpty ? "Change" : diffs.first!)
               .font(.system(size: 12, weight: isCurrent ? .semibold : .regular))
               .foregroundStyle(
-                isCurrent ? ReframedColors.primaryText : ReframedColors.secondaryText
+                isFuture
+                  ? ReframedColors.tertiaryText
+                  : isCurrent ? ReframedColors.primaryText : ReframedColors.secondaryText
               )
               .lineLimit(1)
           }
 
-          Spacer()
-
-          Text(relativeTime(entry.timestamp))
-            .font(.system(size: 10))
-            .foregroundStyle(ReframedColors.tertiaryText)
-        }
-
-        if diffs.count > 1 {
-          VStack(alignment: .leading, spacing: 1) {
-            ForEach(diffs.dropFirst().prefix(4), id: \.self) { diff in
-              Text(diff)
-                .font(.system(size: 10))
-                .foregroundStyle(ReframedColors.tertiaryText)
-                .lineLimit(1)
-            }
-            if diffs.count > 5 {
-              Text("+\(diffs.count - 5) more")
-                .font(.system(size: 10))
-                .foregroundStyle(ReframedColors.tertiaryText)
-            }
+          if diffs.count > 1 {
+            Text(diffs.dropFirst().prefix(3).joined(separator: ", "))
+              .font(.system(size: 10))
+              .foregroundStyle(ReframedColors.tertiaryText)
+              .lineLimit(1)
           }
         }
+
+        Spacer()
+
+        Text(relativeTime(entry.timestamp))
+          .font(.system(size: 10))
+          .foregroundStyle(ReframedColors.tertiaryText)
       }
-      .padding(.horizontal, 12)
+      .padding(.horizontal, 8)
       .padding(.vertical, 6)
       .frame(maxWidth: .infinity, alignment: .leading)
-      .background(isCurrent ? ReframedColors.selectedBackground : Color.clear)
+      .background(
+        RoundedRectangle(cornerRadius: 5)
+          .fill(isCurrent ? ReframedColors.selectedBackground : Color.clear)
+      )
       .contentShape(Rectangle())
     }
     .buttonStyle(.plain)
+    .opacity(isFuture ? 0.6 : 1)
   }
 
   private func relativeTime(_ date: Date) -> String {

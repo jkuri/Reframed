@@ -121,7 +121,12 @@ struct PropertiesPanel: View {
             .onChange(of: projectNameFocused) { _, focused in
               if !focused { commitProjectRename() }
             }
-            .onAppear { editingProjectName = editorState.projectName }
+            .onAppear {
+              editingProjectName = editorState.projectName
+              Task { @MainActor in
+                projectNameFocused = false
+              }
+            }
 
           Button("Rename") {
             commitProjectRename()

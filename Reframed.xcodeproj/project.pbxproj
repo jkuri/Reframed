@@ -136,6 +136,7 @@
 		A20000000000000000000021 /* PropertiesPanel+AudioTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000021 /* PropertiesPanel+AudioTab.swift */; };
 		A20000000000000000000022 /* History.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000022 /* History.swift */; };
 		A20000000000000000000023 /* HistoryPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000023 /* HistoryPopover.swift */; };
+
 		CA0000000000000000000002 /* CIImageExtensions.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB0000000000000000000002 /* CIImageExtensions.swift */; };
 		DB000000000000000000000A /* RNNoiseProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA000000000000000000001D /* RNNoiseProcessor.swift */; };
 /* End PBXBuildFile section */
@@ -272,6 +273,7 @@
 		B20000000000000000000021 /* PropertiesPanel+AudioTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "PropertiesPanel+AudioTab.swift"; sourceTree = "<group>"; };
 		B20000000000000000000022 /* History.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = History.swift; sourceTree = "<group>"; };
 		B20000000000000000000023 /* HistoryPopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HistoryPopover.swift; sourceTree = "<group>"; };
+
 		CB0000000000000000000002 /* CIImageExtensions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CIImageExtensions.swift; sourceTree = "<group>"; };
 		DA000000000000000000001D /* RNNoiseProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RNNoiseProcessor.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
