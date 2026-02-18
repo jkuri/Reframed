@@ -54,7 +54,7 @@ extension TimelineView {
     let startX = max(0, CGFloat(effective.start / totalSeconds) * width)
     let endX = min(width, CGFloat(effective.end / totalSeconds) * width)
     let regionWidth = max(4, endX - startX)
-    let edgeThreshold: CGFloat = 8
+    let edgeThreshold = min(8.0, regionWidth * 0.2)
 
     ZStack {
       RoundedRectangle(cornerRadius: 6)
@@ -78,9 +78,10 @@ extension TimelineView {
             let origEndX = CGFloat(region.endSeconds / totalSeconds) * width
             let origWidth = origEndX - origStartX
             let relX = value.startLocation.x - origStartX
-            if relX <= edgeThreshold && origWidth > edgeThreshold * 3 {
+            let effectiveEdge = min(8.0, origWidth * 0.2)
+            if relX <= effectiveEdge {
               cameraDragType = .resizeLeft
-            } else if relX >= origWidth - edgeThreshold && origWidth > edgeThreshold * 3 {
+            } else if relX >= origWidth - effectiveEdge {
               cameraDragType = .resizeRight
             } else {
               cameraDragType = .move

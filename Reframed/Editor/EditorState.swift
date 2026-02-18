@@ -401,7 +401,7 @@ final class EditorState {
   func addRegion(trackType: AudioTrackType, atTime time: Double) {
     var regs = regions(for: trackType)
     let dur = CMTimeGetSeconds(duration)
-    let desiredHalf: Double = 1.0
+    let desiredHalf = min(5.0, dur / 2)
 
     var gapStart: Double = 0
     var gapEnd: Double = dur
@@ -560,7 +560,7 @@ final class EditorState {
 
   func addCameraRegion(atTime time: Double) {
     let dur = CMTimeGetSeconds(duration)
-    let desiredHalf: Double = 1.0
+    let desiredHalf = min(5.0, dur / 2)
     var gapStart: Double = 0
     var gapEnd: Double = dur
     var insertIdx = cameraFullscreenRegions.count
@@ -885,7 +885,7 @@ final class EditorState {
 
   func addManualZoomKeyframe(at time: Double, center: CGPoint) {
     let dur = CMTimeGetSeconds(duration)
-    let holdDuration = max(zoomDwellThreshold, 0.5)
+    let holdDuration = min(10.0, dur / 2)
     let holdEnd = min(dur, time + holdDuration)
     let transIn = max(0, time - zoomTransitionSpeed)
     let transOut = min(dur, holdEnd + zoomTransitionSpeed)

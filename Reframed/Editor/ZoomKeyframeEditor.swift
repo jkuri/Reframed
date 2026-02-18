@@ -178,7 +178,7 @@ struct ZoomKeyframeEditor: View {
     let trailTransWidth = max(0, min(regionWidth - leadTransWidth, endX - zoomEndX))
     let holdWidth = max(0, regionWidth - leadTransWidth - trailTransWidth)
 
-    let edgeThreshold: CGFloat = 8
+    let edgeThreshold = min(8.0, regionWidth * 0.2)
 
     HStack(spacing: 0) {
       if leadTransWidth > 0 {
@@ -221,9 +221,10 @@ struct ZoomKeyframeEditor: View {
             let origEndX = (region.endTime / duration) * width
             let origWidth = origEndX - origStartX
             let relX = value.startLocation.x - origStartX
-            if relX <= edgeThreshold && origWidth > edgeThreshold * 3 {
+            let effectiveEdge = min(8.0, origWidth * 0.2)
+            if relX <= effectiveEdge {
               dragType = .resizeLeft
-            } else if relX >= origWidth - edgeThreshold && origWidth > edgeThreshold * 3 {
+            } else if relX >= origWidth - effectiveEdge {
               dragType = .resizeRight
             } else {
               dragType = .move
