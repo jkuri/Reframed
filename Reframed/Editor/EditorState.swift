@@ -64,6 +64,49 @@ enum CameraAspect: String, Codable, Sendable, CaseIterable, Identifiable {
   }
 }
 
+enum CameraFullscreenFillMode: String, Codable, Sendable, CaseIterable, Identifiable {
+  case fill, fit
+
+  var id: String { rawValue }
+
+  var label: String {
+    switch self {
+    case .fill: "Fill"
+    case .fit: "Fit"
+    }
+  }
+}
+
+enum CameraFullscreenAspect: String, Codable, Sendable, CaseIterable, Identifiable {
+  case original
+  case ratio16x9
+  case ratio1x1
+  case ratio4x3
+  case ratio9x16
+
+  var id: String { rawValue }
+
+  var label: String {
+    switch self {
+    case .original: "Original"
+    case .ratio16x9: "16:9"
+    case .ratio1x1: "1:1"
+    case .ratio4x3: "4:3"
+    case .ratio9x16: "9:16"
+    }
+  }
+
+  func aspectRatio(webcamSize: CGSize) -> CGFloat {
+    switch self {
+    case .original: webcamSize.width / max(webcamSize.height, 1)
+    case .ratio16x9: 16.0 / 9.0
+    case .ratio1x1: 1.0
+    case .ratio4x3: 4.0 / 3.0
+    case .ratio9x16: 9.0 / 16.0
+    }
+  }
+}
+
 enum AudioTrackType {
   case system, mic
 }
@@ -100,6 +143,8 @@ final class EditorState {
   var videoShadow: CGFloat = 0
   var cameraShadow: CGFloat = 0
   var cameraMirrored: Bool = false
+  var cameraFullscreenFillMode: CameraFullscreenFillMode = .fit
+  var cameraFullscreenAspect: CameraFullscreenAspect = .original
   var projectName: String = ""
   var showExportSheet = false
   var showDeleteConfirmation = false
@@ -179,6 +224,8 @@ final class EditorState {
       self.videoShadow = saved.videoShadow ?? 0
       self.cameraShadow = saved.cameraShadow ?? 0
       self.cameraMirrored = saved.cameraMirrored ?? false
+      self.cameraFullscreenFillMode = saved.cameraFullscreenFillMode ?? .fit
+      self.cameraFullscreenAspect = saved.cameraFullscreenAspect ?? .original
       self.cameraLayout = saved.cameraLayout
       self.webcamEnabled = saved.webcamEnabled ?? true
       self.backgroundImageFillMode = saved.backgroundImageFillMode ?? .fill
@@ -763,6 +810,8 @@ final class EditorState {
       videoShadow: videoShadow,
       cameraShadow: cameraShadow,
       cameraMirrored: cameraMirrored,
+      cameraFullscreenFillMode: cameraFullscreenFillMode,
+      cameraFullscreenAspect: cameraFullscreenAspect,
       exportSettings: settings,
       cursorSnapshot: cursorSnapshot,
       cursorStyle: cursorStyle,
@@ -1040,6 +1089,8 @@ final class EditorState {
       videoShadow: videoShadow,
       cameraShadow: cameraShadow,
       cameraMirrored: cameraMirrored,
+      cameraFullscreenFillMode: cameraFullscreenFillMode,
+      cameraFullscreenAspect: cameraFullscreenAspect,
       cameraLayout: cameraLayout,
       webcamEnabled: webcamEnabled,
       cursorSettings: cursorSettings,
@@ -1078,6 +1129,8 @@ final class EditorState {
     videoShadow = data.videoShadow ?? 0
     cameraShadow = data.cameraShadow ?? 0
     cameraMirrored = data.cameraMirrored ?? false
+    cameraFullscreenFillMode = data.cameraFullscreenFillMode ?? .fit
+    cameraFullscreenAspect = data.cameraFullscreenAspect ?? .original
     cameraLayout = data.cameraLayout
     webcamEnabled = data.webcamEnabled ?? true
 
@@ -1224,6 +1277,8 @@ final class EditorState {
       _ = self.videoShadow
       _ = self.cameraShadow
       _ = self.cameraMirrored
+      _ = self.cameraFullscreenFillMode
+      _ = self.cameraFullscreenAspect
       _ = self.cameraLayout
       _ = self.webcamEnabled
       _ = self.showCursor

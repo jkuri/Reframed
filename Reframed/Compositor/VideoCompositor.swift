@@ -33,6 +33,8 @@ enum VideoCompositor {
     videoShadow: CGFloat = 0,
     cameraShadow: CGFloat = 0,
     cameraMirrored: Bool = false,
+    cameraFullscreenFillMode: CameraFullscreenFillMode = .fit,
+    cameraFullscreenAspect: CameraFullscreenAspect = .original,
     exportSettings: ExportSettings = ExportSettings(),
     cursorSnapshot: CursorMetadataSnapshot? = nil,
     cursorStyle: CursorStyle = .defaultArrow,
@@ -256,6 +258,8 @@ enum VideoCompositor {
             end: CMTimeSubtract(overlapEnd, effectiveTrim.start)
           )
         },
+        cameraFullscreenFillMode: cameraFullscreenFillMode,
+        cameraFullscreenAspect: cameraFullscreenAspect
       )
 
       let videoComposition = AVMutableVideoComposition()

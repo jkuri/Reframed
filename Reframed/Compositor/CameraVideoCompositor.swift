@@ -239,16 +239,40 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
       if let webcamImage {
         if isCamFullscreen {
           let fullRect = CGRect(x: 0, y: 0, width: width, height: height)
-          let webcamAspect = CGSize(width: webcamImage.width, height: webcamImage.height)
-          let fitRect = AVMakeRect(aspectRatio: webcamAspect, insideRect: fullRect)
+          let targetAspect = instruction.cameraFullscreenAspect.aspectRatio(
+            webcamSize: CGSize(width: webcamImage.width, height: webcamImage.height)
+          )
+          let virtualSize: CGSize
+          if instruction.cameraFullscreenAspect == .original {
+            virtualSize = CGSize(width: webcamImage.width, height: webcamImage.height)
+          } else {
+            virtualSize = CGSize(width: targetAspect * 1000, height: 1000)
+          }
+          let drawRect: CGRect
+          switch instruction.cameraFullscreenFillMode {
+          case .fit:
+            drawRect = AVMakeRect(aspectRatio: virtualSize, insideRect: fullRect)
+          case .fill:
+            drawRect = aspectFillRect(imageSize: virtualSize, in: fullRect)
+          }
           context.saveGState()
           drawBackground(in: context, rect: fullRect, instruction: instruction, colorSpace: colorSpace)
+          context.clip(to: fullRect)
           if instruction.cameraMirrored {
-            context.translateBy(x: fitRect.midX, y: 0)
+            context.translateBy(x: drawRect.midX, y: 0)
             context.scaleBy(x: -1, y: 1)
-            context.translateBy(x: -fitRect.midX, y: 0)
+            context.translateBy(x: -drawRect.midX, y: 0)
           }
-          context.draw(webcamImage, in: fitRect)
+          if instruction.cameraFullscreenAspect == .original {
+            context.draw(webcamImage, in: drawRect)
+          } else {
+            let imgFill = aspectFillRect(
+              imageSize: CGSize(width: webcamImage.width, height: webcamImage.height),
+              in: drawRect
+            )
+            context.clip(to: drawRect)
+            context.draw(webcamImage, in: imgFill)
+          }
           context.restoreGState()
         } else if let cameraRect = instruction.cameraRect {
           let flippedY = CGFloat(height) - cameraRect.origin.y - cameraRect.height

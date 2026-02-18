@@ -106,6 +106,38 @@ extension PropertiesPanel {
     .opacity(editorState.webcamEnabled ? 1 : 0.5)
   }
 
+  var cameraFullscreenSection: some View {
+    VStack(alignment: .leading, spacing: Layout.itemSpacing) {
+      sectionHeader(icon: "arrow.up.left.and.arrow.down.right", title: "Fullscreen")
+
+      VStack(alignment: .leading, spacing: 4) {
+        Text("Aspect Ratio")
+          .font(.system(size: 12))
+          .foregroundStyle(ReframedColors.secondaryText)
+        Picker("", selection: $editorState.cameraFullscreenAspect) {
+          ForEach(CameraFullscreenAspect.allCases) { aspect in
+            Text(aspect.label).tag(aspect)
+          }
+        }
+        .pickerStyle(.segmented)
+        .labelsHidden()
+      }
+
+      VStack(alignment: .leading, spacing: 4) {
+        Text("Fill Mode")
+          .font(.system(size: 12))
+          .foregroundStyle(ReframedColors.secondaryText)
+        FullWidthSegmentPicker(
+          items: CameraFullscreenFillMode.allCases,
+          label: { $0.label },
+          selection: $editorState.cameraFullscreenFillMode
+        )
+      }
+    }
+    .disabled(!editorState.webcamEnabled || editorState.cameraFullscreenRegions.isEmpty)
+    .opacity(editorState.webcamEnabled && !editorState.cameraFullscreenRegions.isEmpty ? 1 : 0.5)
+  }
+
   private var borderColorPickerButton: some View {
     let currentName =
       TailwindColors.all.first { $0.color == editorState.cameraBorderColor }?.name ?? "White"

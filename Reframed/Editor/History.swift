@@ -132,6 +132,16 @@ final class History {
       changes.append(enabled ? "Camera mirror enabled" : "Camera mirror disabled")
     }
 
+    if old.cameraFullscreenFillMode != new.cameraFullscreenFillMode {
+      let newMode = (new.cameraFullscreenFillMode ?? .fit).label.lowercased()
+      changes.append("Camera fullscreen fill mode set to \(newMode)")
+    }
+
+    if old.cameraFullscreenAspect != new.cameraFullscreenAspect {
+      let newLabel = (new.cameraFullscreenAspect ?? .original).label
+      changes.append("Camera fullscreen aspect ratio set to \(newLabel)")
+    }
+
     if old.cameraLayout != new.cameraLayout {
       changes.append("Camera repositioned")
     }

@@ -46,6 +46,7 @@ struct PropertiesPanel: View {
           cameraPositionSection
           cameraAspectRatioSection
           cameraStyleSection
+          cameraFullscreenSection
         case .audio:
           audioSection
         case .cursor:

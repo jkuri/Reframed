@@ -29,6 +29,8 @@ struct VideoPreviewView: NSViewRepresentable {
   var currentTime: Double = 0
   var zoomTimeline: ZoomTimeline?
   var cameraFullscreenRegions: [(start: Double, end: Double)] = []
+  var cameraFullscreenFillMode: CameraFullscreenFillMode = .fit
+  var cameraFullscreenAspect: CameraFullscreenAspect = .original
 
   func makeNSView(context: Context) -> VideoPreviewContainer {
     let container = VideoPreviewContainer()
@@ -46,6 +48,8 @@ struct VideoPreviewView: NSViewRepresentable {
 
     let isFullscreen = cameraFullscreenRegions.contains { currentTime >= $0.start && currentTime <= $0.end }
     nsView.isCameraFullscreen = isFullscreen
+    nsView.currentFullscreenFillMode = cameraFullscreenFillMode
+    nsView.currentFullscreenAspect = cameraFullscreenAspect
 
     nsView.updateCameraLayout(
       cameraLayout,
@@ -130,6 +134,8 @@ final class VideoPreviewContainer: NSView {
   private let screenContainerLayer = CALayer()
   var coordinator: VideoPreviewView.Coordinator?
   var isCameraFullscreen = false
+  var currentFullscreenFillMode: CameraFullscreenFillMode = .fit
+  var currentFullscreenAspect: CameraFullscreenAspect = .original
   private var isDraggingCamera = false
   private var currentLayout = CameraLayout()
   private var currentWebcamSize: CGSize?
@@ -409,8 +415,45 @@ final class VideoPreviewContainer: NSView {
       webcamView.layer?.borderWidth = 0
       webcamView.layer?.borderColor = NSColor.clear.cgColor
       webcamView.layer?.backgroundColor = NSColor.clear.cgColor
-      webcamPlayerLayer.videoGravity = .resizeAspect
-      webcamPlayerLayer.frame = webcamView.bounds
+
+      let gravity: AVLayerVideoGravity =
+        currentFullscreenFillMode == .fill
+        ? .resizeAspectFill : .resizeAspect
+      webcamPlayerLayer.videoGravity = gravity
+
+      let containerBounds = webcamView.bounds
+      if currentFullscreenAspect == .original {
+        webcamPlayerLayer.frame = containerBounds
+      } else {
+        let targetAspect = currentFullscreenAspect.aspectRatio(webcamSize: ws)
+        let virtualSize = CGSize(width: targetAspect * 1000, height: 1000)
+        let aspectRect: CGRect
+        if currentFullscreenFillMode == .fill {
+          let rectAspect = containerBounds.width / max(containerBounds.height, 1)
+          let vAspect = virtualSize.width / max(virtualSize.height, 1)
+          if vAspect > rectAspect {
+            let h = containerBounds.width / max(vAspect, 0.001)
+            aspectRect = CGRect(
+              x: 0,
+              y: containerBounds.midY - h / 2,
+              width: containerBounds.width,
+              height: h
+            )
+          } else {
+            let w = containerBounds.height * vAspect
+            aspectRect = CGRect(
+              x: containerBounds.midX - w / 2,
+              y: 0,
+              width: w,
+              height: containerBounds.height
+            )
+          }
+        } else {
+          aspectRect = AVMakeRect(aspectRatio: virtualSize, insideRect: containerBounds)
+        }
+        webcamPlayerLayer.frame = aspectRect
+      }
+
       webcamPlayerLayer.setAffineTransform(
         currentCameraMirrored ? CGAffineTransform(scaleX: -1, y: 1) : .identity
       )
