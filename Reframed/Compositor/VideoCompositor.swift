@@ -435,18 +435,27 @@ enum VideoCompositor {
     nonisolated(unsafe) let writer = try AVAssetWriter(url: url, fileType: fileType)
 
     let pixels = Double(renderSize.width * renderSize.height)
-    let compressionProperties: [String: Any]
-    if codec == .hevc {
-      compressionProperties = [AVVideoAverageBitRateKey: pixels * exportFPS * 0.04]
+    let videoSettings: [String: Any]
+    if codec == .proRes4444 || codec == .proRes422 {
+      videoSettings = [
+        AVVideoCodecKey: codec,
+        AVVideoWidthKey: Int(renderSize.width),
+        AVVideoHeightKey: Int(renderSize.height),
+      ]
     } else {
-      compressionProperties = [AVVideoAverageBitRateKey: pixels * exportFPS * 0.06]
+      let compressionProperties: [String: Any]
+      if codec == .hevc {
+        compressionProperties = [AVVideoAverageBitRateKey: pixels * exportFPS * 0.04]
+      } else {
+        compressionProperties = [AVVideoAverageBitRateKey: pixels * exportFPS * 0.06]
+      }
+      videoSettings = [
+        AVVideoCodecKey: codec,
+        AVVideoWidthKey: Int(renderSize.width),
+        AVVideoHeightKey: Int(renderSize.height),
+        AVVideoCompressionPropertiesKey: compressionProperties,
+      ]
     }
-    let videoSettings: [String: Any] = [
-      AVVideoCodecKey: codec,
-      AVVideoWidthKey: Int(renderSize.width),
-      AVVideoHeightKey: Int(renderSize.height),
-      AVVideoCompressionPropertiesKey: compressionProperties,
-    ]
     nonisolated(unsafe) let videoInput = AVAssetWriterInput(mediaType: .video, outputSettings: videoSettings)
     videoInput.expectsMediaDataInRealTime = false
     writer.add(videoInput)
@@ -750,32 +759,42 @@ enum VideoCompositor {
 
     let assetWriter = try AVAssetWriter(outputURL: outputURL, fileType: fileType)
 
-    let videoCodec: AVVideoCodecType = codec == .h265 ? .hevc : .h264
-    let pixels = Double(renderSize.width * renderSize.height)
-    let exportFPS = Double(fps)
-    let bitRate: Double
-    if codec == .h265 {
-      bitRate = pixels * exportFPS * 0.04
+    let videoCodec: AVVideoCodecType = codec.videoCodecType
+    let videoOutputSettings: [String: Any]
+    if codec.isProRes {
+      videoOutputSettings = [
+        AVVideoCodecKey: videoCodec,
+        AVVideoWidthKey: Int(renderSize.width),
+        AVVideoHeightKey: Int(renderSize.height),
+      ]
     } else {
-      bitRate = pixels * exportFPS * 0.06
-    }
-    var compressionProperties: [String: Any] = [
-      AVVideoAverageBitRateKey: bitRate,
-      AVVideoAllowFrameReorderingKey: false,
-      AVVideoExpectedSourceFrameRateKey: fps,
-      kVTCompressionPropertyKey_RealTime as String: true,
-    ]
-    if codec == .h265 {
-      compressionProperties[kVTCompressionPropertyKey_PrioritizeEncodingSpeedOverQuality as String] = true
-    }
-    let videoInput = AVAssetWriterInput(
-      mediaType: .video,
-      outputSettings: [
+      let pixels = Double(renderSize.width * renderSize.height)
+      let exportFPS = Double(fps)
+      let bitRate: Double
+      if codec == .h265 {
+        bitRate = pixels * exportFPS * 0.04
+      } else {
+        bitRate = pixels * exportFPS * 0.06
+      }
+      var compressionProperties: [String: Any] = [
+        AVVideoAverageBitRateKey: bitRate,
+        AVVideoAllowFrameReorderingKey: false,
+        AVVideoExpectedSourceFrameRateKey: fps,
+        kVTCompressionPropertyKey_RealTime as String: true,
+      ]
+      if codec == .h265 {
+        compressionProperties[kVTCompressionPropertyKey_PrioritizeEncodingSpeedOverQuality as String] = true
+      }
+      videoOutputSettings = [
         AVVideoCodecKey: videoCodec,
         AVVideoWidthKey: Int(renderSize.width),
         AVVideoHeightKey: Int(renderSize.height),
         AVVideoCompressionPropertiesKey: compressionProperties,
       ]
+    }
+    let videoInput = AVAssetWriterInput(
+      mediaType: .video,
+      outputSettings: videoOutputSettings
     )
     videoInput.expectsMediaDataInRealTime = false
 

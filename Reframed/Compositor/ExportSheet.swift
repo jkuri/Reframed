@@ -127,6 +127,14 @@ struct ExportSheet: View {
             settings.fps = .fps24
           }
         }
+        if newFormat == .mp4 && settings.codec.isProRes {
+          settings.codec = .h265
+        }
+      }
+      .onChange(of: settings.codec) { _, newCodec in
+        if newCodec.isProRes && settings.format != .mov {
+          settings.format = .mov
+        }
       }
 
       Spacer().frame(height: 28)

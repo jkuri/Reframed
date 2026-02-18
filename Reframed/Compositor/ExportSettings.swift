@@ -205,13 +205,17 @@ enum ExportAudioBitrate: Sendable, CaseIterable, Identifiable {
 enum ExportCodec: Sendable, CaseIterable, Identifiable {
   case h265
   case h264
+  case proRes422
+  case proRes4444
 
   var id: Self { self }
 
   var label: String {
     switch self {
     case .h264: "H.264"
-    case .h265: "H.265 (HEVC)"
+    case .h265: "H.265"
+    case .proRes422: "ProRes 422"
+    case .proRes4444: "ProRes 4444"
     }
   }
 
@@ -219,6 +223,8 @@ enum ExportCodec: Sendable, CaseIterable, Identifiable {
     switch self {
     case .h264: "Widely compatible. Larger file size, works everywhere."
     case .h265: "Better compression. Smaller file size, same quality."
+    case .proRes422: "Professional editing codec. Large files, excellent quality."
+    case .proRes4444: "Highest quality with alpha channel. Very large files."
     }
   }
 
@@ -226,6 +232,8 @@ enum ExportCodec: Sendable, CaseIterable, Identifiable {
     switch self {
     case .h264: AVAssetExportPresetHighestQuality
     case .h265: AVAssetExportPresetHEVCHighestQuality
+    case .proRes422: AVAssetExportPresetAppleProRes422LPCM
+    case .proRes4444: AVAssetExportPresetAppleProRes4444LPCM
     }
   }
 
@@ -233,6 +241,15 @@ enum ExportCodec: Sendable, CaseIterable, Identifiable {
     switch self {
     case .h264: .h264
     case .h265: .hevc
+    case .proRes422: .proRes422
+    case .proRes4444: .proRes4444
+    }
+  }
+
+  var isProRes: Bool {
+    switch self {
+    case .proRes422, .proRes4444: true
+    default: false
     }
   }
 }
