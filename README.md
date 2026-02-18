@@ -46,7 +46,7 @@ Grab the latest `.dmg` from the [Releases](https://github.com/jkuri/reframed/rel
 ### Export
 
 - Export to MP4 or MOV format
-- H.264 and H.265 (HEVC) codec options
+- H.264, H.265 (HEVC), ProRes 422, and ProRes 4444 codec options
 - Configurable export FPS (24, 30, 40, 50, 60, or original)
 - Resolution options: Original, 4K, 1080p, 720p
 - Camera fullscreen regions rendered in export (webcam fills canvas during marked segments)
