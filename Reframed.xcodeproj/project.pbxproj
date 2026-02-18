@@ -145,6 +145,7 @@
 		A10000000000000000000049 /* IconButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000049 /* IconButton.swift */; };
 		A2000000000000000000002A /* EditorView+TransportBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000002A /* EditorView+TransportBar.swift */; };
 		A2000000000000000000002B /* ResizePopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000002B /* ResizePopover.swift */; };
+		A2000000000000000000002C /* ExportResultSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000002C /* ExportResultSheet.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -288,6 +289,7 @@
 		B10000000000000000000049 /* IconButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = IconButton.swift; sourceTree = "<group>"; };
 		B2000000000000000000002A /* EditorView+TransportBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EditorView+TransportBar.swift"; sourceTree = "<group>"; };
 		B2000000000000000000002B /* ResizePopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResizePopover.swift; sourceTree = "<group>"; };
+		B2000000000000000000002C /* ExportResultSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportResultSheet.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -567,6 +569,7 @@
 				B20000000000000000000020 /* PropertiesPanel+AnimationsTab.swift */,
 				B20000000000000000000021 /* PropertiesPanel+AudioTab.swift */,
 				B2000000000000000000002A /* EditorView+TransportBar.swift */,
+				B2000000000000000000002C /* ExportResultSheet.swift */,
 			);
 			path = Editor;
 			sourceTree = "<group>";
@@ -792,6 +795,7 @@
 				A10000000000000000000049 /* IconButton.swift in Sources */,
 				A2000000000000000000002A /* EditorView+TransportBar.swift in Sources */,
 				A2000000000000000000002B /* ResizePopover.swift in Sources */,
+				A2000000000000000000002C /* ExportResultSheet.swift in Sources */,
 			);
 		};
 /* End PBXSourcesBuildPhase section */

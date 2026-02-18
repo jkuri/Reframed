@@ -138,18 +138,11 @@ struct EditorView: View {
     } message: {
       Text("This will permanently delete the source recording files.")
     }
-    .alert(
-      editorState.exportResultIsError ? "Export Failed" : "Export Successful",
-      isPresented: $editorState.showExportResult
-    ) {
-      Button("OK") {}
-      if !editorState.exportResultIsError {
-        Button("Show in Finder") {
-          editorState.openExportedFile()
-        }
-      }
-    } message: {
-      Text(editorState.exportResultMessage)
+    .sheet(isPresented: $editorState.showExportResult) {
+      ExportResultSheet(
+        editorState: editorState,
+        isPresented: $editorState.showExportResult
+      )
     }
   }
 

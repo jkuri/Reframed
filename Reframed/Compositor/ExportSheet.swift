@@ -133,7 +133,7 @@ struct ExportSheet: View {
   }
 }
 
-private struct ExportSheetButtonStyle: ButtonStyle {
+struct ExportSheetButtonStyle: ButtonStyle {
   let isPrimary: Bool
   @Environment(\.isEnabled) private var isEnabled
 
