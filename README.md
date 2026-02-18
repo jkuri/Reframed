@@ -8,6 +8,12 @@ A powerful macOS screen recorder with built-in video editor. Capture your screen
 
 Grab the latest `.dmg` from the [Releases](https://github.com/jkuri/reframed/releases) page.
 
+Or install via Homebrew:
+
+```bash
+brew install --cask jkuri/reframed/reframed
+```
+
 ## Features
 
 ### Recording
