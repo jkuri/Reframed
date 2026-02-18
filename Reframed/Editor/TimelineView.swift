@@ -11,6 +11,7 @@ struct TimelineView: View {
   let onScrub: (CMTime) -> Void
   @Binding var timelineZoom: CGFloat
   @Binding var baseZoom: CGFloat
+  @Environment(\.colorScheme) private var colorScheme
 
   let sidebarWidth: CGFloat = 70
   private let rulerHeight: CGFloat = 32
@@ -67,6 +68,7 @@ struct TimelineView: View {
   }
 
   var body: some View {
+    let _ = colorScheme
     HStack(spacing: 0) {
       VStack(spacing: 8) {
         Color.clear.frame(height: rulerHeight)

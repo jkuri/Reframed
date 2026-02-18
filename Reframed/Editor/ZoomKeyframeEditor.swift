@@ -10,6 +10,7 @@ struct ZoomKeyframeEditor: View {
   let onAddKeyframe: (Double) -> Void
   let onRemoveRegion: (Int, Int) -> Void
   let onUpdateRegion: (Int, Int, [ZoomKeyframe]) -> Void
+  @Environment(\.colorScheme) private var colorScheme
 
   @State private var dragOffset: CGFloat = 0
   @State private var dragType: RegionDragType?

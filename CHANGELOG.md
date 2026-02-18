@@ -1,5 +1,29 @@
 # Changelog
 
+## [v0.9.0](https://github.com/jkuri/Reframed/compare/v0.8.2...v0.9.0) (2026-02-18)
+
+### Features
+
+- **timeline:** improve the timeline zoom and scrollbar ([5689f45](https://github.com/jkuri/Reframed/commit/5689f45fbf47ecc1f66e3f69c6152d95d6211095))
+- **audio:** cache denoised mic audio stream so it doesn't regenerates everytime you open the project, also use the cached stream when exporting ([97d1d22](https://github.com/jkuri/Reframed/commit/97d1d22012892090065532b4c70b2f7614749ca4))
+- **timeline:** add zoom to timeline ([76efdb7](https://github.com/jkuri/Reframed/commit/76efdb7e3bc38d2d48897ce3565a18f982b96553))
+- **history:** make popover to rollback to specific history snaphot ([b42cec8](https://github.com/jkuri/Reframed/commit/b42cec8d3ca6c75fb988ab64ce2aff0c5e75d966))
+- **editor:** save history of actions done on editor, undo/redo implemented ([70f5ee3](https://github.com/jkuri/Reframed/commit/70f5ee3412ceecafaa1b89a17f42a752f270b89a))
+
+### Bug Fixes
+
+- **timeline:** improve handlers for resize/drag on all tracks ([ed3086a](https://github.com/jkuri/Reframed/commit/ed3086a8a784e5acd23243c646702dd835640179))
+- **audio:** fix denoising progress tracker to yield current right current status ([73f37ed](https://github.com/jkuri/Reframed/commit/73f37ed86d4ab33cb12c7023744959f442aa6d49))
+
+### Chores
+
+- **claude:** add swiftui and swift concurrency skills for claude code ([d6951a0](https://github.com/jkuri/Reframed/commit/d6951a0aeaf32aa7fb48f57e363cf66f1f7e6eeb))
+- **export:** change the order of audio bitrate options ([3faca95](https://github.com/jkuri/Reframed/commit/3faca95d5f92e4b5dd91588bbc70365e28e6b41d))
+
+### Build
+
+- **Makefile:** make dmg now creates universal  release for both Intel x86 and Apple Silicon ([40d6d6d](https://github.com/jkuri/Reframed/commit/40d6d6d9c7c6e61821ca1815be1c27e0c93160ba))
+
 ## [v0.8.2](https://github.com/jkuri/Reframed/compare/v0.8.1...v0.8.2) (2026-02-17)
 
 ### Features
