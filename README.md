@@ -34,7 +34,6 @@ Grab the latest `.dmg` from the [Releases](https://github.com/jkuri/reframed/rel
 - Webcam PiP positioning (corner presets or drag to reposition)
 - Webcam PiP customizable size, corner radius, and border
 - Cursor overlay with multiple styles, adjustable size, and click highlights
-- Zoom & pan with manual keyframes or auto-detection based on cursor dwell time
 - Audio region editing for system audio and microphone tracks
 - Microphone noise reduction powered by [RNNoise](https://github.com/xiph/rnnoise) (neural network spectral denoiser) with adjustable intensity
 - Transport bar with precise timestamp display (centisecond accuracy)
@@ -43,14 +42,28 @@ Grab the latest `.dmg` from the [Releases](https://github.com/jkuri/reframed/rel
 - Live preview of all effects before exporting
 - Multiple editor windows can be open simultaneously
 
+### Cursor Metadata
+
+During recording, cursor position and click data is captured at 120 Hz (8 ms sampling interval) independently from the video frame rate. Each sample stores the normalized cursor position (0.0–1.0 relative to the capture area) and the mouse button state. Click events and keystrokes are recorded separately with precise timestamps. All metadata is saved as `cursor-metadata.json` inside the `.frm` project bundle and can be used in the editor for cursor overlay rendering and zoom automation.
+
+### Zoom & Pan
+
+- **Manual keyframes** — add zoom keyframes on the timeline with configurable zoom level and center point; interpolation uses smooth Hermite easing for natural transitions
+- **Auto-detection** — automatically generates zoom keyframes from cursor click clusters; clicks within a configurable dwell threshold are grouped into regions, and zoom-in/zoom-out transitions are created around each cluster
+- **Cursor-follow mode** — when enabled, the zoom viewport tracks the cursor position in real time so the area of interest stays centered
+- **Configurable parameters** — zoom level (multiplier), transition duration, dwell threshold, and hold duration
+- **Full export integration** — zoom is rendered at export time; both cursor overlay and click highlights are correctly scaled within zoomed regions
+
 ### Export
 
-- Export to MP4 or MOV format
+- Export to MP4, MOV, or GIF format
 - H.264, H.265 (HEVC), ProRes 422, and ProRes 4444 codec options
+- GIF export powered by [gifski](https://gif.ski) with quality presets (Low, Medium, High, Maximum) and max 30 FPS
 - Configurable export FPS (24, 30, 40, 50, 60, or original)
 - Resolution options: Original, 4K, 1080p, 720p
+- Normal and parallel (multi-core) rendering modes
 - Camera fullscreen regions rendered in export (webcam fills canvas during marked segments)
-- Progress bar in the top bar during export
+- Progress bar with ETA in the top bar during export
 
 ### Project Management
 
