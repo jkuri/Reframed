@@ -100,12 +100,25 @@ final class ConfigService {
   }
 
   private func load() {
-    guard let raw = try? Data(contentsOf: fileURL),
-      let decoded = try? JSONDecoder().decode(ConfigData.self, from: raw)
+    guard let saved = try? Data(contentsOf: fileURL),
+      let savedDict = try? JSONSerialization.jsonObject(with: saved) as? [String: Any]
     else {
       logger.info("No config found, using defaults")
       return
     }
+
+    let encoder = JSONEncoder()
+    encoder.outputFormatting = .sortedKeys
+    guard let defaultsData = try? encoder.encode(ConfigData()),
+      var defaultsDict = try? JSONSerialization.jsonObject(with: defaultsData) as? [String: Any]
+    else { return }
+
+    defaultsDict.merge(savedDict) { _, saved in saved }
+
+    guard let merged = try? JSONSerialization.data(withJSONObject: defaultsDict),
+      let decoded = try? JSONDecoder().decode(ConfigData.self, from: merged)
+    else { return }
+
     data = decoded
   }
 
