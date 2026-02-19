@@ -55,7 +55,7 @@ final class VideoTrackWriter: @unchecked Sendable {
         ] as [String: Any],
         AVVideoCompressionPropertiesKey: [
           AVVideoAverageBitRateKey: width * height * 5,
-          AVVideoProfileLevelKey: AVVideoProfileLevelH264MainAutoLevel,
+          AVVideoProfileLevelKey: AVVideoProfileLevelH264HighAutoLevel,
           AVVideoExpectedSourceFrameRateKey: fps,
           AVVideoAllowFrameReorderingKey: false,
         ] as [String: Any],

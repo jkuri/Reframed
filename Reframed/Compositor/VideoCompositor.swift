@@ -423,7 +423,7 @@ enum VideoCompositor {
     let videoTracks = try await asset.loadTracks(withMediaType: .video)
     nonisolated(unsafe) let videoOutput = AVAssetReaderVideoCompositionOutput(
       videoTracks: videoTracks,
-      videoSettings: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
+      videoSettings: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_64RGBAHalf]
     )
     videoOutput.videoComposition = videoComposition
     reader.add(videoOutput)
@@ -442,25 +442,36 @@ enum VideoCompositor {
     nonisolated(unsafe) let writer = try AVAssetWriter(url: url, fileType: fileType)
 
     let pixels = Double(renderSize.width * renderSize.height)
+    let colorProperties: [String: Any] = [
+      AVVideoColorPrimariesKey: AVVideoColorPrimaries_ITU_R_709_2,
+      AVVideoTransferFunctionKey: AVVideoTransferFunction_ITU_R_709_2,
+      AVVideoYCbCrMatrixKey: AVVideoYCbCrMatrix_ITU_R_709_2,
+    ]
     let videoSettings: [String: Any]
     if codec == .proRes4444 || codec == .proRes422 {
       videoSettings = [
         AVVideoCodecKey: codec,
         AVVideoWidthKey: Int(renderSize.width),
         AVVideoHeightKey: Int(renderSize.height),
+        AVVideoColorPropertiesKey: colorProperties,
       ]
     } else {
-      var compressionProperties: [String: Any]
+      var compressionProperties: [String: Any] = [
+        AVVideoMaxKeyFrameIntervalKey: exportFPS,
+        AVVideoExpectedSourceFrameRateKey: exportFPS,
+      ]
       if codec == .hevc {
-        compressionProperties = [AVVideoAverageBitRateKey: pixels * exportFPS * 0.07]
+        compressionProperties[AVVideoAverageBitRateKey] = pixels * exportFPS * 0.07
+        compressionProperties[AVVideoProfileLevelKey] = kVTProfileLevel_HEVC_Main10_AutoLevel
       } else {
-        compressionProperties = [AVVideoAverageBitRateKey: pixels * exportFPS * 0.1]
+        compressionProperties[AVVideoAverageBitRateKey] = pixels * exportFPS * 0.1
+        compressionProperties[AVVideoProfileLevelKey] = AVVideoProfileLevelH264HighAutoLevel
       }
-      compressionProperties[AVVideoMaxKeyFrameIntervalKey] = exportFPS
       videoSettings = [
         AVVideoCodecKey: codec,
         AVVideoWidthKey: Int(renderSize.width),
         AVVideoHeightKey: Int(renderSize.height),
+        AVVideoColorPropertiesKey: colorProperties,
         AVVideoCompressionPropertiesKey: compressionProperties,
       ]
     }
@@ -729,7 +740,7 @@ enum VideoCompositor {
 
     let screenOutput = AVAssetReaderTrackOutput(
       track: screenTrack,
-      outputSettings: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
+      outputSettings: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_64RGBAHalf]
     )
     screenOutput.alwaysCopiesSampleData = false
     reader.add(screenOutput)
@@ -741,7 +752,7 @@ enum VideoCompositor {
     {
       let output = AVAssetReaderTrackOutput(
         track: webcamTrack,
-        outputSettings: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
+        outputSettings: [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_64RGBAHalf]
       )
       output.alwaysCopiesSampleData = false
       reader.add(output)
@@ -768,32 +779,38 @@ enum VideoCompositor {
     let assetWriter = try AVAssetWriter(outputURL: outputURL, fileType: fileType)
 
     let videoCodec: AVVideoCodecType = codec.videoCodecType
+    let parallelColorProperties: [String: Any] = [
+      AVVideoColorPrimariesKey: AVVideoColorPrimaries_ITU_R_709_2,
+      AVVideoTransferFunctionKey: AVVideoTransferFunction_ITU_R_709_2,
+      AVVideoYCbCrMatrixKey: AVVideoYCbCrMatrix_ITU_R_709_2,
+    ]
     let videoOutputSettings: [String: Any]
     if codec.isProRes {
       videoOutputSettings = [
         AVVideoCodecKey: videoCodec,
         AVVideoWidthKey: Int(renderSize.width),
         AVVideoHeightKey: Int(renderSize.height),
+        AVVideoColorPropertiesKey: parallelColorProperties,
       ]
     } else {
       let pixels = Double(renderSize.width * renderSize.height)
       let exportFPS = Double(fps)
-      let bitRate: Double
-      if codec == .h265 {
-        bitRate = pixels * exportFPS * 0.07
-      } else {
-        bitRate = pixels * exportFPS * 0.1
-      }
-      let compressionProperties: [String: Any] = [
-        AVVideoAverageBitRateKey: bitRate,
-        AVVideoAllowFrameReorderingKey: false,
+      var compressionProperties: [String: Any] = [
         AVVideoExpectedSourceFrameRateKey: fps,
         AVVideoMaxKeyFrameIntervalKey: fps,
       ]
+      if codec == .h265 {
+        compressionProperties[AVVideoAverageBitRateKey] = pixels * exportFPS * 0.07
+        compressionProperties[AVVideoProfileLevelKey] = kVTProfileLevel_HEVC_Main10_AutoLevel
+      } else {
+        compressionProperties[AVVideoAverageBitRateKey] = pixels * exportFPS * 0.1
+        compressionProperties[AVVideoProfileLevelKey] = AVVideoProfileLevelH264HighAutoLevel
+      }
       videoOutputSettings = [
         AVVideoCodecKey: videoCodec,
         AVVideoWidthKey: Int(renderSize.width),
         AVVideoHeightKey: Int(renderSize.height),
+        AVVideoColorPropertiesKey: parallelColorProperties,
         AVVideoCompressionPropertiesKey: compressionProperties,
       ]
     }
@@ -806,7 +823,7 @@ enum VideoCompositor {
     let adaptor = AVAssetWriterInputPixelBufferAdaptor(
       assetWriterInput: videoInput,
       sourcePixelBufferAttributes: [
-        kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA,
+        kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_64RGBAHalf,
         kCVPixelBufferWidthKey as String: Int(renderSize.width),
         kCVPixelBufferHeightKey as String: Int(renderSize.height),
       ]
@@ -837,14 +854,14 @@ enum VideoCompositor {
     let coreCount = ProcessInfo.processInfo.activeProcessorCount
     let batchSize = max(coreCount * 3, 24)
 
-    let bytesPerFrame = Int(renderSize.width) * Int(renderSize.height) * 4
+    let bytesPerFrame = Int(renderSize.width) * Int(renderSize.height) * 8
     let maxMemoryBytes = 1_500_000_000
     let maxInFlight = max(batchSize * 3, min(maxMemoryBytes / max(bytesPerFrame, 1), 120))
 
     var poolRef: CVPixelBufferPool?
     let poolAttrs: NSDictionary = [kCVPixelBufferPoolMinimumBufferCountKey: maxInFlight + 4]
     let pbAttrs: NSDictionary = [
-      kCVPixelBufferPixelFormatTypeKey: kCVPixelFormatType_32BGRA,
+      kCVPixelBufferPixelFormatTypeKey: kCVPixelFormatType_64RGBAHalf,
       kCVPixelBufferWidthKey: Int(renderSize.width),
       kCVPixelBufferHeightKey: Int(renderSize.height),
     ]

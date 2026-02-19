@@ -3,11 +3,11 @@ import CoreVideo
 
 final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Sendable {
   var sourcePixelBufferAttributes: [String: any Sendable]? {
-    [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
+    [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_64RGBAHalf]
   }
 
   var requiredPixelBufferAttributesForRenderContext: [String: any Sendable] {
-    [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_32BGRA]
+    [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_64RGBAHalf]
   }
 
   func renderContextChanged(_ newRenderContext: AVVideoCompositionRenderContext) {}
@@ -63,16 +63,31 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
       if let wb = webcamBuffer { CVPixelBufferUnlockBaseAddress(wb, .readOnly) }
     }
 
-    let colorSpace = CGColorSpaceCreateDeviceRGB()
+    let is16bit = CVPixelBufferGetPixelFormatType(outputBuffer) == kCVPixelFormatType_64RGBAHalf
+    let colorSpace: CGColorSpace
+    let bitsPerComponent: Int
+    let bitmapInfo: UInt32
+    if is16bit {
+      colorSpace = CGColorSpace(name: CGColorSpace.sRGB)!
+      bitsPerComponent = 16
+      bitmapInfo =
+        CGBitmapInfo.floatComponents.rawValue | CGBitmapInfo.byteOrder16Little.rawValue
+        | CGImageAlphaInfo.premultipliedLast.rawValue
+    } else {
+      colorSpace = CGColorSpaceCreateDeviceRGB()
+      bitsPerComponent = 8
+      bitmapInfo =
+        CGBitmapInfo.byteOrder32Little.rawValue | CGImageAlphaInfo.premultipliedFirst.rawValue
+    }
     guard
       let context = CGContext(
         data: CVPixelBufferGetBaseAddress(outputBuffer),
         width: width,
         height: height,
-        bitsPerComponent: 8,
+        bitsPerComponent: bitsPerComponent,
         bytesPerRow: CVPixelBufferGetBytesPerRow(outputBuffer),
         space: colorSpace,
-        bitmapInfo: CGBitmapInfo.byteOrder32Little.rawValue | CGImageAlphaInfo.premultipliedFirst.rawValue
+        bitmapInfo: bitmapInfo
       )
     else {
       return
@@ -464,15 +479,32 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
     let bytesPerRow = CVPixelBufferGetBytesPerRow(pixelBuffer)
     guard let baseAddress = CVPixelBufferGetBaseAddress(pixelBuffer) else { return nil }
 
+    let is16bit = CVPixelBufferGetPixelFormatType(pixelBuffer) == kCVPixelFormatType_64RGBAHalf
+    let bitsPerComponent: Int
+    let bitmapInfo: UInt32
+    let imageColorSpace: CGColorSpace
+    if is16bit {
+      bitsPerComponent = 16
+      bitmapInfo =
+        CGBitmapInfo.floatComponents.rawValue | CGBitmapInfo.byteOrder16Little.rawValue
+        | CGImageAlphaInfo.premultipliedLast.rawValue
+      imageColorSpace = CGColorSpace(name: CGColorSpace.sRGB)!
+    } else {
+      bitsPerComponent = 8
+      bitmapInfo =
+        CGBitmapInfo.byteOrder32Little.rawValue | CGImageAlphaInfo.premultipliedFirst.rawValue
+      imageColorSpace = colorSpace
+    }
+
     guard
       let ctx = CGContext(
         data: baseAddress,
         width: width,
         height: height,
-        bitsPerComponent: 8,
+        bitsPerComponent: bitsPerComponent,
         bytesPerRow: bytesPerRow,
-        space: colorSpace,
-        bitmapInfo: CGBitmapInfo.byteOrder32Little.rawValue | CGImageAlphaInfo.premultipliedFirst.rawValue
+        space: imageColorSpace,
+        bitmapInfo: bitmapInfo
       )
     else { return nil }
 
