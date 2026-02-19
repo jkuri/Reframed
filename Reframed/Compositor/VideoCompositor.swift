@@ -450,12 +450,13 @@ enum VideoCompositor {
         AVVideoHeightKey: Int(renderSize.height),
       ]
     } else {
-      let compressionProperties: [String: Any]
+      var compressionProperties: [String: Any]
       if codec == .hevc {
-        compressionProperties = [AVVideoAverageBitRateKey: pixels * exportFPS * 0.04]
+        compressionProperties = [AVVideoAverageBitRateKey: pixels * exportFPS * 0.07]
       } else {
-        compressionProperties = [AVVideoAverageBitRateKey: pixels * exportFPS * 0.06]
+        compressionProperties = [AVVideoAverageBitRateKey: pixels * exportFPS * 0.1]
       }
+      compressionProperties[AVVideoMaxKeyFrameIntervalKey] = exportFPS
       videoSettings = [
         AVVideoCodecKey: codec,
         AVVideoWidthKey: Int(renderSize.width),
@@ -779,19 +780,16 @@ enum VideoCompositor {
       let exportFPS = Double(fps)
       let bitRate: Double
       if codec == .h265 {
-        bitRate = pixels * exportFPS * 0.04
+        bitRate = pixels * exportFPS * 0.07
       } else {
-        bitRate = pixels * exportFPS * 0.06
+        bitRate = pixels * exportFPS * 0.1
       }
-      var compressionProperties: [String: Any] = [
+      let compressionProperties: [String: Any] = [
         AVVideoAverageBitRateKey: bitRate,
         AVVideoAllowFrameReorderingKey: false,
         AVVideoExpectedSourceFrameRateKey: fps,
-        kVTCompressionPropertyKey_RealTime as String: true,
+        AVVideoMaxKeyFrameIntervalKey: fps,
       ]
-      if codec == .h265 {
-        compressionProperties[kVTCompressionPropertyKey_PrioritizeEncodingSpeedOverQuality as String] = true
-      }
       videoOutputSettings = [
         AVVideoCodecKey: videoCodec,
         AVVideoWidthKey: Int(renderSize.width),

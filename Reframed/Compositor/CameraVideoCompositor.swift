@@ -78,6 +78,8 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
       return
     }
 
+    context.interpolationQuality = .high
+
     let canvasRect = CGRect(x: 0, y: 0, width: width, height: height)
 
     drawBackground(in: context, rect: canvasRect, instruction: instruction, colorSpace: colorSpace)
@@ -152,7 +154,6 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
         if instruction.videoCornerRadius <= 0 {
           context.clip(to: videoRect)
         }
-        context.interpolationQuality = .high
         context.draw(img, in: drawRect)
       } else {
         context.draw(img, in: videoRect)
