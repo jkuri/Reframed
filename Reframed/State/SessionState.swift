@@ -27,6 +27,12 @@ final class SessionState {
 
   weak var statusItemButton: NSStatusBarButton?
 
+  init() {
+    if ConfigService.shared.isMicrophoneOn, options.selectedMicrophone != nil {
+      isMicrophoneOn = true
+    }
+  }
+
   private let logger = Logger(label: "eu.jankuri.reframed.session")
   private var selectionCoordinator: SelectionCoordinator?
   private var windowSelectionCoordinator: WindowSelectionCoordinator?
@@ -60,6 +66,7 @@ final class SessionState {
   func toggleMicrophone() {
     guard options.selectedMicrophone != nil else { return }
     isMicrophoneOn.toggle()
+    ConfigService.shared.isMicrophoneOn = isMicrophoneOn
   }
 
   private func startCameraPreview() {
@@ -460,6 +467,7 @@ final class SessionState {
       captureTarget = nil
       captureMode = .none
       stopCameraPreview()
+      isCameraOn = false
       transition(to: .idle)
       showToolbar()
       return
@@ -468,6 +476,7 @@ final class SessionState {
     recordingCoordinator = nil
     captureTarget = nil
     stopCameraPreview()
+    isCameraOn = false
     devicePreviewWindow?.close()
     devicePreviewWindow = nil
     deviceCapture?.stop()

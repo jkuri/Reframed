@@ -70,6 +70,11 @@ final class ConfigService {
     set { data.dimOuterArea = newValue; save() }
   }
 
+  var isMicrophoneOn: Bool {
+    get { data.isMicrophoneOn }
+    set { data.isMicrophoneOn = newValue; save() }
+  }
+
   var appearance: String {
     get { data.appearance }
     set { data.appearance = newValue; save(); applyAppearance() }
@@ -144,6 +149,7 @@ private struct ConfigData: Codable {
   var projectFolder: String = "~/Reframed"
   var retinaCapture: Bool = false
   var dimOuterArea: Bool = true
+  var isMicrophoneOn: Bool = false
   var appearance: String = "system"
   var shortcuts: [String: KeyboardShortcut] = [:]
 }
