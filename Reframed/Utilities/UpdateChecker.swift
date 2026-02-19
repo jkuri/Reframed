@@ -24,8 +24,6 @@ enum UpdateStatus: Sendable {
 
 @MainActor
 enum UpdateChecker {
-  private static let repo = "jkuri/Reframed"
-
   static var currentVersion: String {
     Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.0.0"
   }
@@ -34,8 +32,8 @@ enum UpdateChecker {
     Bundle.main.object(forInfoDictionaryKey: "CFBundleVersion") as? String ?? "0"
   }
 
-  static func checkForUpdates() async -> UpdateStatus {
-    let urlString = "https://api.github.com/repos/\(repo)/releases/latest"
+  nonisolated static func checkForUpdates() async -> UpdateStatus {
+    let urlString = "https://api.github.com/repos/jkuri/Reframed/releases/latest"
     guard let url = URL(string: urlString) else {
       return .error("Invalid URL")
     }
@@ -61,8 +59,9 @@ enum UpdateChecker {
 
       let release = try JSONDecoder().decode(GitHubRelease.self, from: data)
       let latestVersion = release.tagName.trimmingCharacters(in: CharacterSet(charactersIn: "vV"))
+      let current = await currentVersion
 
-      if compareVersions(latestVersion, isNewerThan: currentVersion) {
+      if compareVersions(latestVersion, isNewerThan: current) {
         return .available(version: latestVersion, url: release.htmlUrl)
       } else {
         return .upToDate
@@ -74,7 +73,7 @@ enum UpdateChecker {
     }
   }
 
-  private static func compareVersions(_ latest: String, isNewerThan current: String) -> Bool {
+  nonisolated private static func compareVersions(_ latest: String, isNewerThan current: String) -> Bool {
     let latestParts = latest.split(separator: ".").compactMap { Int($0) }
     let currentParts = current.split(separator: ".").compactMap { Int($0) }
 

@@ -91,8 +91,14 @@ struct EditorView: View {
           .padding(.bottom, 12)
       }
     }
-    .onTapGesture {
-      NSApp.keyWindow?.makeFirstResponder(nil)
+    .background {
+      Color.clear
+        .contentShape(Rectangle())
+        .onTapGesture {
+          DispatchQueue.main.async {
+            NSApp.keyWindow?.makeFirstResponder(nil)
+          }
+        }
     }
     .ignoresSafeArea(edges: .top)
     .frame(minWidth: 1200, minHeight: 800)
