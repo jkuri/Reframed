@@ -164,7 +164,7 @@ struct PropertiesPanel: View {
           infoRow("Capture Mode", value: captureModeLabel(mode))
         }
 
-        infoRow("File Size", value: formattedFileSize(url: editorState.result.screenVideoURL))
+        infoRow("Project Size", value: formattedProjectSize())
 
         if let ws = editorState.result.webcamSize {
           infoRow("Webcam", value: "\(Int(ws.width))x\(Int(ws.height))")
@@ -199,13 +199,19 @@ struct PropertiesPanel: View {
     }
   }
 
-  private func formattedFileSize(url: URL) -> String {
-    guard let attrs = try? FileManager.default.attributesOfItem(atPath: url.path),
-      let size = attrs[.size] as? Int64
-    else {
+  private func formattedProjectSize() -> String {
+    guard let bundleURL = editorState.project?.bundleURL else { return "—" }
+    let fm = FileManager.default
+    guard let enumerator = fm.enumerator(at: bundleURL, includingPropertiesForKeys: [.fileSizeKey], options: [.skipsHiddenFiles]) else {
       return "—"
     }
-    return ByteCountFormatter.string(fromByteCount: size, countStyle: .file)
+    var total: Int64 = 0
+    for case let fileURL as URL in enumerator {
+      if let size = (try? fileURL.resourceValues(forKeys: [.fileSizeKey]))?.fileSize {
+        total += Int64(size)
+      }
+    }
+    return ByteCountFormatter.string(fromByteCount: total, countStyle: .file)
   }
 
   private func formattedDate(_ date: Date) -> String {
@@ -222,7 +228,7 @@ struct PropertiesPanel: View {
         .foregroundStyle(ReframedColors.dimLabel)
       Spacer()
       Text(value)
-        .font(.system(size: 12, design: .monospaced))
+        .font(.system(size: 12))
         .foregroundStyle(ReframedColors.secondaryText)
     }
   }
