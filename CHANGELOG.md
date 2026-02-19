@@ -1,5 +1,16 @@
 # Changelog
 
+## [v0.9.2](https://github.com/jkuri/Reframed/compare/v0.9.1...v0.9.2) (2026-02-19)
+
+### Features
+
+- **capture:** adjusted video export bitrates and keyframe intervals, removed specific compression properties, and set global high interpolation quality for camera video rendering. ([e4140ef](https://github.com/jkuri/Reframed/commit/e4140ef2c016ee8d86dcd94225fb5667322ed984))
+- **capture:** enhance capturing screen with options like superscale, codec selection and some other stuff ([f736879](https://github.com/jkuri/Reframed/commit/f736879c4b2fb6fc6fc80ba28a7e70748598f310))
+
+### Chores
+
+- **icon:** new AppIcon ([15875a2](https://github.com/jkuri/Reframed/commit/15875a28e22e0f23a0ceaca4730f1b9495da08f3))
+
 ## [v0.9.1](https://github.com/jkuri/Reframed/compare/v0.9.0...v0.9.1) (2026-02-18)
 
 ### Features
