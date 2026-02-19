@@ -73,6 +73,7 @@ extension EditorView {
     .padding(.horizontal, 8)
     .padding(.vertical, 4)
     .background(ReframedColors.panelBackground)
-    .clipShape(RoundedRectangle(cornerRadius: 8))
+    .clipShape(RoundedRectangle(cornerRadius: 10))
+    .overlay(RoundedRectangle(cornerRadius: 10).stroke(ReframedColors.divider, lineWidth: 1))
   }
 }

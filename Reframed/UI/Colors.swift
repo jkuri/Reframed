@@ -105,7 +105,7 @@ enum ReframedColors {
   }
 
   static var divider: Color {
-    isDark ? Color.white.opacity(0.15) : Color.black.opacity(0.12)
+    isDark ? Color.white.opacity(0.22) : Color.black.opacity(0.12)
   }
 
   static var subtleBorder: Color {

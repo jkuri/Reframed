@@ -59,18 +59,22 @@ struct EditorView: View {
           onOpenFolder: { editorState.openProjectFolder() },
           onDelete: { editorState.showDeleteConfirmation = true }
         )
-        .padding(.bottom, 4)
+        .padding(.horizontal, 12)
+        .padding(.bottom, 2)
 
-        HStack(spacing: 6) {
+        HStack(spacing: 8) {
           mainContent
             .background(ReframedColors.panelBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .overlay(RoundedRectangle(cornerRadius: 10).stroke(ReframedColors.divider, lineWidth: 1))
           editorSidebar
             .background(ReframedColors.panelBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .overlay(RoundedRectangle(cornerRadius: 10).stroke(ReframedColors.divider, lineWidth: 1))
           PropertiesPanel(editorState: editorState, selectedTab: selectedTab)
             .background(ReframedColors.panelBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 8))
+            .clipShape(RoundedRectangle(cornerRadius: 10))
+            .overlay(RoundedRectangle(cornerRadius: 10).stroke(ReframedColors.divider, lineWidth: 1))
         }
         .padding(.horizontal, 12)
         .frame(maxHeight: .infinity)
@@ -78,16 +82,17 @@ struct EditorView: View {
 
       transportBar
         .padding(.horizontal, 12)
-        .padding(.top, 8)
+        .padding(.top, 10)
         .padding(.bottom, editorState.isPreviewMode ? 12 : 0)
 
       if !editorState.isPreviewMode {
         timeline
           .fixedSize(horizontal: false, vertical: true)
           .background(ReframedColors.panelBackground)
-          .clipShape(RoundedRectangle(cornerRadius: 8))
+          .clipShape(RoundedRectangle(cornerRadius: 10))
+          .overlay(RoundedRectangle(cornerRadius: 10).stroke(ReframedColors.divider, lineWidth: 1))
           .padding(.horizontal, 12)
-          .padding(.top, 8)
+          .padding(.top, 10)
           .padding(.bottom, 12)
       }
     }
@@ -102,7 +107,7 @@ struct EditorView: View {
     }
     .ignoresSafeArea(edges: .top)
     .frame(minWidth: 1200, minHeight: 800)
-    .background(ReframedColors.selectedBackground.opacity(0.05))
+    .background(ReframedColors.panelBackground)
     .task {
       await editorState.setup()
       didFinishSetup = true
