@@ -56,7 +56,7 @@ extension SettingsView {
       )
 
       Text(
-        "Doubles capture resolution for better zoom quality. Text may appear softer due to upscaling beyond the display's native resolution. Increases file size."
+        "Doubles capture resolution for better zoom quality. Only enable this on retina displays, otherwise it will result in blurry video."
       )
       .font(.system(size: 11))
       .foregroundStyle(ReframedColors.secondaryText)
