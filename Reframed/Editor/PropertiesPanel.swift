@@ -157,7 +157,14 @@ struct PropertiesPanel: View {
       VStack(spacing: Layout.compactSpacing) {
         infoRow("Resolution", value: "\(Int(editorState.result.screenSize.width))x\(Int(editorState.result.screenSize.height))")
         infoRow("FPS", value: "\(editorState.result.fps)")
+        infoRow("Codec", value: codecLabel(editorState.result.captureQuality))
         infoRow("Duration", value: formatDuration(editorState.duration))
+
+        if let mode = editorState.project?.metadata.captureMode, mode != .none {
+          infoRow("Capture Mode", value: captureModeLabel(mode))
+        }
+
+        infoRow("File Size", value: formattedFileSize(url: editorState.result.screenVideoURL))
 
         if let ws = editorState.result.webcamSize {
           infoRow("Webcam", value: "\(Int(ws.width))x\(Int(ws.height))")
@@ -166,8 +173,46 @@ struct PropertiesPanel: View {
         infoRow("System Audio", value: editorState.result.systemAudioURL != nil ? "Yes" : "No")
         infoRow("Microphone", value: editorState.result.microphoneAudioURL != nil ? "Yes" : "No")
         infoRow("Cursor Data", value: editorState.cursorMetadataProvider != nil ? "Yes" : "No")
+
+        if let date = editorState.project?.metadata.createdAt {
+          infoRow("Recorded", value: formattedDate(date))
+        }
       }
     }
+  }
+
+  private func codecLabel(_ quality: CaptureQuality) -> String {
+    switch quality {
+    case .standard: "H.264"
+    case .high: "ProRes 422"
+    case .veryHigh: "ProRes 4444"
+    }
+  }
+
+  private func captureModeLabel(_ mode: CaptureMode) -> String {
+    switch mode {
+    case .none: "None"
+    case .entireScreen: "Entire Screen"
+    case .selectedWindow: "Window"
+    case .selectedArea: "Area"
+    case .device: "iOS Device"
+    }
+  }
+
+  private func formattedFileSize(url: URL) -> String {
+    guard let attrs = try? FileManager.default.attributesOfItem(atPath: url.path),
+      let size = attrs[.size] as? Int64
+    else {
+      return "—"
+    }
+    return ByteCountFormatter.string(fromByteCount: size, countStyle: .file)
+  }
+
+  private func formattedDate(_ date: Date) -> String {
+    let formatter = DateFormatter()
+    formatter.dateStyle = .medium
+    formatter.timeStyle = .short
+    return formatter.string(from: date)
   }
 
   private func infoRow(_ label: String, value: String) -> some View {

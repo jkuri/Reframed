@@ -171,7 +171,7 @@ struct EditorView: View {
                 in: RoundedRectangle(cornerRadius: 8)
               )
               .contentShape(Rectangle())
-              .opacity(disabled ? 0.35 : 1)
+              .opacity(disabled ? 0.45 : 1)
             }
             .buttonStyle(.plain)
             .hoverEffect(id: "tab.\(tab.rawValue)")

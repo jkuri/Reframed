@@ -26,6 +26,7 @@ actor RecordingCoordinator {
   private var webcamPixelW: Int = 0
   private var webcamPixelH: Int = 0
   private var recordingFPS: Int = 60
+  private var captureQualityUsed: CaptureQuality = .standard
 
   func startRecording(
     target: CaptureTarget,
@@ -35,7 +36,9 @@ actor RecordingCoordinator {
     cameraDeviceId: String? = nil,
     cameraResolution: String = "1080p",
     existingWebcam: (WebcamCapture, VerifiedCamera)? = nil,
-    cursorMetadataRecorder: CursorMetadataRecorder? = nil
+    cursorMetadataRecorder: CursorMetadataRecorder? = nil,
+    captureQuality: CaptureQuality = .standard,
+    retinaCapture: Bool = false
   ) async throws -> Date {
     var verifiedCam: (capture: WebcamCapture, info: VerifiedCamera)?
     var verifiedMic: MicrophoneCapture?
@@ -97,7 +100,12 @@ actor RecordingCoordinator {
 
     pixelW = Int(round(sourceRect.width * displayScale)) & ~1
     pixelH = Int(round(sourceRect.height * displayScale)) & ~1
+    if retinaCapture {
+      pixelW = (pixelW * 2) & ~1
+      pixelH = (pixelH * 2) & ~1
+    }
     recordingFPS = fps
+    captureQualityUsed = captureQuality
 
     var streamCount = 1
     if verifiedMic != nil { streamCount += 1 }
@@ -108,11 +116,12 @@ actor RecordingCoordinator {
     self.recordingClock = clock
 
     let vidWriter = try VideoTrackWriter(
-      outputURL: FileManager.default.tempVideoURL(),
+      outputURL: FileManager.default.tempVideoURL(captureQuality: captureQuality),
       width: pixelW,
       height: pixelH,
       fps: fps,
-      clock: clock
+      clock: clock,
+      captureQuality: captureQuality
     )
     self.videoWriter = vidWriter
 
@@ -136,14 +145,15 @@ actor RecordingCoordinator {
       self.cursorMetadataRecorder = cursorMetadataRecorder
     }
 
-    let session = ScreenCaptureSession(videoWriter: vidWriter)
+    let session = ScreenCaptureSession(videoWriter: vidWriter, captureQuality: captureQuality)
     do {
       try await session.start(
         target: target,
         display: display,
         displayScale: displayScale,
         fps: fps,
-        hideCursor: cursorMetadataRecorder != nil
+        hideCursor: cursorMetadataRecorder != nil,
+        retinaCapture: retinaCapture
       )
     } catch {
       verifiedCam?.capture.stop()
@@ -217,7 +227,9 @@ actor RecordingCoordinator {
     microphoneDeviceId: String? = nil,
     cameraDeviceId: String? = nil,
     cameraResolution: String = "1080p",
-    existingWebcam: (WebcamCapture, VerifiedCamera)? = nil
+    existingWebcam: (WebcamCapture, VerifiedCamera)? = nil,
+    captureQuality: CaptureQuality = .standard,
+    retinaCapture: Bool = false
   ) async throws -> Date {
     var verifiedCam: (capture: WebcamCapture, info: VerifiedCamera)?
     var verifiedMic: MicrophoneCapture?
@@ -271,10 +283,15 @@ actor RecordingCoordinator {
       pW = 1920
       pH = 1080
     }
+    if retinaCapture {
+      pW = (pW * 2) & ~1
+      pH = (pH * 2) & ~1
+    }
 
     pixelW = pW
     pixelH = pH
     recordingFPS = fps
+    captureQualityUsed = captureQuality
 
     var streamCount = 1
     if verifiedMic != nil { streamCount += 1 }
@@ -286,11 +303,12 @@ actor RecordingCoordinator {
     self.recordingClock = clock
 
     let vidWriter = try VideoTrackWriter(
-      outputURL: FileManager.default.tempVideoURL(),
+      outputURL: FileManager.default.tempVideoURL(captureQuality: captureQuality),
       width: pW,
       height: pH,
       fps: fps,
-      clock: clock
+      clock: clock,
+      captureQuality: captureQuality
     )
     self.videoWriter = vidWriter
     deviceCapture.attachVideoWriter(vidWriter)
@@ -473,7 +491,8 @@ actor RecordingCoordinator {
       cursorMetadataURL: cursorMetadataURL,
       screenSize: CGSize(width: screenW, height: screenH),
       webcamSize: webcamURL != nil ? CGSize(width: camW, height: camH) : nil,
-      fps: fps
+      fps: fps,
+      captureQuality: captureQualityUsed
     )
   }
 

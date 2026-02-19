@@ -65,7 +65,7 @@ struct EditorTopBar: View {
         }
         .buttonStyle(.plain)
         .disabled(editorState.isExporting)
-        .opacity(editorState.isExporting ? 0.4 : 1.0)
+        .opacity(editorState.isExporting ? 0.5 : 1.0)
       }
     }
     .padding(.leading, 16)

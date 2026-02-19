@@ -14,13 +14,22 @@ final class ScreenCaptureSession: NSObject, SCStreamDelegate, SCStreamOutput, @u
   private var lastLogTime: CFAbsoluteTime = 0
   private var isPaused = false
   private var lastPixelBuffer: CVPixelBuffer?
+  private let captureQuality: CaptureQuality
 
-  init(videoWriter: VideoTrackWriter) {
+  init(videoWriter: VideoTrackWriter, captureQuality: CaptureQuality = .standard) {
     self.videoWriter = videoWriter
+    self.captureQuality = captureQuality
     super.init()
   }
 
-  func start(target: CaptureTarget, display: SCDisplay, displayScale: CGFloat, fps: Int = 60, hideCursor: Bool = false) async throws {
+  func start(
+    target: CaptureTarget,
+    display: SCDisplay,
+    displayScale: CGFloat,
+    fps: Int = 60,
+    hideCursor: Bool = false,
+    retinaCapture: Bool = false
+  ) async throws {
     let filter: SCContentFilter
     let sourceRect: CGRect
 
@@ -38,8 +47,17 @@ final class ScreenCaptureSession: NSObject, SCStreamDelegate, SCStreamOutput, @u
       sourceRect = CGRect(origin: .zero, size: display.frame.size)
     }
 
-    let pixelW = Int(sourceRect.width * displayScale) & ~1
-    let pixelH = Int(sourceRect.height * displayScale) & ~1
+    let baseW = Int(sourceRect.width * displayScale) & ~1
+    let baseH = Int(sourceRect.height * displayScale) & ~1
+    let pixelW: Int
+    let pixelH: Int
+    if retinaCapture {
+      pixelW = (baseW * 2) & ~1
+      pixelH = (baseH * 2) & ~1
+    } else {
+      pixelW = baseW
+      pixelH = baseH
+    }
 
     let captureFps = Int(round(Double(fps) * 1.2))
 
@@ -48,11 +66,11 @@ final class ScreenCaptureSession: NSObject, SCStreamDelegate, SCStreamOutput, @u
     config.width = pixelW
     config.height = pixelH
     config.minimumFrameInterval = CMTime(value: 1, timescale: CMTimeScale(captureFps))
-    config.pixelFormat = kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange
+    config.pixelFormat = captureQuality.isProRes ? kCVPixelFormatType_32BGRA : kCVPixelFormatType_420YpCbCr8BiPlanarVideoRange
     config.showsCursor = !hideCursor
     config.capturesAudio = false
     config.queueDepth = 8
-    config.scalesToFit = false
+    config.scalesToFit = retinaCapture
     config.colorSpaceName = CGColorSpace.sRGB as CFString
 
     lastPixelBuffer = nil

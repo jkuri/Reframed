@@ -13,6 +13,7 @@ struct ProjectMetadata: Codable, Sendable {
   var hasCursorMetadata: Bool = false
   var hasWebcam: Bool = false
   var captureMode: CaptureMode?
+  var captureQuality: String? = nil
   var editorState: EditorStateData?
 }
 

@@ -785,7 +785,8 @@ final class EditorState {
         cursorMetadataURL: result.cursorMetadataURL,
         screenSize: result.screenSize,
         webcamSize: nil,
-        fps: result.fps
+        fps: result.fps,
+        captureQuality: result.captureQuality
       )
     }
 

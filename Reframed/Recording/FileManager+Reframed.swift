@@ -17,8 +17,9 @@ extension FileManager {
     reframedTempDir().appendingPathComponent("reframed-\(timestamp()).mp4")
   }
 
-  func tempVideoURL() -> URL {
-    reframedTempDir().appendingPathComponent("video-\(timestamp()).mp4")
+  func tempVideoURL(captureQuality: CaptureQuality = .standard) -> URL {
+    let ext = captureQuality.isProRes ? "mov" : "mp4"
+    return reframedTempDir().appendingPathComponent("video-\(timestamp()).\(ext)")
   }
 
   func tempWebcamURL() -> URL {

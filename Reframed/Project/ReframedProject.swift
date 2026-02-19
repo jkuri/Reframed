@@ -10,7 +10,11 @@ struct ReframedProject: Sendable {
   }
 
   var screenVideoURL: URL {
-    bundleURL.appendingPathComponent("screen.mp4")
+    let movURL = bundleURL.appendingPathComponent("screen.mov")
+    if FileManager.default.fileExists(atPath: movURL.path) {
+      return movURL
+    }
+    return bundleURL.appendingPathComponent("screen.mp4")
   }
 
   var webcamVideoURL: URL? {
@@ -51,7 +55,8 @@ struct ReframedProject: Sendable {
       cursorMetadataURL: cursorMetadataURL,
       screenSize: metadata.screenSize.cgSize,
       webcamSize: metadata.webcamSize?.cgSize,
-      fps: metadata.fps
+      fps: metadata.fps,
+      captureQuality: CaptureQuality(rawValue: metadata.captureQuality ?? "standard") ?? .standard
     )
   }
 
@@ -68,7 +73,8 @@ struct ReframedProject: Sendable {
     let bundleURL = directory.appendingPathComponent(bundleName)
     try fm.createDirectory(at: bundleURL, withIntermediateDirectories: true)
 
-    try fm.moveItem(at: result.screenVideoURL, to: bundleURL.appendingPathComponent("screen.mp4"))
+    let screenExt = result.screenVideoURL.pathExtension
+    try fm.moveItem(at: result.screenVideoURL, to: bundleURL.appendingPathComponent("screen.\(screenExt)"))
 
     if let webcamURL = result.webcamVideoURL {
       try fm.moveItem(at: webcamURL, to: bundleURL.appendingPathComponent("webcam.mp4"))
@@ -97,7 +103,8 @@ struct ReframedProject: Sendable {
       hasMicrophoneAudio: result.microphoneAudioURL != nil,
       hasCursorMetadata: result.cursorMetadataURL != nil,
       hasWebcam: result.webcamVideoURL != nil,
-      captureMode: captureMode
+      captureMode: captureMode,
+      captureQuality: result.captureQuality.rawValue
     )
 
     let encoder = JSONEncoder()

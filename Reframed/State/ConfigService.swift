@@ -40,6 +40,11 @@ final class ConfigService {
     set { data.captureSystemAudio = newValue; save() }
   }
 
+  var captureQuality: String {
+    get { data.captureQuality }
+    set { data.captureQuality = newValue; save() }
+  }
+
   var cameraDeviceId: String? {
     get { data.cameraDeviceId }
     set { data.cameraDeviceId = newValue; save() }
@@ -53,6 +58,11 @@ final class ConfigService {
   var projectFolder: String {
     get { data.projectFolder }
     set { data.projectFolder = newValue; save() }
+  }
+
+  var retinaCapture: Bool {
+    get { data.retinaCapture }
+    set { data.retinaCapture = newValue; save() }
   }
 
   var appearance: String {
@@ -118,14 +128,16 @@ final class ConfigService {
 
 private struct ConfigData: Codable {
   var outputFolder: String = "~/Movies/Reframe"
-  var timerDelay: Int = 0
+  var timerDelay: Int = 3
   var audioDeviceId: String? = nil
   var rememberLastSelection: Bool = true
   var fps: Int = 60
+  var captureQuality: String = "standard"
   var captureSystemAudio: Bool = false
   var cameraDeviceId: String? = nil
   var cameraMaximumResolution: String = "1080p"
   var projectFolder: String = "~/Reframed"
+  var retinaCapture: Bool = false
   var appearance: String = "system"
   var shortcuts: [String: KeyboardShortcut] = [:]
 }

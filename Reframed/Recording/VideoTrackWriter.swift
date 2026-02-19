@@ -23,7 +23,14 @@ final class VideoTrackWriter: @unchecked Sendable {
     droppedFrames = 0
   }
 
-  init(outputURL: URL, width: Int, height: Int, fps: Int = 60, clock: SharedRecordingClock) throws {
+  init(
+    outputURL: URL,
+    width: Int,
+    height: Int,
+    fps: Int = 60,
+    clock: SharedRecordingClock,
+    captureQuality: CaptureQuality = .standard
+  ) throws {
     self.outputURL = outputURL
     self.clock = clock
 
@@ -31,24 +38,51 @@ final class VideoTrackWriter: @unchecked Sendable {
       try FileManager.default.removeItem(at: outputURL)
     }
 
-    let writer = try AVAssetWriter(outputURL: outputURL, fileType: .mp4)
+    let fileType: AVFileType = captureQuality.isProRes ? .mov : .mp4
+    let writer = try AVAssetWriter(outputURL: outputURL, fileType: fileType)
 
-    let videoSettings: [String: Any] = [
-      AVVideoCodecKey: AVVideoCodecType.h264,
-      AVVideoWidthKey: width,
-      AVVideoHeightKey: height,
-      AVVideoColorPropertiesKey: [
-        AVVideoColorPrimariesKey: AVVideoColorPrimaries_ITU_R_709_2,
-        AVVideoTransferFunctionKey: AVVideoTransferFunction_ITU_R_709_2,
-        AVVideoYCbCrMatrixKey: AVVideoYCbCrMatrix_ITU_R_709_2,
-      ] as [String: Any],
-      AVVideoCompressionPropertiesKey: [
-        AVVideoAverageBitRateKey: width * height * 5,
-        AVVideoProfileLevelKey: AVVideoProfileLevelH264MainAutoLevel,
-        AVVideoExpectedSourceFrameRateKey: fps,
-        AVVideoAllowFrameReorderingKey: false,
-      ] as [String: Any],
-    ]
+    let videoSettings: [String: Any]
+    switch captureQuality {
+    case .standard:
+      videoSettings = [
+        AVVideoCodecKey: AVVideoCodecType.h264,
+        AVVideoWidthKey: width,
+        AVVideoHeightKey: height,
+        AVVideoColorPropertiesKey: [
+          AVVideoColorPrimariesKey: AVVideoColorPrimaries_ITU_R_709_2,
+          AVVideoTransferFunctionKey: AVVideoTransferFunction_ITU_R_709_2,
+          AVVideoYCbCrMatrixKey: AVVideoYCbCrMatrix_ITU_R_709_2,
+        ] as [String: Any],
+        AVVideoCompressionPropertiesKey: [
+          AVVideoAverageBitRateKey: width * height * 5,
+          AVVideoProfileLevelKey: AVVideoProfileLevelH264MainAutoLevel,
+          AVVideoExpectedSourceFrameRateKey: fps,
+          AVVideoAllowFrameReorderingKey: false,
+        ] as [String: Any],
+      ]
+    case .high:
+      videoSettings = [
+        AVVideoCodecKey: AVVideoCodecType.proRes422,
+        AVVideoWidthKey: width,
+        AVVideoHeightKey: height,
+        AVVideoColorPropertiesKey: [
+          AVVideoColorPrimariesKey: AVVideoColorPrimaries_ITU_R_709_2,
+          AVVideoTransferFunctionKey: AVVideoTransferFunction_ITU_R_709_2,
+          AVVideoYCbCrMatrixKey: AVVideoYCbCrMatrix_ITU_R_709_2,
+        ] as [String: Any],
+      ]
+    case .veryHigh:
+      videoSettings = [
+        AVVideoCodecKey: AVVideoCodecType.proRes4444,
+        AVVideoWidthKey: width,
+        AVVideoHeightKey: height,
+        AVVideoColorPropertiesKey: [
+          AVVideoColorPrimariesKey: AVVideoColorPrimaries_ITU_R_709_2,
+          AVVideoTransferFunctionKey: AVVideoTransferFunction_ITU_R_709_2,
+          AVVideoYCbCrMatrixKey: AVVideoYCbCrMatrix_ITU_R_709_2,
+        ] as [String: Any],
+      ]
+    }
 
     let input = AVAssetWriterInput(mediaType: .video, outputSettings: videoSettings)
     input.expectsMediaDataInRealTime = true

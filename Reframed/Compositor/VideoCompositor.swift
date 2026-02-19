@@ -128,8 +128,15 @@ enum VideoCompositor {
     let hasWebcam = result.webcamVideoURL != nil
     let hasCursor = cursorSnapshot != nil
     let hasZoom = zoomTimeline != nil
+    let sourceCodecMatchesExport: Bool = {
+      switch result.captureQuality {
+      case .veryHigh: return exportSettings.codec == .proRes4444
+      case .high: return exportSettings.codec == .proRes422
+      case .standard: return exportSettings.codec == .h264
+      }
+    }()
     let needsReencode =
-      exportSettings.codec != .h264 || exportSettings.resolution != .original
+      !sourceCodecMatchesExport || exportSettings.resolution != .original
       || exportSettings.fps != .original
     let needsCompositor =
       hasVisualEffects || hasWebcam || needsReencode || hasCursor || hasZoom

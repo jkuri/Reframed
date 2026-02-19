@@ -10,4 +10,5 @@ struct RecordingResult: Sendable {
   let screenSize: CGSize
   let webcamSize: CGSize?
   let fps: Int
+  let captureQuality: CaptureQuality
 }

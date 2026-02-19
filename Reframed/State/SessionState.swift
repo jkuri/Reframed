@@ -394,7 +394,9 @@ final class SessionState {
         microphoneDeviceId: useMic ? options.selectedMicrophone?.id : nil,
         cameraDeviceId: useCam ? options.selectedCamera?.id : nil,
         cameraResolution: ConfigService.shared.cameraMaximumResolution,
-        existingWebcam: existingWebcam
+        existingWebcam: existingWebcam,
+        captureQuality: options.captureQuality,
+        retinaCapture: options.retinaCapture
       )
 
       if existingWebcam == nil, useCam {
@@ -438,7 +440,9 @@ final class SessionState {
       cameraDeviceId: useCam ? options.selectedCamera?.id : nil,
       cameraResolution: ConfigService.shared.cameraMaximumResolution,
       existingWebcam: existingWebcam,
-      cursorMetadataRecorder: metadataRecorder
+      cursorMetadataRecorder: metadataRecorder,
+      captureQuality: options.captureQuality,
+      retinaCapture: options.retinaCapture
     )
 
     metadataRecorder.start()

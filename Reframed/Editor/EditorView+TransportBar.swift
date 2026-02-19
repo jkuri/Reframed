@@ -18,7 +18,7 @@ extension EditorView {
 
       IconButton(
         systemName: "minus.magnifyingglass",
-        color: timelineZoom > 1.0 ? ReframedColors.primaryText : ReframedColors.tertiaryText
+        color: timelineZoom > 1.0 ? ReframedColors.primaryText : ReframedColors.disabledText
       ) {
         timelineZoom = max(1.0, timelineZoom / 1.5)
         baseZoom = timelineZoom
@@ -27,7 +27,7 @@ extension EditorView {
 
       IconButton(
         systemName: "plus.magnifyingglass",
-        color: timelineZoom < 30.0 ? ReframedColors.primaryText : ReframedColors.tertiaryText
+        color: timelineZoom < 30.0 ? ReframedColors.primaryText : ReframedColors.disabledText
       ) {
         timelineZoom = min(30.0, timelineZoom * 1.5)
         baseZoom = timelineZoom
@@ -36,7 +36,7 @@ extension EditorView {
 
       IconButton(
         systemName: "1.magnifyingglass",
-        color: timelineZoom > 1.0 ? ReframedColors.primaryText : ReframedColors.tertiaryText
+        color: timelineZoom > 1.0 ? ReframedColors.primaryText : ReframedColors.disabledText
       ) {
         timelineZoom = 1.0
         baseZoom = 1.0
@@ -53,14 +53,14 @@ extension EditorView {
 
       IconButton(
         systemName: "arrow.uturn.backward",
-        color: editorState.history.canUndo ? ReframedColors.primaryText : ReframedColors.tertiaryText,
+        color: editorState.history.canUndo ? ReframedColors.primaryText : ReframedColors.disabledText,
         action: { editorState.undo() }
       )
       .disabled(!editorState.history.canUndo)
 
       IconButton(
         systemName: "arrow.uturn.forward",
-        color: editorState.history.canRedo ? ReframedColors.primaryText : ReframedColors.tertiaryText,
+        color: editorState.history.canRedo ? ReframedColors.primaryText : ReframedColors.disabledText,
         action: { editorState.redo() }
       )
       .disabled(!editorState.history.canRedo)

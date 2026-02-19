@@ -1,6 +1,24 @@
 import AVFoundation
 import SwiftUI
 
+enum CaptureQuality: String, CaseIterable, Sendable, Codable {
+  case standard
+  case high
+  case veryHigh
+
+  var label: String {
+    switch self {
+    case .standard: "Standard"
+    case .high: "High"
+    case .veryHigh: "Very High"
+    }
+  }
+
+  var isProRes: Bool {
+    self == .high || self == .veryHigh
+  }
+}
+
 enum TimerDelay: Int, CaseIterable, Sendable {
   case none = 0
   case threeSeconds = 3
@@ -46,8 +64,16 @@ final class RecordingOptions {
     didSet { ConfigService.shared.fps = fps }
   }
 
+  var captureQuality: CaptureQuality {
+    didSet { ConfigService.shared.captureQuality = captureQuality.rawValue }
+  }
+
   var captureSystemAudio: Bool {
     didSet { ConfigService.shared.captureSystemAudio = captureSystemAudio }
+  }
+
+  var retinaCapture: Bool {
+    didSet { ConfigService.shared.retinaCapture = retinaCapture }
   }
 
   var selectedCamera: CaptureDevice? {
@@ -79,7 +105,9 @@ final class RecordingOptions {
     timerDelay = TimerDelay(rawValue: config.timerDelay) ?? .none
     rememberLastSelection = config.rememberLastSelection
     fps = config.fps
+    captureQuality = CaptureQuality(rawValue: config.captureQuality) ?? .standard
     captureSystemAudio = config.captureSystemAudio
+    retinaCapture = config.retinaCapture
 
     let savedDeviceId = config.audioDeviceId
     if let deviceId = savedDeviceId {

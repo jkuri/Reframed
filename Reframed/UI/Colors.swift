@@ -100,6 +100,10 @@ enum ReframedColors {
     isDark ? Color.white.opacity(0.5) : Color.black.opacity(0.4)
   }
 
+  static var disabledText: Color {
+    isDark ? Color.white.opacity(0.7) : Color.black.opacity(0.5)
+  }
+
   static var divider: Color {
     isDark ? Color.white.opacity(0.15) : Color.black.opacity(0.12)
   }
