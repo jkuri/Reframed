@@ -183,7 +183,7 @@ struct PropertiesPanel: View {
 
   private func codecLabel(_ quality: CaptureQuality) -> String {
     switch quality {
-    case .standard: "H.264"
+    case .standard: "H.265 (HEVC)"
     case .high: "ProRes 422"
     case .veryHigh: "ProRes 4444"
     }

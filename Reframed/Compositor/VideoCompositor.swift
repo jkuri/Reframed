@@ -132,7 +132,7 @@ enum VideoCompositor {
       switch result.captureQuality {
       case .veryHigh: return exportSettings.codec == .proRes4444
       case .high: return exportSettings.codec == .proRes422
-      case .standard: return exportSettings.codec == .h264
+      case .standard: return exportSettings.codec == .h265
       }
     }()
     let needsReencode =
@@ -461,10 +461,10 @@ enum VideoCompositor {
         AVVideoExpectedSourceFrameRateKey: exportFPS,
       ]
       if codec == .hevc {
-        compressionProperties[AVVideoAverageBitRateKey] = pixels * exportFPS * 0.07
+        compressionProperties[AVVideoAverageBitRateKey] = pixels * exportFPS * 0.1
         compressionProperties[AVVideoProfileLevelKey] = kVTProfileLevel_HEVC_Main10_AutoLevel
       } else {
-        compressionProperties[AVVideoAverageBitRateKey] = pixels * exportFPS * 0.1
+        compressionProperties[AVVideoAverageBitRateKey] = pixels * exportFPS * 0.15
         compressionProperties[AVVideoProfileLevelKey] = AVVideoProfileLevelH264HighAutoLevel
       }
       videoSettings = [
@@ -800,10 +800,10 @@ enum VideoCompositor {
         AVVideoMaxKeyFrameIntervalKey: fps,
       ]
       if codec == .h265 {
-        compressionProperties[AVVideoAverageBitRateKey] = pixels * exportFPS * 0.07
+        compressionProperties[AVVideoAverageBitRateKey] = pixels * exportFPS * 0.1
         compressionProperties[AVVideoProfileLevelKey] = kVTProfileLevel_HEVC_Main10_AutoLevel
       } else {
-        compressionProperties[AVVideoAverageBitRateKey] = pixels * exportFPS * 0.1
+        compressionProperties[AVVideoAverageBitRateKey] = pixels * exportFPS * 0.15
         compressionProperties[AVVideoProfileLevelKey] = AVVideoProfileLevelH264HighAutoLevel
       }
       videoOutputSettings = [

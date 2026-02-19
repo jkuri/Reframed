@@ -213,7 +213,7 @@ enum ExportCodec: Sendable, CaseIterable, Identifiable {
   var label: String {
     switch self {
     case .h264: "H.264"
-    case .h265: "H.265"
+    case .h265: "H.265 (HEVC)"
     case .proRes422: "ProRes 422"
     case .proRes4444: "ProRes 4444"
     }

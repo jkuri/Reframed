@@ -2,6 +2,7 @@ import AVFoundation
 import CoreMedia
 import CoreVideo
 import Logging
+import VideoToolbox
 
 final class VideoTrackWriter: @unchecked Sendable {
   private var assetWriter: AVAssetWriter?
@@ -45,7 +46,7 @@ final class VideoTrackWriter: @unchecked Sendable {
     switch captureQuality {
     case .standard:
       videoSettings = [
-        AVVideoCodecKey: AVVideoCodecType.h264,
+        AVVideoCodecKey: AVVideoCodecType.hevc,
         AVVideoWidthKey: width,
         AVVideoHeightKey: height,
         AVVideoColorPropertiesKey: [
@@ -55,7 +56,7 @@ final class VideoTrackWriter: @unchecked Sendable {
         ] as [String: Any],
         AVVideoCompressionPropertiesKey: [
           AVVideoAverageBitRateKey: width * height * 5,
-          AVVideoProfileLevelKey: AVVideoProfileLevelH264HighAutoLevel,
+          AVVideoProfileLevelKey: kVTProfileLevel_HEVC_Main10_AutoLevel,
           AVVideoExpectedSourceFrameRateKey: fps,
           AVVideoAllowFrameReorderingKey: false,
         ] as [String: Any],

@@ -37,7 +37,7 @@ extension SettingsView {
 
   var captureQualityDescription: String {
     switch options?.captureQuality ?? .standard {
-    case .standard: "H.264 — good quality, smaller files"
+    case .standard: "H.265 (HEVC) 10-bit — great quality, smaller files"
     case .high: "ProRes 422 — near-lossless, larger files"
     case .veryHigh: "ProRes 4444 — lossless quality, massive files"
     }
@@ -55,10 +55,12 @@ extension SettingsView {
         )
       )
 
-      Text("Doubles capture resolution for better zoom quality. Increases file size.")
-        .font(.system(size: 11))
-        .foregroundStyle(ReframedColors.secondaryText)
-        .padding(.horizontal, 10)
+      Text(
+        "Doubles capture resolution for better zoom quality. Text may appear softer due to upscaling beyond the display's native resolution. Increases file size."
+      )
+      .font(.system(size: 11))
+      .foregroundStyle(ReframedColors.secondaryText)
+      .padding(.horizontal, 10)
     }
   }
 
