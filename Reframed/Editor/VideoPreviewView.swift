@@ -323,6 +323,7 @@ final class VideoPreviewContainer: NSView {
     layer?.addSublayer(cursorOverlay)
 
     webcamWrapper.wantsLayer = true
+    webcamWrapper.layer?.zPosition = 20
     webcamWrapper.layer?.masksToBounds = false
 
     webcamView.wantsLayer = true
