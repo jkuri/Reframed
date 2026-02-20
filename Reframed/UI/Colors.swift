@@ -165,8 +165,8 @@ enum ReframedColors {
   static let webcamHiddenTrackColor = Color.hex("#fde047")
   static let webcamCustomTrackColor = Color.hex("#38bdf8")
 
-  static let systemAudioColor = Color.hex("#ec4899")
-  static let micAudioColor = Color.hex("#f04545")
+  static let systemAudioColor = Color.hex("#db2777")
+  static let micAudioColor = Color.hex("#dc2626")
 
   static let zoomColor = Color.hex("#734dbf")
   static let zoomEaseColor = Color.hex("#734dbf").opacity(0.5)
