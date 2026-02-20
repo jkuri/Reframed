@@ -393,6 +393,9 @@ final class SessionState {
         if let camSession = box?.session {
           let previewWindow = WebcamPreviewWindow()
           previewWindow.show(captureSession: camSession)
+          if options.hideCameraPreviewWhileRecording {
+            previewWindow.hide()
+          }
           self.webcamPreviewWindow = previewWindow
         }
       }
@@ -441,6 +444,9 @@ final class SessionState {
       if let camSession = box?.session {
         let previewWindow = WebcamPreviewWindow()
         previewWindow.show(captureSession: camSession)
+        if options.hideCameraPreviewWhileRecording {
+          previewWindow.hide()
+        }
         self.webcamPreviewWindow = previewWindow
       }
     }
@@ -646,10 +652,16 @@ final class SessionState {
       if windowPositionObserver == nil, case .window(let win) = captureTarget {
         startWindowTracking(windowID: win.windowID)
       }
+      if options.hideCameraPreviewWhileRecording {
+        webcamPreviewWindow?.hide()
+      }
       showToolbar()
     case .paused:
-      break
+      if options.hideCameraPreviewWhileRecording {
+        webcamPreviewWindow?.unhide()
+      }
     default:
+      webcamPreviewWindow?.unhide()
       stopAudioLevelPolling()
       stopWindowTracking()
     }

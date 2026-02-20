@@ -122,6 +122,14 @@ final class WebcamPreviewWindow {
     panel?.orderFrontRegardless()
   }
 
+  func hide() {
+    panel?.orderOut(nil)
+  }
+
+  func unhide() {
+    panel?.orderFrontRegardless()
+  }
+
   func close() {
     savePosition()
     if let observer = moveObserver {

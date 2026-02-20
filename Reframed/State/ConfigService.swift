@@ -70,6 +70,11 @@ final class ConfigService {
     set { data.dimOuterArea = newValue; save() }
   }
 
+  var hideCameraPreviewWhileRecording: Bool {
+    get { data.hideCameraPreviewWhileRecording }
+    set { data.hideCameraPreviewWhileRecording = newValue; save() }
+  }
+
   var isMicrophoneOn: Bool {
     get { data.isMicrophoneOn }
     set { data.isMicrophoneOn = newValue; save() }
@@ -162,6 +167,7 @@ private struct ConfigData: Codable {
   var projectFolder: String = "~/Reframed"
   var retinaCapture: Bool = false
   var dimOuterArea: Bool = true
+  var hideCameraPreviewWhileRecording: Bool = false
   var isMicrophoneOn: Bool = false
   var appearance: String = "system"
   var shortcuts: [String: KeyboardShortcut] = [:]

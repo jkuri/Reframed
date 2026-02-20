@@ -93,6 +93,14 @@ extension SettingsView {
           set: { options?.dimOuterArea = $0 }
         )
       )
+
+      settingsToggle(
+        "Hide Camera Preview While Recording",
+        isOn: Binding(
+          get: { options?.hideCameraPreviewWhileRecording ?? false },
+          set: { options?.hideCameraPreviewWhileRecording = $0 }
+        )
+      )
     }
   }
 }
