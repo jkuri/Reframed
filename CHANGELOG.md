@@ -1,5 +1,61 @@
 # Changelog
 
+## [v0.9.3](https://github.com/jkuri/Reframed/compare/v0.9.2...v0.9.3) (2026-02-20)
+
+### Features
+
+- **animations:** make camera PiP animations like fade, slide in, scale work in both preview and export ([f286360](https://github.com/jkuri/Reframed/commit/f28636000aeb2c4df6dd9e1457c018097d5f8db8))
+- **camera:** add option for custom style and position regions on webcam webcam track ([ff8069e](https://github.com/jkuri/Reframed/commit/ff8069e93cbfb58d8375917ee0d371810780ec49))
+- **camera:** enhance camera regions with option to hide camera on specific sections on the timeline ([54e3166](https://github.com/jkuri/Reframed/commit/54e31660efb4a615b3ecd5b5b10c31abe9718727))
+- **settings:** add about section in settings popover and check for updates feature ([a751572](https://github.com/jkuri/Reframed/commit/a751572f19d47365ba8546f7fd6200552fd9efba))
+- **editor:** add more info about the project in the panel ([d621371](https://github.com/jkuri/Reframed/commit/d621371b579dfc5d232378dc8d4bb0cf84430627))
+- **recording:** make option to enable/disable outer area as dimmed while recording ([71d6ca2](https://github.com/jkuri/Reframed/commit/71d6ca2b4f54664896efc1f23bdd73391ef18ed4))
+- **video:** switch standard quality video encoding to H.265 (HEVC) 10-bit and update related UI labels and descriptions ([81aeea5](https://github.com/jkuri/Reframed/commit/81aeea53701c2b62aa5db7b11b1baad6ec7776fb))
+- **capture:** adjusted video export bitrates and keyframe intervals, removed specific compression properties, and set global high interpolation quality for camera video rendering. ([307febf](https://github.com/jkuri/Reframed/commit/307febf07b8d7a7c780017db4e01c1a8a350ba92))
+- **capture:** enhance capturing screen with options like superscale, codec selection and some other stuff ([2a945c4](https://github.com/jkuri/Reframed/commit/2a945c49ac73852037080b47edcf8fcc6a2c7a6c))
+
+### Bug Fixes
+
+- **preview:** fix camera bugs around PiP camera bounds and rendering ([7ad4c84](https://github.com/jkuri/Reframed/commit/7ad4c846173302f83af30824de39e52055831f4a))
+- **compositor:** make sure manual export also keep the fps as requested ([33f861c](https://github.com/jkuri/Reframed/commit/33f861c66a3f1ed431ef6e29f4b4f805706d8445))
+- **metadata:** write correct metadata about cursor in case of window recording and dragged to another position ([171f5ff](https://github.com/jkuri/Reframed/commit/171f5ffc4446187a32226231fdcb7ffbba30c68c))
+- **config:** merge existing config values in case of a new property is defined, make it backward compatible ([6003119](https://github.com/jkuri/Reframed/commit/6003119bd0975552288d52371557f95faa8ebf8b))
+- **config:** save state of audio streams ([b76eff2](https://github.com/jkuri/Reframed/commit/b76eff2158ad1cb2732b2dff0e5afa9f4e4e790f))
+- **recording:** update dimmed area and border in case recording specific window and its dragged to new position ([3ac2569](https://github.com/jkuri/Reframed/commit/3ac25690ea84335ec895ea9199d0f707b2623de9))
+
+### Performance
+
+- **camera:** lower down the bitrate multiplier in case of webcam ([7dbc64d](https://github.com/jkuri/Reframed/commit/7dbc64d5856bb995e9139c2ad70c7d583260fed9))
+- **video:** match bitreate of captured and exported video ([0692f2d](https://github.com/jkuri/Reframed/commit/0692f2d357970ac27eca1bbd69a400c1c8551b4a))
+- **video:** improve the quality of the captured and exported video ([74d7f84](https://github.com/jkuri/Reframed/commit/74d7f8488901e78c92fa0057613130596e676419))
+
+### Refactoring
+
+- **colors:** make all colors used in timeline tracks in hex format for easier changes ([bc4d259](https://github.com/jkuri/Reframed/commit/bc4d259055533fed15d3eaed854618da3a9f71f1))
+- **compositor:** break video compositor into more source files ([aaa7052](https://github.com/jkuri/Reframed/commit/aaa70523754a329c55ba627a8bd46f358a61b06a))
+- **settings:** refactor EditorView's tap gesture handling to reliably resign the first responder and update the UpdateChecker to use nonisolated functions for improved concurrency. ([ef130b8](https://github.com/jkuri/Reframed/commit/ef130b80e684f700baaf7ded70923f7d49da9cc5))
+- **ui:** make reusable inline editable text component and use it for renaming the project ([e93c668](https://github.com/jkuri/Reframed/commit/e93c668af096d258ea1b67ddde1480928f4b041e))
+- **ux:** improve the behavour of the device recording and show the preview before it starts recording ([dc18a26](https://github.com/jkuri/Reframed/commit/dc18a268f0451e04ef02f796e1ac56bd44c273d1))
+- **ux:** improve the user xp before start recordin, in countdown mode, overlay removed ([0639424](https://github.com/jkuri/Reframed/commit/063942436420fd8aada1718c9ba46561ce4e432a))
+
+### Styling
+
+- **topbar:** minor export button padding fix ([f0b7bf7](https://github.com/jkuri/Reframed/commit/f0b7bf756c23ed5a0c8f0990cbb00b0e9c68c14a))
+- **colours:** update the mic and system audio track colors to look better on both light and dark mode ([f4213e3](https://github.com/jkuri/Reframed/commit/f4213e3bc0a626b99b5eb4e2c1d3d1a63d34d3b2))
+- **zoom:** update manual zoom region edit popover to consistently follow the colors across the app ([10b2a78](https://github.com/jkuri/Reframed/commit/10b2a78555c4194f62b1bfeb769e99fc585568a9))
+- **editor:** improve the camera region edit popover dialog ([18f7b01](https://github.com/jkuri/Reframed/commit/18f7b01ebb4ff1ea71581fdaf5b3e1f62360a79f))
+- **editor:** modify the colours and border radius on editor elements ([b3959a1](https://github.com/jkuri/Reframed/commit/b3959a187dcbd24572fe1ea56786921311fdbad8))
+- **menubar:** improve the style ef menubar items ([2a79a25](https://github.com/jkuri/Reframed/commit/2a79a254820cff4af1dc4d644b20e43d4138703b))
+- **properties-panel:** improve readability and display project size in general info ([64372a0](https://github.com/jkuri/Reframed/commit/64372a0cdafe6288da354fe0afed3dd867661941))
+
+### Documentation
+
+- **readme:** add new icon to the readme section ([4532b67](https://github.com/jkuri/Reframed/commit/4532b67b6976b3fea6508234957c4c0eb27caf00))
+
+### Chores
+
+- **settings:** update text for supersample description ([a11b5e8](https://github.com/jkuri/Reframed/commit/a11b5e8782f306ec29901e4617df49a35e60f31e))
+
 ## [v0.9.2](https://github.com/jkuri/Reframed/compare/v0.9.1...v0.9.2) (2026-02-19)
 
 ### Features
