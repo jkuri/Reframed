@@ -65,3 +65,5 @@ fastlane/test_output
 .agent/
 
 .DS_Store
+
+.claude/worktrees

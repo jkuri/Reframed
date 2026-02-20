@@ -13,6 +13,8 @@ make dmg        # Create DMG installer
 make install    # Install to /Applications
 make format     # Format Swift source (swift format)
 make clean      # Clean build artifacts
+make tag        # Create git tag from Config.xcconfig version and generate changelog
+make changelog  # Generate CHANGELOG.md
 ```
 
 No test target exists yet. No linter is configured.
@@ -26,14 +28,16 @@ Reframed is a macOS screen recording app with a menu bar interface, floating cap
 ```
 Reframed/
 ├── App/              AppDelegate, Permissions, WindowController
-├── CaptureModes/     Area/Screen/Window selection + Common overlay components
-├── Editor/           Video editor (timeline, export, compositing, zoom, cursor)
+├── CaptureModes/     Area/Screen/Window/Device selection + Common overlay components
+├── Compositor/       Video composition & export (VideoCompositor, CameraVideoCompositor, ExportSettings, BackgroundStyle, CameraLayout, GradientPresets)
+├── Editor/           Video editor (timeline, properties panels, preview, cursor, zoom, camera regions, history)
+├── Libraries/        Native C/C++ dependencies (gifski static library for GIF encoding)
 ├── Logging/          LogBootstrap, RotatingFileLogHandler
 ├── Project/          .frm bundle management (ReframedProject, ProjectMetadata)
-├── Recording/        Capture pipeline (coordinators, writers, device/webcam/mic/audio)
-├── State/            SessionState, CaptureState, CaptureMode, ConfigService, StateService
-├── UI/               Toolbar, menu bar, popovers, settings, countdown overlay
-├── Utilities/        CGRect/NSScreen extensions, CodableColor, SendableBox, SoundEffect, TimeFormatting
+├── Recording/        Capture pipeline (coordinators, writers, device/webcam/mic/audio, cursor metadata)
+├── State/            SessionState, CaptureState, CaptureMode, ConfigService, StateService, RecordingOptions, KeyboardShortcutManager
+├── UI/               Toolbar, menu bar, popovers, settings, countdown overlay, reusable components
+├── Utilities/        CGRect/NSScreen extensions, CodableColor, SendableBox, SoundEffect, TimeFormatting, UpdateChecker, MediaFileInfo, RNNoiseProcessor, CIImageExtensions, KeyboardShortcut
 ├── ReframedApp.swift Entry point (@main)
 └── Info.plist        App configuration
 ```
@@ -48,9 +52,9 @@ Everything is actor-isolated. The core pattern:
 - **`ScreenCaptureSession`** (class, `@unchecked Sendable`) — SCStream wrapper; unchecked because SCStream isn't Sendable yet
 - **`SelectionCoordinator`** (@MainActor) — manages the full-screen overlay window for area selection and recording borders
 - **`WindowSelectionCoordinator`** (@MainActor) — manages window highlight overlay for window selection
-- **`EditorState`** (@MainActor, @Observable) — editor state including trim ranges, background, camera layout, cursor, zoom
-- **`VideoCompositor`** (enum with static methods) — export-time compositing pipeline
-- **`CameraVideoCompositor`** (NSObject, AVVideoCompositing) — custom compositor for rendering background + screen + webcam
+- **`EditorState`** (@MainActor, @Observable) — editor state including trim ranges, background, camera layout/regions, cursor, zoom, animations, audio
+- **`VideoCompositor`** (enum with static methods) — export-time compositing pipeline (manual + parallel export modes)
+- **`CameraVideoCompositor`** (NSObject, AVVideoCompositing) — custom compositor for rendering background + screen + webcam with camera region transitions
 
 ### State machine
 
@@ -67,7 +71,7 @@ Reframed offers four recording modes:
 - **Selected area** — full-screen transparent overlay with crosshair cursor; drag to select region (8 resize handles)
 - **iOS device** — captures connected iPhone/iPad via AVCaptureDevice
 
-Optional features: webcam PiP overlay, microphone audio, system audio capture, configurable countdown timer (3/5/10s), cursor metadata recording with mouse click monitoring.
+Optional features: webcam PiP overlay (with hide-while-recording option), microphone audio, system audio capture, configurable countdown timer (3/5/10s), cursor metadata recording with mouse click monitoring.
 
 After selection, ScreenCaptureKit captures the chosen target. CVPixelBuffers flow through `SharedRecordingClock` for timestamp synchronization, then to track writers. On stop, a `.frm` project bundle is created and the editor opens automatically.
 
@@ -75,12 +79,32 @@ After selection, ScreenCaptureKit captures the chosen target. CVPixelBuffers flo
 
 Built-in editor with:
 - Timeline trimming (independent trim ranges for video, system audio, mic audio)
-- Background styles (none, solid color, gradient presets)
+- Audio regions (per-track independent audio trimming with volume and mute controls)
+- Background styles (none, solid color, gradient presets, background image with fill modes)
+- Canvas aspect ratios (original, 16:9, 1:1, 4:3, 9:16)
 - Padding and corner radius (both video and camera)
-- Webcam PiP (draggable positioning, 4-corner presets, configurable size/corner radius/border)
+- Webcam PiP (draggable positioning, 4-corner presets, configurable size/corner radius/border/shadow/mirror)
+- Camera regions (timeline-based webcam visibility: fullscreen/hidden/custom with per-region entry/exit transitions — fade/scale/slide)
 - Cursor overlay (multiple styles, smoothing levels, click highlights with configurable color/size)
+- Cursor movement smoothing (spring physics-based interpolation with speed presets)
 - Zoom & pan (manual keyframes via `ZoomTimeline`, auto-detection via `ZoomDetector` based on cursor dwell time)
-- Export: MP4/MOV with H.264/H.265, configurable FPS and resolution
+- Undo/redo history (50-snapshot system with human-readable change descriptions)
+- Export: MP4/MOV/GIF with H.264/H.265, configurable FPS and resolution, parallel or manual export modes
+- Microphone noise reduction (RNNoise library integration with configurable intensity)
+
+### Compositor
+
+The `Compositor/` module handles all video composition and export:
+- `VideoCompositor` — main export orchestrator with manual and parallel rendering modes
+- `VideoCompositor+Audio` — audio mixing and track management
+- `VideoCompositor+ParallelExport` — multi-core parallel rendering for faster exports
+- `VideoCompositor+ManualExport` — traditional single-threaded export pipeline
+- `VideoCompositor+GIFExport` — GIF export using libgifski C library
+- `CameraVideoCompositor` — custom AVVideoCompositing for per-frame rendering with camera region transitions
+- `CompositionInstruction` — AVVideoCompositionInstructionProtocol implementation
+- `ExportSettings` — export options (format, FPS, resolution, codec, audio bitrate, GIF quality)
+- `BackgroundStyle` — solid color, gradient, and image backgrounds with fill modes
+- `CameraLayout` — PiP positioning, dimensions, and styling
 
 ### Project management
 
@@ -88,7 +112,7 @@ Recordings are saved as `.frm` bundles (UTI: `eu.jankuri.reframed.project`) cont
 
 ```
 recording-YYYY-MM-DD-HHmmss.frm/
-├── project.json          ProjectMetadata (JSON)
+├── project.json          ProjectMetadata (JSON) with full EditorStateData
 ├── screen.mp4            Main screen recording
 ├── webcam.mp4            Optional webcam overlay
 ├── system-audio.m4a      Optional system audio
@@ -96,7 +120,7 @@ recording-YYYY-MM-DD-HHmmss.frm/
 └── cursor-metadata.json  Optional cursor tracking data
 ```
 
-Projects can be reopened and re-edited. Editor state (trim ranges, camera layout, background, cursor settings, zoom keyframes) is persisted in `project.json`.
+Projects can be reopened and re-edited. Editor state is persisted in `project.json` including: trim ranges, background style, canvas aspect, camera layout/regions with transitions, cursor settings, zoom keyframes, animation settings, audio settings (volume/mute/noise reduction), and audio regions.
 
 ### Coordinate system
 
@@ -120,8 +144,10 @@ Uses `MenuBarExtra(.window)` + MenuBarExtraAccess (1.2.x) for the `isPresented` 
 
 ## Dependencies (SPM via Xcode)
 
-- `swift-log` ≥ 1.6.0 (logging)
+- `swift-log` 1.9.x (logging)
 - `MenuBarExtraAccess` 1.2.x (max 1.2.2 — do NOT use 1.9.x, it doesn't exist)
+- `rnnoise-spm` 1.1.x (noise reduction for microphone audio)
+- `gifski` (static C library in `Libraries/gifski/` — GIF encoding)
 
 ## Code style
 
