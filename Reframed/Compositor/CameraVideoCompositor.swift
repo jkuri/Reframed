@@ -394,7 +394,20 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
               context.scaleBy(x: rt.progress, y: rt.progress)
               context.translateBy(x: -cx, y: -cy)
             case .slide:
-              let offsetY = (1.0 - rt.progress) * CGFloat(height) * 0.5
+              let slideCam = resolveCamera(
+                instruction: instruction,
+                compositionTime: compositionTime,
+                outputWidth: width,
+                outputHeight: height
+              )
+              let slideDistance: CGFloat
+              if let cam = slideCam {
+                let flippedY = CGFloat(height) - cam.rect.origin.y - cam.rect.height
+                slideDistance = flippedY + cam.rect.height
+              } else {
+                slideDistance = CGFloat(height)
+              }
+              let offsetY = (1.0 - rt.progress) * slideDistance
               context.translateBy(x: 0, y: -offsetY)
             }
           }

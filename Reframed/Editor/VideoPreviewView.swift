@@ -753,7 +753,8 @@ final class VideoPreviewContainer: NSView {
       webcamWrapper.layer?.transform = transform
     case .slide:
       webcamWrapper.alphaValue = 1.0
-      let offsetY = (1.0 - p) * webcamWrapper.frame.height
+      let distanceToBottom = webcamWrapper.frame.origin.y + webcamWrapper.frame.height
+      let offsetY = (1.0 - p) * distanceToBottom
       webcamWrapper.layer?.transform = CATransform3DMakeTranslation(0, -offsetY, 0)
     }
   }
