@@ -60,6 +60,7 @@ struct AudioRegionData: Codable, Sendable, Identifiable, Equatable {
 enum CameraRegionType: String, Codable, Sendable, CaseIterable, Identifiable {
   case fullscreen
   case hidden
+  case custom
 
   var id: String { rawValue }
 
@@ -67,6 +68,7 @@ enum CameraRegionType: String, Codable, Sendable, CaseIterable, Identifiable {
     switch self {
     case .fullscreen: "Fullscreen"
     case .hidden: "Hidden"
+    case .custom: "Custom"
     }
   }
 }
@@ -76,6 +78,13 @@ struct CameraRegionData: Codable, Sendable, Identifiable, Equatable {
   var startSeconds: Double
   var endSeconds: Double
   var type: CameraRegionType = .fullscreen
+  var customLayout: CameraLayout?
+  var customCameraAspect: CameraAspect?
+  var customCornerRadius: CGFloat?
+  var customShadow: CGFloat?
+  var customBorderWidth: CGFloat?
+  var customBorderColor: CodableColor?
+  var customMirrored: Bool?
 }
 
 struct EditorStateData: Codable, Sendable {

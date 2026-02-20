@@ -1,6 +1,17 @@
 import AVFoundation
 import CoreMedia
 
+struct CameraCustomRegion: Sendable {
+  let timeRange: CMTimeRange
+  let layout: CameraLayout
+  let cameraAspect: CameraAspect
+  let cornerRadius: CGFloat
+  let shadow: CGFloat
+  let borderWidth: CGFloat
+  let borderColor: CGColor
+  let mirrored: Bool
+}
+
 final class CompositionInstruction: NSObject, AVVideoCompositionInstructionProtocol, @unchecked Sendable {
   let timeRange: CMTimeRange
   let enablePostProcessing = false
@@ -41,6 +52,9 @@ final class CompositionInstruction: NSObject, AVVideoCompositionInstructionProto
   let trimStartSeconds: Double
   let cameraFullscreenRegions: [CMTimeRange]
   let cameraHiddenRegions: [CMTimeRange]
+  let cameraCustomRegions: [CameraCustomRegion]
+  let webcamSize: CGSize?
+  let cameraAspect: CameraAspect
   let cameraFullscreenFillMode: CameraFullscreenFillMode
   let cameraFullscreenAspect: CameraFullscreenAspect
 
@@ -77,6 +91,9 @@ final class CompositionInstruction: NSObject, AVVideoCompositionInstructionProto
     trimStartSeconds: Double = 0,
     cameraFullscreenRegions: [CMTimeRange] = [],
     cameraHiddenRegions: [CMTimeRange] = [],
+    cameraCustomRegions: [CameraCustomRegion] = [],
+    webcamSize: CGSize? = nil,
+    cameraAspect: CameraAspect = .original,
     cameraFullscreenFillMode: CameraFullscreenFillMode = .fit,
     cameraFullscreenAspect: CameraFullscreenAspect = .original
   ) {
@@ -112,6 +129,9 @@ final class CompositionInstruction: NSObject, AVVideoCompositionInstructionProto
     self.trimStartSeconds = trimStartSeconds
     self.cameraFullscreenRegions = cameraFullscreenRegions
     self.cameraHiddenRegions = cameraHiddenRegions
+    self.cameraCustomRegions = cameraCustomRegions
+    self.webcamSize = webcamSize
+    self.cameraAspect = cameraAspect
     self.cameraFullscreenFillMode = cameraFullscreenFillMode
     self.cameraFullscreenAspect = cameraFullscreenAspect
 

@@ -30,6 +30,11 @@ struct VideoPreviewView: NSViewRepresentable {
   var zoomTimeline: ZoomTimeline?
   var cameraFullscreenRegions: [(start: Double, end: Double)] = []
   var cameraHiddenRegions: [(start: Double, end: Double)] = []
+  var cameraCustomRegions:
+    [(
+      start: Double, end: Double, layout: CameraLayout, cameraAspect: CameraAspect, cornerRadius: CGFloat, shadow: CGFloat,
+      borderWidth: CGFloat, borderColor: CGColor, mirrored: Bool
+    )] = []
   var cameraFullscreenFillMode: CameraFullscreenFillMode = .fit
   var cameraFullscreenAspect: CameraFullscreenAspect = .original
 
@@ -45,6 +50,7 @@ struct VideoPreviewView: NSViewRepresentable {
   }
 
   func updateNSView(_ nsView: VideoPreviewContainer, context: Context) {
+    context.coordinator.cameraLayout = $cameraLayout
     context.coordinator.canvasSize = canvasSize
 
     let isCameraHidden = cameraHiddenRegions.contains { currentTime >= $0.start && currentTime <= $0.end }
@@ -54,20 +60,23 @@ struct VideoPreviewView: NSViewRepresentable {
     nsView.currentFullscreenFillMode = cameraFullscreenFillMode
     nsView.currentFullscreenAspect = cameraFullscreenAspect
 
+    let customRegion = cameraCustomRegions.first(where: { currentTime >= $0.start && currentTime <= $0.end })
+    let effectiveLayout = customRegion?.layout ?? cameraLayout
+
     nsView.updateCameraLayout(
-      cameraLayout,
+      effectiveLayout,
       webcamSize: webcamSize,
       screenSize: screenSize,
       canvasSize: canvasSize,
       padding: padding,
       videoCornerRadius: videoCornerRadius,
-      cameraAspect: cameraAspect,
-      cameraCornerRadius: cameraCornerRadius,
-      cameraBorderWidth: cameraBorderWidth,
-      cameraBorderColor: cameraBorderColor,
+      cameraAspect: customRegion?.cameraAspect ?? cameraAspect,
+      cameraCornerRadius: customRegion?.cornerRadius ?? cameraCornerRadius,
+      cameraBorderWidth: customRegion?.borderWidth ?? cameraBorderWidth,
+      cameraBorderColor: customRegion?.borderColor ?? cameraBorderColor,
       videoShadow: videoShadow,
-      cameraShadow: cameraShadow,
-      cameraMirrored: cameraMirrored
+      cameraShadow: customRegion?.shadow ?? cameraShadow,
+      cameraMirrored: customRegion?.mirrored ?? cameraMirrored
     )
 
     if let zoom = zoomTimeline {

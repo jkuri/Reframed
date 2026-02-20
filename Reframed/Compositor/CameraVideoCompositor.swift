@@ -298,17 +298,22 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
             context.draw(webcamImage, in: imgFill)
           }
           context.restoreGState()
-        } else if let cameraRect = instruction.cameraRect {
-          let flippedY = CGFloat(height) - cameraRect.origin.y - cameraRect.height
+        } else if let cam = resolveCamera(
+          instruction: instruction,
+          compositionTime: compositionTime,
+          outputWidth: width,
+          outputHeight: height
+        ) {
+          let flippedY = CGFloat(height) - cam.rect.origin.y - cam.rect.height
           let drawRect = CGRect(
-            x: cameraRect.origin.x,
+            x: cam.rect.origin.x,
             y: flippedY,
-            width: cameraRect.width,
-            height: cameraRect.height
+            width: cam.rect.width,
+            height: cam.rect.height
           )
 
-          if instruction.cameraShadow > 0 {
-            let blur = min(drawRect.width, drawRect.height) * instruction.cameraShadow / 2000.0
+          if cam.shadow > 0 {
+            let blur = min(drawRect.width, drawRect.height) * cam.shadow / 2000.0
             context.saveGState()
             context.setShadow(
               offset: .zero,
@@ -317,8 +322,8 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
             )
             let shadowPath = CGPath(
               roundedRect: drawRect,
-              cornerWidth: instruction.cameraCornerRadius,
-              cornerHeight: instruction.cameraCornerRadius,
+              cornerWidth: cam.cornerRadius,
+              cornerHeight: cam.cornerRadius,
               transform: nil
             )
             context.addPath(shadowPath)
@@ -327,22 +332,21 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
             context.restoreGState()
           }
 
-          let bw = instruction.cameraBorderWidth
-          if bw > 0 {
+          if cam.borderWidth > 0 {
             let borderPath = CGPath(
               roundedRect: drawRect,
-              cornerWidth: instruction.cameraCornerRadius,
-              cornerHeight: instruction.cameraCornerRadius,
+              cornerWidth: cam.cornerRadius,
+              cornerHeight: cam.cornerRadius,
               transform: nil
             )
             context.saveGState()
             context.addPath(borderPath)
-            context.setFillColor(instruction.cameraBorderColor)
+            context.setFillColor(cam.borderColor)
             context.fillPath()
             context.restoreGState()
 
-            let insetRect = drawRect.insetBy(dx: bw, dy: bw)
-            let innerRadius = max(0, instruction.cameraCornerRadius - bw)
+            let insetRect = drawRect.insetBy(dx: cam.borderWidth, dy: cam.borderWidth)
+            let innerRadius = max(0, cam.cornerRadius - cam.borderWidth)
             let innerPath = CGPath(
               roundedRect: insetRect,
               cornerWidth: innerRadius,
@@ -352,7 +356,7 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
             context.saveGState()
             context.addPath(innerPath)
             context.clip()
-            if instruction.cameraMirrored {
+            if cam.mirrored {
               context.translateBy(x: insetRect.midX, y: 0)
               context.scaleBy(x: -1, y: 1)
               context.translateBy(x: -insetRect.midX, y: 0)
@@ -363,14 +367,14 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
           } else {
             let path = CGPath(
               roundedRect: drawRect,
-              cornerWidth: instruction.cameraCornerRadius,
-              cornerHeight: instruction.cameraCornerRadius,
+              cornerWidth: cam.cornerRadius,
+              cornerHeight: cam.cornerRadius,
               transform: nil
             )
             context.saveGState()
             context.addPath(path)
             context.clip()
-            if instruction.cameraMirrored {
+            if cam.mirrored {
               context.translateBy(x: drawRect.midX, y: 0)
               context.scaleBy(x: -1, y: 1)
               context.translateBy(x: -drawRect.midX, y: 0)
@@ -382,6 +386,58 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
         }
       }
     }
+  }
+
+  private struct ResolvedCamera {
+    let rect: CGRect
+    let cornerRadius: CGFloat
+    let borderWidth: CGFloat
+    let borderColor: CGColor
+    let shadow: CGFloat
+    let mirrored: Bool
+  }
+
+  private static func resolveCamera(
+    instruction: CompositionInstruction,
+    compositionTime: CMTime,
+    outputWidth: Int,
+    outputHeight: Int
+  ) -> ResolvedCamera? {
+    let canvasSize = instruction.canvasSize
+    let scaleX = CGFloat(outputWidth) / canvasSize.width
+    let scaleY = CGFloat(outputHeight) / canvasSize.height
+    let scale = min(scaleX, scaleY)
+
+    if let region = instruction.cameraCustomRegions.first(where: { $0.timeRange.containsTime(compositionTime) }),
+      let ws = instruction.webcamSize
+    {
+      let pixelRect = region.layout.pixelRect(screenSize: canvasSize, webcamSize: ws, cameraAspect: region.cameraAspect)
+      let scaledRect = CGRect(
+        x: pixelRect.origin.x * scaleX,
+        y: pixelRect.origin.y * scaleY,
+        width: pixelRect.width * scaleX,
+        height: pixelRect.height * scaleY
+      )
+      let minDim = min(scaledRect.width, scaledRect.height)
+      return ResolvedCamera(
+        rect: scaledRect,
+        cornerRadius: minDim * (region.cornerRadius / 100.0),
+        borderWidth: region.borderWidth * scale,
+        borderColor: region.borderColor,
+        shadow: region.shadow,
+        mirrored: region.mirrored
+      )
+    }
+
+    guard let rect = instruction.cameraRect else { return nil }
+    return ResolvedCamera(
+      rect: rect,
+      cornerRadius: instruction.cameraCornerRadius,
+      borderWidth: instruction.cameraBorderWidth,
+      borderColor: instruction.cameraBorderColor,
+      shadow: instruction.cameraShadow,
+      mirrored: instruction.cameraMirrored
+    )
   }
 
   private static func aspectFillRect(imageSize: CGSize, in rect: CGRect) -> CGRect {

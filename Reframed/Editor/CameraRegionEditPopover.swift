@@ -1,10 +1,26 @@
 import SwiftUI
 
 struct CameraRegionEditPopover: View {
-  let regionType: CameraRegionType
+  let region: CameraRegionData
+  let maxCameraRelativeWidth: CGFloat
   let onChangeType: (CameraRegionType) -> Void
+  let onUpdateLayout: (CameraLayout) -> Void
+  let onSetCorner: (CameraCorner) -> Void
+  let onUpdateStyle:
+    (
+      CameraAspect?, CGFloat?, CGFloat?, CGFloat?, CodableColor?, Bool?
+    ) -> Void
   let onRemove: () -> Void
 
+  @State private var localLayout: CameraLayout = CameraLayout()
+  @State private var localAspect: CameraAspect = .original
+  @State private var localCornerRadius: CGFloat = 8
+  @State private var localShadow: CGFloat = 0
+  @State private var localBorderWidth: CGFloat = 0
+  @State private var localBorderColor: CodableColor = CodableColor(r: 0, g: 0, b: 0, a: 1)
+  @State private var localMirrored: Bool = false
+  @State private var showBorderColorPopover = false
+  @State private var didInit = false
   @Environment(\.colorScheme) private var colorScheme
 
   var body: some View {
@@ -16,12 +32,19 @@ struct CameraRegionEditPopover: View {
         items: CameraRegionType.allCases,
         label: { $0.label },
         selection: Binding(
-          get: { regionType },
+          get: { region.type },
           set: { onChangeType($0) }
         )
       )
       .padding(.horizontal, 12)
       .padding(.vertical, 4)
+
+      if region.type == .custom {
+        Divider()
+          .padding(.horizontal, 12)
+
+        customControls
+      }
 
       Button {
         onRemove()
@@ -45,5 +68,130 @@ struct CameraRegionEditPopover: View {
     .padding(.vertical, 8)
     .frame(width: Layout.regionPopoverWidth)
     .popoverContainerStyle()
+    .onAppear {
+      if !didInit {
+        localLayout = region.customLayout ?? CameraLayout()
+        localAspect = region.customCameraAspect ?? .original
+        localCornerRadius = region.customCornerRadius ?? 8
+        localShadow = region.customShadow ?? 0
+        localBorderWidth = region.customBorderWidth ?? 0
+        localBorderColor = region.customBorderColor ?? CodableColor(r: 0, g: 0, b: 0, a: 1)
+        localMirrored = region.customMirrored ?? false
+        didInit = true
+      }
+    }
+    .onChange(of: region.customLayout) { _, newValue in
+      if let newValue { localLayout = newValue }
+    }
+    .onChange(of: localLayout) { _, newValue in
+      onUpdateLayout(newValue)
+    }
+    .onChange(of: localAspect) { _, newValue in
+      onUpdateStyle(newValue, nil, nil, nil, nil, nil)
+    }
+    .onChange(of: localCornerRadius) { _, newValue in
+      onUpdateStyle(nil, newValue, nil, nil, nil, nil)
+    }
+    .onChange(of: localShadow) { _, newValue in
+      onUpdateStyle(nil, nil, newValue, nil, nil, nil)
+    }
+    .onChange(of: localBorderWidth) { _, newValue in
+      onUpdateStyle(nil, nil, nil, newValue, nil, nil)
+    }
+    .onChange(of: localBorderColor) { _, newValue in
+      onUpdateStyle(nil, nil, nil, nil, newValue, nil)
+    }
+    .onChange(of: localMirrored) { _, newValue in
+      onUpdateStyle(nil, nil, nil, nil, nil, newValue)
+    }
+  }
+
+  private var customControls: some View {
+    VStack(alignment: .leading, spacing: Layout.itemSpacing) {
+      SectionHeader(icon: "arrow.up.and.down.and.arrow.left.and.right", title: "Position")
+
+      HStack(spacing: 4) {
+        ForEach(
+          Array(
+            zip(
+              [CameraCorner.topLeft, .topRight, .bottomLeft, .bottomRight],
+              ["arrow.up.left", "arrow.up.right", "arrow.down.left", "arrow.down.right"]
+            )
+          ),
+          id: \.1
+        ) { corner, icon in
+          Button {
+            onSetCorner(corner)
+          } label: {
+            Image(systemName: icon)
+              .font(.system(size: 11))
+              .frame(width: 28, height: 28)
+              .background(ReframedColors.fieldBackground)
+              .clipShape(RoundedRectangle(cornerRadius: 4))
+          }
+          .buttonStyle(.plain)
+          .foregroundStyle(ReframedColors.primaryText)
+        }
+      }
+
+      SectionHeader(icon: "aspectratio", title: "Aspect Ratio")
+
+      Picker("", selection: $localAspect) {
+        ForEach(CameraAspect.allCases) { aspect in
+          Text(aspect.label).tag(aspect)
+        }
+      }
+      .pickerStyle(.segmented)
+      .labelsHidden()
+
+      SectionHeader(icon: "paintbrush", title: "Style")
+
+      SliderRow(
+        label: "Size",
+        value: $localLayout.relativeWidth,
+        range: 0.1...maxCameraRelativeWidth,
+        step: 0.01
+      )
+
+      SliderRow(
+        label: "Radius",
+        value: $localCornerRadius,
+        range: 0...50,
+        formattedValue: "\(Int(localCornerRadius))%"
+      )
+
+      SliderRow(
+        label: "Shadow",
+        value: $localShadow,
+        range: 0...100,
+        formattedValue: "\(Int(localShadow))"
+      )
+
+      SliderRow(
+        label: "Border",
+        value: $localBorderWidth,
+        range: 0...30,
+        step: 0.5,
+        formattedValue: String(format: "%.1f", localBorderWidth)
+      )
+
+      borderColorPickerButton
+
+      ToggleRow(label: "Mirror", isOn: $localMirrored)
+    }
+    .padding(.horizontal, 12)
+    .padding(.vertical, 4)
+  }
+
+  private var borderColorPickerButton: some View {
+    let currentName =
+      TailwindColors.all.first { $0.color == localBorderColor }?.name ?? "Custom"
+    return TailwindColorPicker(
+      displayColor: Color(cgColor: localBorderColor.cgColor),
+      displayName: currentName,
+      isPresented: $showBorderColorPopover,
+      isSelected: { $0.color == localBorderColor },
+      onSelect: { localBorderColor = $0.color }
+    )
   }
 }

@@ -613,6 +613,94 @@ final class EditorState {
     cameraRegions.contains { $0.type == .hidden && time >= $0.startSeconds && time <= $0.endSeconds }
   }
 
+  func effectiveCameraLayout(at time: Double) -> CameraLayout {
+    if let region = cameraRegions.first(where: {
+      $0.type == .custom && time >= $0.startSeconds && time <= $0.endSeconds
+    }), let layout = region.customLayout {
+      return layout
+    }
+    return cameraLayout
+  }
+
+  func activeCameraRegionId(at time: Double) -> UUID? {
+    cameraRegions.first(where: {
+      $0.type == .custom && time >= $0.startSeconds && time <= $0.endSeconds
+    })?.id
+  }
+
+  func updateCameraRegionLayout(regionId: UUID, layout: CameraLayout) {
+    guard let idx = cameraRegions.firstIndex(where: { $0.id == regionId }) else { return }
+    cameraRegions[idx].customLayout = layout
+  }
+
+  func setCameraRegionCorner(regionId: UUID, corner: CameraCorner) {
+    guard let idx = cameraRegions.firstIndex(where: { $0.id == regionId }),
+      var layout = cameraRegions[idx].customLayout
+    else { return }
+    let regionAspect = cameraRegions[idx].customCameraAspect ?? cameraAspect
+    let margin: CGFloat = 0.02
+    let canvas = canvasSize(for: result.screenSize)
+    let marginY = margin * canvas.width / max(canvas.height, 1)
+    let relH: CGFloat = {
+      guard let ws = result.webcamSize else { return layout.relativeWidth * 0.75 }
+      let aspect = regionAspect.heightToWidthRatio(webcamSize: ws)
+      return layout.relativeWidth * aspect * (canvas.width / max(canvas.height, 1))
+    }()
+    switch corner {
+    case .topLeft:
+      layout.relativeX = margin
+      layout.relativeY = marginY
+    case .topRight:
+      layout.relativeX = 1.0 - layout.relativeWidth - margin
+      layout.relativeY = marginY
+    case .bottomLeft:
+      layout.relativeX = margin
+      layout.relativeY = 1.0 - relH - marginY
+    case .bottomRight:
+      layout.relativeX = 1.0 - layout.relativeWidth - margin
+      layout.relativeY = 1.0 - relH - marginY
+    }
+    cameraRegions[idx].customLayout = layout
+  }
+
+  func clampCameraRegionLayout(regionId: UUID) {
+    guard let idx = cameraRegions.firstIndex(where: { $0.id == regionId }),
+      var layout = cameraRegions[idx].customLayout
+    else { return }
+    let regionAspect = cameraRegions[idx].customCameraAspect ?? cameraAspect
+    layout.relativeWidth = min(layout.relativeWidth, maxCameraRelativeWidth)
+    let relH: CGFloat = {
+      guard let ws = result.webcamSize else { return layout.relativeWidth * 0.75 }
+      let canvas = canvasSize(for: result.screenSize)
+      let aspect = regionAspect.heightToWidthRatio(webcamSize: ws)
+      return layout.relativeWidth * aspect * (canvas.width / max(canvas.height, 1))
+    }()
+    layout.relativeX = max(0, min(1 - layout.relativeWidth, layout.relativeX))
+    layout.relativeY = max(0, min(1 - relH, layout.relativeY))
+    cameraRegions[idx].customLayout = layout
+  }
+
+  func updateCameraRegionStyle(
+    regionId: UUID,
+    aspect: CameraAspect? = nil,
+    cornerRadius: CGFloat? = nil,
+    shadow: CGFloat? = nil,
+    borderWidth: CGFloat? = nil,
+    borderColor: CodableColor? = nil,
+    mirrored: Bool? = nil
+  ) {
+    guard let idx = cameraRegions.firstIndex(where: { $0.id == regionId }) else { return }
+    if let aspect { cameraRegions[idx].customCameraAspect = aspect }
+    if let cornerRadius { cameraRegions[idx].customCornerRadius = cornerRadius }
+    if let shadow { cameraRegions[idx].customShadow = shadow }
+    if let borderWidth { cameraRegions[idx].customBorderWidth = borderWidth }
+    if let borderColor { cameraRegions[idx].customBorderColor = borderColor }
+    if let mirrored { cameraRegions[idx].customMirrored = mirrored }
+    if aspect != nil {
+      clampCameraRegionLayout(regionId: regionId)
+    }
+  }
+
   func addCameraRegion(atTime time: Double, type: CameraRegionType = .fullscreen) {
     let dur = CMTimeGetSeconds(duration)
     let desiredHalf = min(5.0, dur / 2)
@@ -653,6 +741,29 @@ final class EditorState {
   func updateCameraRegionType(regionId: UUID, type: CameraRegionType) {
     guard let idx = cameraRegions.firstIndex(where: { $0.id == regionId }) else { return }
     cameraRegions[idx].type = type
+    if type == .custom {
+      if cameraRegions[idx].customLayout == nil {
+        cameraRegions[idx].customLayout = cameraLayout
+      }
+      if cameraRegions[idx].customCameraAspect == nil {
+        cameraRegions[idx].customCameraAspect = cameraAspect
+      }
+      if cameraRegions[idx].customCornerRadius == nil {
+        cameraRegions[idx].customCornerRadius = cameraCornerRadius
+      }
+      if cameraRegions[idx].customShadow == nil {
+        cameraRegions[idx].customShadow = cameraShadow
+      }
+      if cameraRegions[idx].customBorderWidth == nil {
+        cameraRegions[idx].customBorderWidth = cameraBorderWidth
+      }
+      if cameraRegions[idx].customBorderColor == nil {
+        cameraRegions[idx].customBorderColor = cameraBorderColor
+      }
+      if cameraRegions[idx].customMirrored == nil {
+        cameraRegions[idx].customMirrored = cameraMirrored
+      }
+    }
   }
 
   func updateCameraRegionStart(regionId: UUID, newStart: Double) {
@@ -791,6 +902,24 @@ final class EditorState {
         end: CMTime(seconds: $0.endSeconds, preferredTimescale: 600)
       )
     }
+    let camCustomRegions: [CameraCustomRegion] =
+      cameraRegions
+      .filter { $0.type == .custom && $0.customLayout != nil }
+      .map {
+        CameraCustomRegion(
+          timeRange: CMTimeRange(
+            start: CMTime(seconds: $0.startSeconds, preferredTimescale: 600),
+            end: CMTime(seconds: $0.endSeconds, preferredTimescale: 600)
+          ),
+          layout: $0.customLayout!,
+          cameraAspect: $0.customCameraAspect ?? cameraAspect,
+          cornerRadius: $0.customCornerRadius ?? cameraCornerRadius,
+          shadow: $0.customShadow ?? cameraShadow,
+          borderWidth: $0.customBorderWidth ?? cameraBorderWidth,
+          borderColor: ($0.customBorderColor ?? cameraBorderColor).cgColor,
+          mirrored: $0.customMirrored ?? cameraMirrored
+        )
+      }
 
     let exportResult: RecordingResult
     if webcamEnabled {
@@ -819,6 +948,7 @@ final class EditorState {
       micAudioRegions: micRegions.isEmpty ? nil : micRegions,
       cameraFullscreenRegions: camFsRegions.isEmpty ? nil : camFsRegions,
       cameraHiddenRegions: camHiddenRegions.isEmpty ? nil : camHiddenRegions,
+      cameraCustomRegions: camCustomRegions.isEmpty ? nil : camCustomRegions,
       backgroundStyle: backgroundStyle,
       backgroundImageURL: backgroundImageURL(),
       backgroundImageFillMode: backgroundImageFillMode,

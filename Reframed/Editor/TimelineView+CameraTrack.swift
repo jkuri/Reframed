@@ -49,10 +49,12 @@ extension TimelineView {
     width: CGFloat,
     height: CGFloat
   ) -> some View {
-    let accentColor =
-      region.type == .fullscreen
-      ? ReframedColors.webcamTrackColor
-      : ReframedColors.webcamHiddenTrackColor
+    let accentColor: Color =
+      switch region.type {
+      case .fullscreen: ReframedColors.webcamTrackColor
+      case .hidden: ReframedColors.webcamHiddenTrackColor
+      case .custom: ReframedColors.webcamCustomTrackColor
+      }
     let effective = effectiveCameraRegion(region, width: width)
     let startX = max(0, CGFloat(effective.start / totalSeconds) * width)
     let endX = min(width, CGFloat(effective.end / totalSeconds) * width)
@@ -82,9 +84,28 @@ extension TimelineView {
       arrowEdge: .top
     ) {
       CameraRegionEditPopover(
-        regionType: region.type,
+        region: region,
+        maxCameraRelativeWidth: editorState.maxCameraRelativeWidth,
         onChangeType: { newType in
           editorState.updateCameraRegionType(regionId: region.id, type: newType)
+        },
+        onUpdateLayout: { layout in
+          editorState.updateCameraRegionLayout(regionId: region.id, layout: layout)
+          editorState.clampCameraRegionLayout(regionId: region.id)
+        },
+        onSetCorner: { corner in
+          editorState.setCameraRegionCorner(regionId: region.id, corner: corner)
+        },
+        onUpdateStyle: { aspect, cornerRadius, shadow, borderWidth, borderColor, mirrored in
+          editorState.updateCameraRegionStyle(
+            regionId: region.id,
+            aspect: aspect,
+            cornerRadius: cornerRadius,
+            shadow: shadow,
+            borderWidth: borderWidth,
+            borderColor: borderColor,
+            mirrored: mirrored
+          )
         },
         onRemove: {
           popoverCameraRegionId = nil

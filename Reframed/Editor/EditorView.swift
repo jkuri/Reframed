@@ -228,7 +228,7 @@ struct EditorView: View {
         VideoPreviewView(
           screenPlayer: editorState.playerController.screenPlayer,
           webcamPlayer: editorState.webcamEnabled ? editorState.playerController.webcamPlayer : nil,
-          cameraLayout: $editorState.cameraLayout,
+          cameraLayout: effectiveCameraLayoutBinding,
           webcamSize: editorState.webcamEnabled ? editorState.result.webcamSize : nil,
           screenSize: screenSize,
           canvasSize: editorState.canvasSize(for: screenSize),
@@ -255,6 +255,21 @@ struct EditorView: View {
             ? editorState.cameraRegions.filter { $0.type == .fullscreen }.map { (start: $0.startSeconds, end: $0.endSeconds) } : [],
           cameraHiddenRegions: editorState.webcamEnabled
             ? editorState.cameraRegions.filter { $0.type == .hidden }.map { (start: $0.startSeconds, end: $0.endSeconds) } : [],
+          cameraCustomRegions: editorState.webcamEnabled
+            ? editorState.cameraRegions.filter { $0.type == .custom && $0.customLayout != nil }
+              .map { r in
+                (
+                  start: r.startSeconds,
+                  end: r.endSeconds,
+                  layout: r.customLayout!,
+                  cameraAspect: r.customCameraAspect ?? editorState.cameraAspect,
+                  cornerRadius: r.customCornerRadius ?? editorState.cameraCornerRadius,
+                  shadow: r.customShadow ?? editorState.cameraShadow,
+                  borderWidth: r.customBorderWidth ?? editorState.cameraBorderWidth,
+                  borderColor: (r.customBorderColor ?? editorState.cameraBorderColor).cgColor,
+                  mirrored: r.customMirrored ?? editorState.cameraMirrored
+                )
+              } : [],
           cameraFullscreenFillMode: editorState.cameraFullscreenFillMode,
           cameraFullscreenAspect: editorState.cameraFullscreenAspect
         )
@@ -325,6 +340,20 @@ struct EditorView: View {
       timelineZoom: $timelineZoom,
       baseZoom: $baseZoom
     )
+  }
+
+  private var effectiveCameraLayoutBinding: Binding<CameraLayout> {
+    let currentTime = CMTimeGetSeconds(editorState.currentTime)
+    if let regionId = editorState.activeCameraRegionId(at: currentTime) {
+      return Binding(
+        get: { editorState.effectiveCameraLayout(at: currentTime) },
+        set: { newLayout in
+          editorState.updateCameraRegionLayout(regionId: regionId, layout: newLayout)
+          editorState.clampCameraRegionLayout(regionId: regionId)
+        }
+      )
+    }
+    return $editorState.cameraLayout
   }
 
   private func previewCornerRadius(screenSize: CGSize, viewSize: CGSize) -> CGFloat {
