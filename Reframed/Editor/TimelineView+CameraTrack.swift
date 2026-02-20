@@ -107,6 +107,15 @@ extension TimelineView {
             mirrored: mirrored
           )
         },
+        onUpdateTransition: { entryType, entryDur, exitType, exitDur in
+          editorState.updateCameraRegionTransition(
+            regionId: region.id,
+            entryTransition: entryType,
+            entryDuration: entryDur,
+            exitTransition: exitType,
+            exitDuration: exitDur
+          )
+        },
         onRemove: {
           popoverCameraRegionId = nil
           editorState.removeCameraRegion(regionId: region.id)

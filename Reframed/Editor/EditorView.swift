@@ -252,9 +252,25 @@ struct EditorView: View {
           currentTime: CMTimeGetSeconds(editorState.currentTime),
           zoomTimeline: editorState.zoomTimeline,
           cameraFullscreenRegions: editorState.webcamEnabled
-            ? editorState.cameraRegions.filter { $0.type == .fullscreen }.map { (start: $0.startSeconds, end: $0.endSeconds) } : [],
+            ? editorState.cameraRegions.filter { $0.type == .fullscreen }.map { r in
+              (
+                start: r.startSeconds, end: r.endSeconds,
+                entryTransition: r.entryTransition ?? .none,
+                entryDuration: r.entryTransitionDuration ?? 0.3,
+                exitTransition: r.exitTransition ?? .none,
+                exitDuration: r.exitTransitionDuration ?? 0.3
+              )
+            } : [],
           cameraHiddenRegions: editorState.webcamEnabled
-            ? editorState.cameraRegions.filter { $0.type == .hidden }.map { (start: $0.startSeconds, end: $0.endSeconds) } : [],
+            ? editorState.cameraRegions.filter { $0.type == .hidden }.map { r in
+              (
+                start: r.startSeconds, end: r.endSeconds,
+                entryTransition: r.entryTransition ?? .none,
+                entryDuration: r.entryTransitionDuration ?? 0.3,
+                exitTransition: r.exitTransition ?? .none,
+                exitDuration: r.exitTransitionDuration ?? 0.3
+              )
+            } : [],
           cameraCustomRegions: editorState.webcamEnabled
             ? editorState.cameraRegions.filter { $0.type == .custom && $0.customLayout != nil }
               .map { r in
@@ -267,7 +283,11 @@ struct EditorView: View {
                   shadow: r.customShadow ?? editorState.cameraShadow,
                   borderWidth: r.customBorderWidth ?? editorState.cameraBorderWidth,
                   borderColor: (r.customBorderColor ?? editorState.cameraBorderColor).cgColor,
-                  mirrored: r.customMirrored ?? editorState.cameraMirrored
+                  mirrored: r.customMirrored ?? editorState.cameraMirrored,
+                  entryTransition: r.entryTransition ?? .none,
+                  entryDuration: r.entryTransitionDuration ?? 0.3,
+                  exitTransition: r.exitTransition ?? .none,
+                  exitDuration: r.exitTransitionDuration ?? 0.3
                 )
               } : [],
           cameraFullscreenFillMode: editorState.cameraFullscreenFillMode,

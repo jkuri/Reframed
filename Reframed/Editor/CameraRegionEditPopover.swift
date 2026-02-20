@@ -10,6 +10,7 @@ struct CameraRegionEditPopover: View {
     (
       CameraAspect?, CGFloat?, CGFloat?, CGFloat?, CodableColor?, Bool?
     ) -> Void
+  let onUpdateTransition: (CameraTransitionType?, Double?, CameraTransitionType?, Double?) -> Void
   let onRemove: () -> Void
 
   @State private var localLayout: CameraLayout = CameraLayout()
@@ -19,6 +20,10 @@ struct CameraRegionEditPopover: View {
   @State private var localBorderWidth: CGFloat = 0
   @State private var localBorderColor: CodableColor = CodableColor(r: 0, g: 0, b: 0, a: 1)
   @State private var localMirrored: Bool = false
+  @State private var localEntryTransition: CameraTransitionType = .none
+  @State private var localEntryDuration: Double = 0.3
+  @State private var localExitTransition: CameraTransitionType = .none
+  @State private var localExitDuration: Double = 0.3
   @State private var showBorderColorPopover = false
   @State private var didInit = false
   @Environment(\.colorScheme) private var colorScheme
@@ -45,6 +50,11 @@ struct CameraRegionEditPopover: View {
 
         customControls
       }
+
+      Divider()
+        .padding(.horizontal, 12)
+
+      transitionControls
 
       Button {
         onRemove()
@@ -77,6 +87,10 @@ struct CameraRegionEditPopover: View {
         localBorderWidth = region.customBorderWidth ?? 0
         localBorderColor = region.customBorderColor ?? CodableColor(r: 0, g: 0, b: 0, a: 1)
         localMirrored = region.customMirrored ?? false
+        localEntryTransition = region.entryTransition ?? .none
+        localEntryDuration = region.entryTransitionDuration ?? 0.3
+        localExitTransition = region.exitTransition ?? .none
+        localExitDuration = region.exitTransitionDuration ?? 0.3
         didInit = true
       }
     }
@@ -103,6 +117,18 @@ struct CameraRegionEditPopover: View {
     }
     .onChange(of: localMirrored) { _, newValue in
       onUpdateStyle(nil, nil, nil, nil, nil, newValue)
+    }
+    .onChange(of: localEntryTransition) { _, newValue in
+      onUpdateTransition(newValue, nil, nil, nil)
+    }
+    .onChange(of: localEntryDuration) { _, newValue in
+      onUpdateTransition(nil, newValue, nil, nil)
+    }
+    .onChange(of: localExitTransition) { _, newValue in
+      onUpdateTransition(nil, nil, newValue, nil)
+    }
+    .onChange(of: localExitDuration) { _, newValue in
+      onUpdateTransition(nil, nil, nil, newValue)
     }
   }
 
@@ -178,6 +204,50 @@ struct CameraRegionEditPopover: View {
       borderColorPickerButton
 
       ToggleRow(label: "Mirror", isOn: $localMirrored)
+    }
+    .padding(.horizontal, 12)
+    .padding(.vertical, 4)
+  }
+
+  private var transitionControls: some View {
+    VStack(alignment: .leading, spacing: Layout.itemSpacing) {
+      SectionHeader(icon: "arrow.right", title: "Entry Transition")
+
+      FullWidthSegmentPicker(
+        items: CameraTransitionType.allCases,
+        label: { $0.label },
+        selection: $localEntryTransition
+      )
+
+      if localEntryTransition != .none {
+        SliderRow(
+          label: "Duration",
+          value: $localEntryDuration,
+          range: 0.05...1.0,
+          step: 0.05,
+          formattedValue: String(format: "%.2fs", localEntryDuration)
+        )
+      }
+
+      Divider()
+
+      SectionHeader(icon: "arrow.left", title: "Exit Transition")
+
+      FullWidthSegmentPicker(
+        items: CameraTransitionType.allCases,
+        label: { $0.label },
+        selection: $localExitTransition
+      )
+
+      if localExitTransition != .none {
+        SliderRow(
+          label: "Duration",
+          value: $localExitDuration,
+          range: 0.05...1.0,
+          step: 0.05,
+          formattedValue: String(format: "%.2fs", localExitDuration)
+        )
+      }
     }
     .padding(.horizontal, 12)
     .padding(.vertical, 4)

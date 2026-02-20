@@ -701,6 +701,20 @@ final class EditorState {
     }
   }
 
+  func updateCameraRegionTransition(
+    regionId: UUID,
+    entryTransition: CameraTransitionType? = nil,
+    entryDuration: Double? = nil,
+    exitTransition: CameraTransitionType? = nil,
+    exitDuration: Double? = nil
+  ) {
+    guard let idx = cameraRegions.firstIndex(where: { $0.id == regionId }) else { return }
+    if let entryTransition { cameraRegions[idx].entryTransition = entryTransition }
+    if let entryDuration { cameraRegions[idx].entryTransitionDuration = entryDuration }
+    if let exitTransition { cameraRegions[idx].exitTransition = exitTransition }
+    if let exitDuration { cameraRegions[idx].exitTransitionDuration = exitDuration }
+  }
+
   func addCameraRegion(atTime time: Double, type: CameraRegionType = .fullscreen) {
     let dur = CMTimeGetSeconds(duration)
     let desiredHalf = min(5.0, dur / 2)
@@ -895,15 +909,27 @@ final class EditorState {
       )
     }
     let camFsRegions = cameraRegions.filter { $0.type == .fullscreen }.map {
-      CMTimeRange(
-        start: CMTime(seconds: $0.startSeconds, preferredTimescale: 600),
-        end: CMTime(seconds: $0.endSeconds, preferredTimescale: 600)
+      CameraRegionInfo(
+        timeRange: CMTimeRange(
+          start: CMTime(seconds: $0.startSeconds, preferredTimescale: 600),
+          end: CMTime(seconds: $0.endSeconds, preferredTimescale: 600)
+        ),
+        entryTransition: $0.entryTransition ?? .none,
+        entryDuration: $0.entryTransitionDuration ?? 0.3,
+        exitTransition: $0.exitTransition ?? .none,
+        exitDuration: $0.exitTransitionDuration ?? 0.3
       )
     }
     let camHiddenRegions = cameraRegions.filter { $0.type == .hidden }.map {
-      CMTimeRange(
-        start: CMTime(seconds: $0.startSeconds, preferredTimescale: 600),
-        end: CMTime(seconds: $0.endSeconds, preferredTimescale: 600)
+      CameraRegionInfo(
+        timeRange: CMTimeRange(
+          start: CMTime(seconds: $0.startSeconds, preferredTimescale: 600),
+          end: CMTime(seconds: $0.endSeconds, preferredTimescale: 600)
+        ),
+        entryTransition: $0.entryTransition ?? .none,
+        entryDuration: $0.entryTransitionDuration ?? 0.3,
+        exitTransition: $0.exitTransition ?? .none,
+        exitDuration: $0.exitTransitionDuration ?? 0.3
       )
     }
     let camCustomRegions: [CameraCustomRegion] =
@@ -921,7 +947,11 @@ final class EditorState {
           shadow: $0.customShadow ?? cameraShadow,
           borderWidth: $0.customBorderWidth ?? cameraBorderWidth,
           borderColor: ($0.customBorderColor ?? cameraBorderColor).cgColor,
-          mirrored: $0.customMirrored ?? cameraMirrored
+          mirrored: $0.customMirrored ?? cameraMirrored,
+          entryTransition: $0.entryTransition ?? .none,
+          entryDuration: $0.entryTransitionDuration ?? 0.3,
+          exitTransition: $0.exitTransition ?? .none,
+          exitDuration: $0.exitTransitionDuration ?? 0.3
         )
       }
 

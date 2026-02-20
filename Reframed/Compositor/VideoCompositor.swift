@@ -19,8 +19,8 @@ enum VideoCompositor {
     trimRange: CMTimeRange,
     systemAudioRegions: [CMTimeRange]? = nil,
     micAudioRegions: [CMTimeRange]? = nil,
-    cameraFullscreenRegions: [CMTimeRange]? = nil,
-    cameraHiddenRegions: [CMTimeRange]? = nil,
+    cameraFullscreenRegions: [CameraRegionInfo]? = nil,
+    cameraHiddenRegions: [CameraRegionInfo]? = nil,
     cameraCustomRegions: [CameraCustomRegion]? = nil,
     backgroundStyle: BackgroundStyle = .none,
     backgroundImageURL: URL? = nil,
@@ -264,21 +264,33 @@ enum VideoCompositor {
         zoomTimeline: zoomTimeline,
         trimStartSeconds: CMTimeGetSeconds(effectiveTrim.start),
         cameraFullscreenRegions: (cameraFullscreenRegions ?? []).compactMap { region in
-          let overlapStart = CMTimeMaximum(region.start, effectiveTrim.start)
-          let overlapEnd = CMTimeMinimum(region.end, effectiveTrim.end)
+          let overlapStart = CMTimeMaximum(region.timeRange.start, effectiveTrim.start)
+          let overlapEnd = CMTimeMinimum(region.timeRange.end, effectiveTrim.end)
           guard CMTimeCompare(overlapEnd, overlapStart) > 0 else { return nil }
-          return CMTimeRange(
-            start: CMTimeSubtract(overlapStart, effectiveTrim.start),
-            end: CMTimeSubtract(overlapEnd, effectiveTrim.start)
+          return CameraRegionInfo(
+            timeRange: CMTimeRange(
+              start: CMTimeSubtract(overlapStart, effectiveTrim.start),
+              end: CMTimeSubtract(overlapEnd, effectiveTrim.start)
+            ),
+            entryTransition: region.entryTransition,
+            entryDuration: region.entryDuration,
+            exitTransition: region.exitTransition,
+            exitDuration: region.exitDuration
           )
         },
         cameraHiddenRegions: (cameraHiddenRegions ?? []).compactMap { region in
-          let overlapStart = CMTimeMaximum(region.start, effectiveTrim.start)
-          let overlapEnd = CMTimeMinimum(region.end, effectiveTrim.end)
+          let overlapStart = CMTimeMaximum(region.timeRange.start, effectiveTrim.start)
+          let overlapEnd = CMTimeMinimum(region.timeRange.end, effectiveTrim.end)
           guard CMTimeCompare(overlapEnd, overlapStart) > 0 else { return nil }
-          return CMTimeRange(
-            start: CMTimeSubtract(overlapStart, effectiveTrim.start),
-            end: CMTimeSubtract(overlapEnd, effectiveTrim.start)
+          return CameraRegionInfo(
+            timeRange: CMTimeRange(
+              start: CMTimeSubtract(overlapStart, effectiveTrim.start),
+              end: CMTimeSubtract(overlapEnd, effectiveTrim.start)
+            ),
+            entryTransition: region.entryTransition,
+            entryDuration: region.entryDuration,
+            exitTransition: region.exitTransition,
+            exitDuration: region.exitDuration
           )
         },
         cameraCustomRegions: (cameraCustomRegions ?? []).compactMap { region in
@@ -296,7 +308,11 @@ enum VideoCompositor {
             shadow: region.shadow,
             borderWidth: region.borderWidth,
             borderColor: region.borderColor,
-            mirrored: region.mirrored
+            mirrored: region.mirrored,
+            entryTransition: region.entryTransition,
+            entryDuration: region.entryDuration,
+            exitTransition: region.exitTransition,
+            exitDuration: region.exitDuration
           )
         },
         webcamSize: result.webcamSize,

@@ -1,6 +1,14 @@
 import AVFoundation
 import CoreMedia
 
+struct CameraRegionInfo: Sendable {
+  let timeRange: CMTimeRange
+  let entryTransition: CameraTransitionType
+  let entryDuration: Double
+  let exitTransition: CameraTransitionType
+  let exitDuration: Double
+}
+
 struct CameraCustomRegion: Sendable {
   let timeRange: CMTimeRange
   let layout: CameraLayout
@@ -10,6 +18,10 @@ struct CameraCustomRegion: Sendable {
   let borderWidth: CGFloat
   let borderColor: CGColor
   let mirrored: Bool
+  let entryTransition: CameraTransitionType
+  let entryDuration: Double
+  let exitTransition: CameraTransitionType
+  let exitDuration: Double
 }
 
 final class CompositionInstruction: NSObject, AVVideoCompositionInstructionProtocol, @unchecked Sendable {
@@ -50,8 +62,8 @@ final class CompositionInstruction: NSObject, AVVideoCompositionInstructionProto
   let zoomFollowCursor: Bool
   let zoomTimeline: ZoomTimeline?
   let trimStartSeconds: Double
-  let cameraFullscreenRegions: [CMTimeRange]
-  let cameraHiddenRegions: [CMTimeRange]
+  let cameraFullscreenRegions: [CameraRegionInfo]
+  let cameraHiddenRegions: [CameraRegionInfo]
   let cameraCustomRegions: [CameraCustomRegion]
   let webcamSize: CGSize?
   let cameraAspect: CameraAspect
@@ -89,8 +101,8 @@ final class CompositionInstruction: NSObject, AVVideoCompositionInstructionProto
     zoomFollowCursor: Bool = true,
     zoomTimeline: ZoomTimeline? = nil,
     trimStartSeconds: Double = 0,
-    cameraFullscreenRegions: [CMTimeRange] = [],
-    cameraHiddenRegions: [CMTimeRange] = [],
+    cameraFullscreenRegions: [CameraRegionInfo] = [],
+    cameraHiddenRegions: [CameraRegionInfo] = [],
     cameraCustomRegions: [CameraCustomRegion] = [],
     webcamSize: CGSize? = nil,
     cameraAspect: CameraAspect = .original,

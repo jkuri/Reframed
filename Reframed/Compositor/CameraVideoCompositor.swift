@@ -246,107 +246,89 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
     }
 
     if let webcamBuffer {
-      let isCamHidden = instruction.cameraHiddenRegions.contains {
-        $0.containsTime(compositionTime)
+      let hiddenRegion = instruction.cameraHiddenRegions.first {
+        $0.timeRange.containsTime(compositionTime)
       }
 
-      guard !isCamHidden else {
+      let hiddenTransition: (type: CameraTransitionType, progress: CGFloat)? = {
+        guard let r = hiddenRegion else { return nil }
+        let p = computeRegionTransition(compositionTime: compositionTime, region: r)
+        return (resolveActiveTransitionType(compositionTime: compositionTime, region: r), 1.0 - p)
+      }()
+
+      if hiddenRegion != nil && (hiddenTransition == nil || hiddenTransition!.type == .none) {
         return
       }
 
-      let isCamFullscreen = instruction.cameraFullscreenRegions.contains {
-        $0.containsTime(compositionTime)
+      let fsRegion = instruction.cameraFullscreenRegions.first {
+        $0.timeRange.containsTime(compositionTime)
       }
+      let isCamFullscreen = hiddenRegion == nil && fsRegion != nil
+
+      let regionTransition: (type: CameraTransitionType, progress: CGFloat)? = {
+        if let ht = hiddenTransition, ht.type != .none { return ht }
+        if let r = fsRegion {
+          let p = computeRegionTransition(compositionTime: compositionTime, region: r)
+          let t = resolveActiveTransitionType(compositionTime: compositionTime, region: r)
+          if t != .none { return (t, p) }
+        }
+        if let r = instruction.cameraCustomRegions.first(where: { $0.timeRange.containsTime(compositionTime) }) {
+          let info = CameraRegionInfo(
+            timeRange: r.timeRange,
+            entryTransition: r.entryTransition,
+            entryDuration: r.entryDuration,
+            exitTransition: r.exitTransition,
+            exitDuration: r.exitDuration
+          )
+          let p = computeRegionTransition(compositionTime: compositionTime, region: info)
+          let t = resolveActiveTransitionType(compositionTime: compositionTime, region: info)
+          if t != .none { return (t, p) }
+        }
+        return nil
+      }()
 
       let webcamImage = createImage(from: webcamBuffer, colorSpace: colorSpace)
 
       if let webcamImage {
-        if isCamFullscreen {
+        let isFullscreenScale = isCamFullscreen && regionTransition?.type == .scale && regionTransition!.progress < 1.0
+
+        if isFullscreenScale,
+          let pipCam = resolveCamera(
+            instruction: instruction,
+            compositionTime: compositionTime,
+            outputWidth: width,
+            outputHeight: height
+          )
+        {
+          let p = regionTransition!.progress
           let fullRect = CGRect(x: 0, y: 0, width: width, height: height)
-          let targetAspect = instruction.cameraFullscreenAspect.aspectRatio(
-            webcamSize: CGSize(width: webcamImage.width, height: webcamImage.height)
-          )
-          let virtualSize: CGSize
-          if instruction.cameraFullscreenAspect == .original {
-            virtualSize = CGSize(width: webcamImage.width, height: webcamImage.height)
-          } else {
-            virtualSize = CGSize(width: targetAspect * 1000, height: 1000)
-          }
-          let drawRect: CGRect
-          switch instruction.cameraFullscreenFillMode {
-          case .fit:
-            drawRect = AVMakeRect(aspectRatio: virtualSize, insideRect: fullRect)
-          case .fill:
-            drawRect = aspectFillRect(imageSize: virtualSize, in: fullRect)
-          }
-          context.saveGState()
-          drawBackground(in: context, rect: fullRect, instruction: instruction, colorSpace: colorSpace)
-          context.clip(to: fullRect)
-          if instruction.cameraMirrored {
-            context.translateBy(x: drawRect.midX, y: 0)
-            context.scaleBy(x: -1, y: 1)
-            context.translateBy(x: -drawRect.midX, y: 0)
-          }
-          if instruction.cameraFullscreenAspect == .original {
-            context.draw(webcamImage, in: drawRect)
-          } else {
-            let imgFill = aspectFillRect(
-              imageSize: CGSize(width: webcamImage.width, height: webcamImage.height),
-              in: drawRect
-            )
-            context.clip(to: drawRect)
-            context.draw(webcamImage, in: imgFill)
-          }
-          context.restoreGState()
-        } else if let cam = resolveCamera(
-          instruction: instruction,
-          compositionTime: compositionTime,
-          outputWidth: width,
-          outputHeight: height
-        ) {
-          let flippedY = CGFloat(height) - cam.rect.origin.y - cam.rect.height
-          let drawRect = CGRect(
-            x: cam.rect.origin.x,
-            y: flippedY,
-            width: cam.rect.width,
-            height: cam.rect.height
-          )
+          let pipFlippedY = CGFloat(height) - pipCam.rect.origin.y - pipCam.rect.height
+          let pipRect = CGRect(x: pipCam.rect.origin.x, y: pipFlippedY, width: pipCam.rect.width, height: pipCam.rect.height)
 
-          if cam.shadow > 0 {
-            let blur = min(drawRect.width, drawRect.height) * cam.shadow / 2000.0
-            context.saveGState()
-            context.setShadow(
-              offset: .zero,
-              blur: blur,
-              color: CGColor(red: 0, green: 0, blue: 0, alpha: 0.6)
-            )
-            let shadowPath = CGPath(
-              roundedRect: drawRect,
-              cornerWidth: cam.cornerRadius,
-              cornerHeight: cam.cornerRadius,
-              transform: nil
-            )
-            context.addPath(shadowPath)
-            context.setFillColor(CGColor(red: 0, green: 0, blue: 0, alpha: 1))
-            context.fillPath()
-            context.restoreGState()
-          }
+          let interpRect = CGRect(
+            x: pipRect.origin.x + (fullRect.origin.x - pipRect.origin.x) * p,
+            y: pipRect.origin.y + (fullRect.origin.y - pipRect.origin.y) * p,
+            width: pipRect.width + (fullRect.width - pipRect.width) * p,
+            height: pipRect.height + (fullRect.height - pipRect.height) * p
+          )
+          let interpRadius = pipCam.cornerRadius * (1.0 - p)
+          let interpBorder = pipCam.borderWidth * (1.0 - p)
 
-          if cam.borderWidth > 0 {
+          if interpBorder > 0 {
             let borderPath = CGPath(
-              roundedRect: drawRect,
-              cornerWidth: cam.cornerRadius,
-              cornerHeight: cam.cornerRadius,
+              roundedRect: interpRect,
+              cornerWidth: interpRadius,
+              cornerHeight: interpRadius,
               transform: nil
             )
             context.saveGState()
             context.addPath(borderPath)
-            context.setFillColor(cam.borderColor)
+            context.setFillColor(pipCam.borderColor)
             context.fillPath()
             context.restoreGState()
 
-            let insetRect = drawRect.insetBy(dx: cam.borderWidth, dy: cam.borderWidth)
-            let innerRadius = max(0, cam.cornerRadius - cam.borderWidth)
+            let insetRect = interpRect.insetBy(dx: interpBorder, dy: interpBorder)
+            let innerRadius = max(0, interpRadius - interpBorder)
             let innerPath = CGPath(
               roundedRect: insetRect,
               cornerWidth: innerRadius,
@@ -356,7 +338,7 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
             context.saveGState()
             context.addPath(innerPath)
             context.clip()
-            if cam.mirrored {
+            if instruction.cameraMirrored {
               context.translateBy(x: insetRect.midX, y: 0)
               context.scaleBy(x: -1, y: 1)
               context.translateBy(x: -insetRect.midX, y: 0)
@@ -366,26 +348,228 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
             context.restoreGState()
           } else {
             let path = CGPath(
-              roundedRect: drawRect,
-              cornerWidth: cam.cornerRadius,
-              cornerHeight: cam.cornerRadius,
+              roundedRect: interpRect,
+              cornerWidth: interpRadius,
+              cornerHeight: interpRadius,
               transform: nil
             )
             context.saveGState()
             context.addPath(path)
             context.clip()
-            if cam.mirrored {
+            if instruction.cameraMirrored {
+              context.translateBy(x: interpRect.midX, y: 0)
+              context.scaleBy(x: -1, y: 1)
+              context.translateBy(x: -interpRect.midX, y: 0)
+            }
+            let fillRect = aspectFillRect(imageSize: CGSize(width: webcamImage.width, height: webcamImage.height), in: interpRect)
+            context.draw(webcamImage, in: fillRect)
+            context.restoreGState()
+          }
+        } else {
+          if let rt = regionTransition, rt.type != .none {
+            context.saveGState()
+            switch rt.type {
+            case .none:
+              break
+            case .fade:
+              context.setAlpha(rt.progress)
+            case .scale:
+              let scaleCam = resolveCamera(
+                instruction: instruction,
+                compositionTime: compositionTime,
+                outputWidth: width,
+                outputHeight: height
+              )
+              let cx: CGFloat
+              let cy: CGFloat
+              if let cam = scaleCam {
+                let flippedY = CGFloat(height) - cam.rect.origin.y - cam.rect.height
+                cx = cam.rect.origin.x + cam.rect.width / 2
+                cy = flippedY + cam.rect.height / 2
+              } else {
+                cx = CGFloat(width) / 2
+                cy = CGFloat(height) / 2
+              }
+              context.translateBy(x: cx, y: cy)
+              context.scaleBy(x: rt.progress, y: rt.progress)
+              context.translateBy(x: -cx, y: -cy)
+            case .slide:
+              let offsetY = (1.0 - rt.progress) * CGFloat(height) * 0.5
+              context.translateBy(x: 0, y: -offsetY)
+            }
+          }
+
+          if isCamFullscreen {
+            let fullRect = CGRect(x: 0, y: 0, width: width, height: height)
+            let targetAspect = instruction.cameraFullscreenAspect.aspectRatio(
+              webcamSize: CGSize(width: webcamImage.width, height: webcamImage.height)
+            )
+            let virtualSize: CGSize
+            if instruction.cameraFullscreenAspect == .original {
+              virtualSize = CGSize(width: webcamImage.width, height: webcamImage.height)
+            } else {
+              virtualSize = CGSize(width: targetAspect * 1000, height: 1000)
+            }
+            let drawRect: CGRect
+            switch instruction.cameraFullscreenFillMode {
+            case .fit:
+              drawRect = AVMakeRect(aspectRatio: virtualSize, insideRect: fullRect)
+            case .fill:
+              drawRect = aspectFillRect(imageSize: virtualSize, in: fullRect)
+            }
+            context.saveGState()
+            drawBackground(in: context, rect: fullRect, instruction: instruction, colorSpace: colorSpace)
+            context.clip(to: fullRect)
+            if instruction.cameraMirrored {
               context.translateBy(x: drawRect.midX, y: 0)
               context.scaleBy(x: -1, y: 1)
               context.translateBy(x: -drawRect.midX, y: 0)
             }
-            let fillRect = aspectFillRect(imageSize: CGSize(width: webcamImage.width, height: webcamImage.height), in: drawRect)
-            context.draw(webcamImage, in: fillRect)
+            if instruction.cameraFullscreenAspect == .original {
+              context.draw(webcamImage, in: drawRect)
+            } else {
+              let imgFill = aspectFillRect(
+                imageSize: CGSize(width: webcamImage.width, height: webcamImage.height),
+                in: drawRect
+              )
+              context.clip(to: drawRect)
+              context.draw(webcamImage, in: imgFill)
+            }
+            context.restoreGState()
+          } else if let cam = resolveCamera(
+            instruction: instruction,
+            compositionTime: compositionTime,
+            outputWidth: width,
+            outputHeight: height
+          ) {
+            let flippedY = CGFloat(height) - cam.rect.origin.y - cam.rect.height
+            let drawRect = CGRect(
+              x: cam.rect.origin.x,
+              y: flippedY,
+              width: cam.rect.width,
+              height: cam.rect.height
+            )
+
+            if cam.shadow > 0 {
+              let blur = min(drawRect.width, drawRect.height) * cam.shadow / 2000.0
+              context.saveGState()
+              context.setShadow(
+                offset: .zero,
+                blur: blur,
+                color: CGColor(red: 0, green: 0, blue: 0, alpha: 0.6)
+              )
+              let shadowPath = CGPath(
+                roundedRect: drawRect,
+                cornerWidth: cam.cornerRadius,
+                cornerHeight: cam.cornerRadius,
+                transform: nil
+              )
+              context.addPath(shadowPath)
+              context.setFillColor(CGColor(red: 0, green: 0, blue: 0, alpha: 1))
+              context.fillPath()
+              context.restoreGState()
+            }
+
+            if cam.borderWidth > 0 {
+              let borderPath = CGPath(
+                roundedRect: drawRect,
+                cornerWidth: cam.cornerRadius,
+                cornerHeight: cam.cornerRadius,
+                transform: nil
+              )
+              context.saveGState()
+              context.addPath(borderPath)
+              context.setFillColor(cam.borderColor)
+              context.fillPath()
+              context.restoreGState()
+
+              let insetRect = drawRect.insetBy(dx: cam.borderWidth, dy: cam.borderWidth)
+              let innerRadius = max(0, cam.cornerRadius - cam.borderWidth)
+              let innerPath = CGPath(
+                roundedRect: insetRect,
+                cornerWidth: innerRadius,
+                cornerHeight: innerRadius,
+                transform: nil
+              )
+              context.saveGState()
+              context.addPath(innerPath)
+              context.clip()
+              if cam.mirrored {
+                context.translateBy(x: insetRect.midX, y: 0)
+                context.scaleBy(x: -1, y: 1)
+                context.translateBy(x: -insetRect.midX, y: 0)
+              }
+              let innerFill = aspectFillRect(imageSize: CGSize(width: webcamImage.width, height: webcamImage.height), in: insetRect)
+              context.draw(webcamImage, in: innerFill)
+              context.restoreGState()
+            } else {
+              let path = CGPath(
+                roundedRect: drawRect,
+                cornerWidth: cam.cornerRadius,
+                cornerHeight: cam.cornerRadius,
+                transform: nil
+              )
+              context.saveGState()
+              context.addPath(path)
+              context.clip()
+              if cam.mirrored {
+                context.translateBy(x: drawRect.midX, y: 0)
+                context.scaleBy(x: -1, y: 1)
+                context.translateBy(x: -drawRect.midX, y: 0)
+              }
+              let fillRect = aspectFillRect(imageSize: CGSize(width: webcamImage.width, height: webcamImage.height), in: drawRect)
+              context.draw(webcamImage, in: fillRect)
+              context.restoreGState()
+            }
+          }
+
+          if regionTransition != nil && regionTransition!.type != .none {
             context.restoreGState()
           }
         }
       }
     }
+  }
+
+  private static func smoothstep(_ t: Double) -> CGFloat {
+    let c = max(0.0, min(1.0, t))
+    return CGFloat(c * c * c * (c * (c * 6 - 15) + 10))
+  }
+
+  private static func computeRegionTransition(
+    compositionTime: CMTime,
+    region: CameraRegionInfo
+  ) -> CGFloat {
+    let t = CMTimeGetSeconds(compositionTime)
+    let start = CMTimeGetSeconds(region.timeRange.start)
+    let end = CMTimeGetSeconds(region.timeRange.end)
+    let elapsed = t - start
+    let remaining = end - t
+    if region.entryTransition != .none && elapsed < region.entryDuration {
+      return smoothstep(elapsed / region.entryDuration)
+    }
+    if region.exitTransition != .none && remaining < region.exitDuration {
+      return smoothstep(remaining / region.exitDuration)
+    }
+    return 1.0
+  }
+
+  private static func resolveActiveTransitionType(
+    compositionTime: CMTime,
+    region: CameraRegionInfo
+  ) -> CameraTransitionType {
+    let t = CMTimeGetSeconds(compositionTime)
+    let start = CMTimeGetSeconds(region.timeRange.start)
+    let end = CMTimeGetSeconds(region.timeRange.end)
+    let elapsed = t - start
+    let remaining = end - t
+    if region.entryTransition != .none && elapsed < region.entryDuration {
+      return region.entryTransition
+    }
+    if region.exitTransition != .none && remaining < region.exitDuration {
+      return region.exitTransition
+    }
+    return .none
   }
 
   private struct ResolvedCamera {

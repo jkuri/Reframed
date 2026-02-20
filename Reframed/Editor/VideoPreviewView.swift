@@ -28,12 +28,24 @@ struct VideoPreviewView: NSViewRepresentable {
   var zoomFollowCursor: Bool = true
   var currentTime: Double = 0
   var zoomTimeline: ZoomTimeline?
-  var cameraFullscreenRegions: [(start: Double, end: Double)] = []
-  var cameraHiddenRegions: [(start: Double, end: Double)] = []
+  var cameraFullscreenRegions:
+    [(
+      start: Double, end: Double,
+      entryTransition: CameraTransitionType, entryDuration: Double,
+      exitTransition: CameraTransitionType, exitDuration: Double
+    )] = []
+  var cameraHiddenRegions:
+    [(
+      start: Double, end: Double,
+      entryTransition: CameraTransitionType, entryDuration: Double,
+      exitTransition: CameraTransitionType, exitDuration: Double
+    )] = []
   var cameraCustomRegions:
     [(
       start: Double, end: Double, layout: CameraLayout, cameraAspect: CameraAspect, cornerRadius: CGFloat, shadow: CGFloat,
-      borderWidth: CGFloat, borderColor: CGColor, mirrored: Bool
+      borderWidth: CGFloat, borderColor: CGColor, mirrored: Bool,
+      entryTransition: CameraTransitionType, entryDuration: Double,
+      exitTransition: CameraTransitionType, exitDuration: Double
     )] = []
   var cameraFullscreenFillMode: CameraFullscreenFillMode = .fit
   var cameraFullscreenAspect: CameraFullscreenAspect = .original
@@ -53,14 +65,109 @@ struct VideoPreviewView: NSViewRepresentable {
     context.coordinator.cameraLayout = $cameraLayout
     context.coordinator.canvasSize = canvasSize
 
-    let isCameraHidden = cameraHiddenRegions.contains { currentTime >= $0.start && currentTime <= $0.end }
+    let hiddenRegion = cameraHiddenRegions.first { currentTime >= $0.start && currentTime <= $0.end }
+    let isCameraHidden = hiddenRegion != nil
     nsView.isCameraHidden = isCameraHidden
-    let isFullscreen = !isCameraHidden && cameraFullscreenRegions.contains { currentTime >= $0.start && currentTime <= $0.end }
+    let fsRegion = cameraFullscreenRegions.first { currentTime >= $0.start && currentTime <= $0.end }
+    let isFullscreen = !isCameraHidden && fsRegion != nil
     nsView.isCameraFullscreen = isFullscreen
     nsView.currentFullscreenFillMode = cameraFullscreenFillMode
     nsView.currentFullscreenAspect = cameraFullscreenAspect
 
     let customRegion = cameraCustomRegions.first(where: { currentTime >= $0.start && currentTime <= $0.end })
+
+    let transitionProgress: CGFloat = {
+      if let r = hiddenRegion {
+        let p = Self.computeTransitionProgress(
+          time: currentTime,
+          start: r.start,
+          end: r.end,
+          entryTransition: r.entryTransition,
+          entryDuration: r.entryDuration,
+          exitTransition: r.exitTransition,
+          exitDuration: r.exitDuration
+        )
+        return 1.0 - p
+      }
+      if let r = fsRegion {
+        return Self.computeTransitionProgress(
+          time: currentTime,
+          start: r.start,
+          end: r.end,
+          entryTransition: r.entryTransition,
+          entryDuration: r.entryDuration,
+          exitTransition: r.exitTransition,
+          exitDuration: r.exitDuration
+        )
+      }
+      if let r = customRegion {
+        return Self.computeTransitionProgress(
+          time: currentTime,
+          start: r.start,
+          end: r.end,
+          entryTransition: r.entryTransition,
+          entryDuration: r.entryDuration,
+          exitTransition: r.exitTransition,
+          exitDuration: r.exitDuration
+        )
+      }
+      return 1.0
+    }()
+
+    let activeTransitionType: CameraTransitionType = {
+      func resolveType(
+        time: Double,
+        start: Double,
+        end: Double,
+        entryTransition: CameraTransitionType,
+        entryDuration: Double,
+        exitTransition: CameraTransitionType,
+        exitDuration: Double
+      ) -> CameraTransitionType {
+        let elapsed = time - start
+        let remaining = end - time
+        if entryTransition != .none && elapsed < entryDuration { return entryTransition }
+        if exitTransition != .none && remaining < exitDuration { return exitTransition }
+        return .none
+      }
+      if let r = hiddenRegion {
+        return resolveType(
+          time: currentTime,
+          start: r.start,
+          end: r.end,
+          entryTransition: r.entryTransition,
+          entryDuration: r.entryDuration,
+          exitTransition: r.exitTransition,
+          exitDuration: r.exitDuration
+        )
+      }
+      if let r = fsRegion {
+        return resolveType(
+          time: currentTime,
+          start: r.start,
+          end: r.end,
+          entryTransition: r.entryTransition,
+          entryDuration: r.entryDuration,
+          exitTransition: r.exitTransition,
+          exitDuration: r.exitDuration
+        )
+      }
+      if let r = customRegion {
+        return resolveType(
+          time: currentTime,
+          start: r.start,
+          end: r.end,
+          entryTransition: r.entryTransition,
+          entryDuration: r.entryDuration,
+          exitTransition: r.exitTransition,
+          exitDuration: r.exitDuration
+        )
+      }
+      return .none
+    }()
+
+    nsView.cameraTransitionProgress = transitionProgress
+    nsView.cameraTransitionType = activeTransitionType
     let effectiveLayout = customRegion?.layout ?? cameraLayout
 
     nsView.updateCameraLayout(
@@ -115,6 +222,31 @@ struct VideoPreviewView: NSViewRepresentable {
     }
   }
 
+  static func smoothstep(_ t: Double) -> CGFloat {
+    let c = max(0, min(1, t))
+    return CGFloat(c * c * c * (c * (c * 6 - 15) + 10))
+  }
+
+  static func computeTransitionProgress(
+    time: Double,
+    start: Double,
+    end: Double,
+    entryTransition: CameraTransitionType,
+    entryDuration: Double,
+    exitTransition: CameraTransitionType,
+    exitDuration: Double
+  ) -> CGFloat {
+    let elapsed = time - start
+    let remaining = end - time
+    if entryTransition != .none && elapsed < entryDuration {
+      return smoothstep(elapsed / entryDuration)
+    }
+    if exitTransition != .none && remaining < exitDuration {
+      return smoothstep(remaining / exitDuration)
+    }
+    return 1.0
+  }
+
   func makeCoordinator() -> Coordinator {
     Coordinator(cameraLayout: $cameraLayout, screenSize: screenSize, canvasSize: canvasSize, webcamSize: webcamSize)
   }
@@ -149,6 +281,8 @@ final class VideoPreviewContainer: NSView {
   var isCameraFullscreen = false
   var currentFullscreenFillMode: CameraFullscreenFillMode = .fit
   var currentFullscreenAspect: CameraFullscreenAspect = .original
+  var cameraTransitionProgress: CGFloat = 1.0
+  var cameraTransitionType: CameraTransitionType = .none
   private var isDraggingCamera = false
   private var currentLayout = CameraLayout()
   private var currentWebcamSize: CGSize?
@@ -416,8 +550,11 @@ final class VideoPreviewContainer: NSView {
       return
     }
 
-    if isCameraHidden {
+    let hasActiveTransition = cameraTransitionType != .none && cameraTransitionProgress < 1.0
+    if isCameraHidden && !hasActiveTransition {
       webcamWrapper.isHidden = true
+      webcamWrapper.alphaValue = 1.0
+      webcamWrapper.layer?.transform = CATransform3DIdentity
       screenContainerLayer.isHidden = false
       cursorOverlay.isHidden = false
       CATransaction.commit()
@@ -426,7 +563,62 @@ final class VideoPreviewContainer: NSView {
 
     webcamWrapper.isHidden = false
 
+    if isCameraHidden && hasActiveTransition {
+      webcamWrapper.alphaValue = 1.0
+      webcamWrapper.layer?.transform = CATransform3DIdentity
+      screenContainerLayer.isHidden = false
+      cursorOverlay.isHidden = false
+    }
+
     if isCameraFullscreen {
+      let isScaleTransition = cameraTransitionType == .scale && cameraTransitionProgress < 1.0
+
+      if isScaleTransition {
+        screenContainerLayer.isHidden = false
+        cursorOverlay.isHidden = false
+        webcamWrapper.layer?.shadowOpacity = 0
+        webcamView.layer?.backgroundColor = NSColor.clear.cgColor
+
+        let camAspect = currentCameraAspect.heightToWidthRatio(webcamSize: ws)
+        let pipW = canvasRect.width * currentLayout.relativeWidth
+        let pipH = pipW * camAspect
+        let pipX = canvasRect.origin.x + canvasRect.width * currentLayout.relativeX
+        let pipY = canvasRect.origin.y + canvasRect.height * currentLayout.relativeY
+        let pipFrame = CGRect(x: pipX, y: bounds.height - pipY - pipH, width: pipW, height: pipH)
+
+        let p = cameraTransitionProgress
+        let interpFrame = CGRect(
+          x: pipFrame.origin.x + (canvasRect.origin.x - pipFrame.origin.x) * p,
+          y: pipFrame.origin.y + (canvasRect.origin.y - pipFrame.origin.y) * p,
+          width: pipFrame.width + (canvasRect.width - pipFrame.width) * p,
+          height: pipFrame.height + (canvasRect.height - pipFrame.height) * p
+        )
+
+        let pipMinDim = min(pipW, pipH)
+        let pipRadius = pipMinDim * (currentCameraCornerRadius / 100.0)
+        let interpRadius = pipRadius * (1.0 - p)
+        let pipBorder = currentCameraBorderWidth * min(scaleX, scaleY)
+        let interpBorder = pipBorder * (1.0 - p)
+
+        webcamWrapper.frame = interpFrame
+        webcamView.frame = webcamWrapper.bounds
+        webcamView.layer?.cornerRadius = interpRadius
+        webcamView.layer?.borderWidth = interpBorder
+        webcamView.layer?.borderColor = interpBorder > 0 ? currentCameraBorderColor : NSColor.clear.cgColor
+
+        webcamPlayerLayer.videoGravity = .resizeAspectFill
+        webcamPlayerLayer.setAffineTransform(.identity)
+        webcamPlayerLayer.frame = webcamView.bounds
+        webcamPlayerLayer.setAffineTransform(
+          currentCameraMirrored ? CGAffineTransform(scaleX: -1, y: 1) : .identity
+        )
+
+        webcamWrapper.alphaValue = 1.0
+        webcamWrapper.layer?.transform = CATransform3DIdentity
+        CATransaction.commit()
+        return
+      }
+
       webcamWrapper.layer?.shadowOpacity = 0
       screenContainerLayer.isHidden = true
       cursorOverlay.isHidden = true
@@ -479,6 +671,7 @@ final class VideoPreviewContainer: NSView {
       webcamPlayerLayer.setAffineTransform(
         currentCameraMirrored ? CGAffineTransform(scaleX: -1, y: 1) : .identity
       )
+      applyTransitionEffect()
       CATransaction.commit()
       return
     }
@@ -529,7 +722,38 @@ final class VideoPreviewContainer: NSView {
       webcamWrapper.layer?.shadowOpacity = 0
     }
 
+    applyTransitionEffect()
     CATransaction.commit()
+  }
+
+  private func applyTransitionEffect() {
+    guard cameraTransitionType != .none else {
+      webcamWrapper.alphaValue = 1.0
+      webcamWrapper.layer?.transform = CATransform3DIdentity
+      return
+    }
+    let p = cameraTransitionProgress
+    switch cameraTransitionType {
+    case .none:
+      webcamWrapper.alphaValue = 1.0
+      webcamWrapper.layer?.transform = CATransform3DIdentity
+    case .fade:
+      webcamWrapper.alphaValue = p
+      webcamWrapper.layer?.transform = CATransform3DIdentity
+    case .scale:
+      webcamWrapper.alphaValue = 1.0
+      let cx = webcamWrapper.bounds.width / 2
+      let cy = webcamWrapper.bounds.height / 2
+      var transform = CATransform3DIdentity
+      transform = CATransform3DTranslate(transform, cx, cy, 0)
+      transform = CATransform3DScale(transform, p, p, 1)
+      transform = CATransform3DTranslate(transform, -cx, -cy, 0)
+      webcamWrapper.layer?.transform = transform
+    case .slide:
+      webcamWrapper.alphaValue = 1.0
+      let offsetY = (1.0 - p) * webcamWrapper.frame.height
+      webcamWrapper.layer?.transform = CATransform3DMakeTranslation(0, -offsetY, 0)
+    }
   }
 
   override func mouseMoved(with event: NSEvent) {
