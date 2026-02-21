@@ -158,9 +158,9 @@ final class DevicePreviewWindow {
     contentView.wantsLayer = true
     contentView.layer?.cornerRadius = cornerRadius
     contentView.layer?.masksToBounds = true
-    contentView.layer?.backgroundColor = ReframedColors.panelBackgroundNS.cgColor
+    contentView.layer?.backgroundColor = ReframedColors.backgroundNS.cgColor
     contentView.layer?.borderWidth = 1
-    contentView.layer?.borderColor = ReframedColors.subtleBorderNS.cgColor
+    contentView.layer?.borderColor = ReframedColors.borderNS.cgColor
 
     panel.contentView = contentView
     self.panel = panel
@@ -184,8 +184,8 @@ final class DevicePreviewWindow {
 
   private func updateColors() {
     guard let contentView = panel?.contentView else { return }
-    contentView.layer?.backgroundColor = ReframedColors.panelBackgroundNS.cgColor
-    contentView.layer?.borderColor = ReframedColors.subtleBorderNS.cgColor
+    contentView.layer?.backgroundColor = ReframedColors.backgroundNS.cgColor
+    contentView.layer?.borderColor = ReframedColors.borderNS.cgColor
   }
 
   private func resolvedOrigin() -> CGPoint {

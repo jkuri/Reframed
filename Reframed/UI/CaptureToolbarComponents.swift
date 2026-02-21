@@ -35,8 +35,8 @@ struct ToolbarActionButton: View {
         .font(.system(size: 15))
         .foregroundStyle(ReframedColors.primaryText)
         .frame(width: 36, height: 36)
-        .background(isHovered ? ReframedColors.hoverBackground : Color.clear)
-        .clipShape(RoundedRectangle(cornerRadius: 6))
+        .background(isHovered ? ReframedColors.muted : Color.clear)
+        .clipShape(RoundedRectangle(cornerRadius: Radius.md))
         .contentShape(Rectangle())
     }
     .buttonStyle(.plain)
@@ -66,7 +66,7 @@ struct ToolbarToggleButton: View {
       }
       .frame(width: 56, height: 52)
       .background(background)
-      .clipShape(RoundedRectangle(cornerRadius: 6))
+      .clipShape(RoundedRectangle(cornerRadius: Radius.md))
       .contentShape(Rectangle())
     }
     .buttonStyle(.plain)
@@ -86,7 +86,7 @@ struct ToolbarToggleButton: View {
 
   private var background: Color {
     if !isAvailable { return Color.clear }
-    if isOn { return ReframedColors.selectedBackground }
+    if isOn { return ReframedColors.muted }
     return Color.clear
   }
 }
@@ -107,7 +107,7 @@ struct AudioLevelIcon: View {
       HStack(spacing: 1.5) {
         ForEach(0..<dotCount, id: \.self) { i in
           Circle()
-            .fill(level > thresholds[i] ? Color.accentColor : ReframedColors.tertiaryText.opacity(0.2))
+            .fill(level > thresholds[i] ? ReframedColors.primaryText : ReframedColors.tertiaryText.opacity(0.2))
             .frame(width: 3, height: 3)
         }
       }

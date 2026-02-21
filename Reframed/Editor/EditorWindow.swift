@@ -57,7 +57,7 @@ final class EditorWindow: NSObject, NSWindowDelegate {
     window.titlebarAppearsTransparent = true
     window.titleVisibility = .hidden
     window.styleMask.insert(.fullSizeContentView)
-    window.backgroundColor = ReframedColors.panelBackgroundNS
+    window.backgroundColor = ReframedColors.backgroundContainerNS
     window.contentView = hostingView
     window.contentMinSize = NSSize(width: 1200, height: 800)
     window.minSize = NSSize(width: 1200, height: 800)
@@ -162,7 +162,7 @@ final class EditorWindow: NSObject, NSWindowDelegate {
   }
 
   func windowDidChangeEffectiveAppearance(_ notification: Notification) {
-    window?.backgroundColor = ReframedColors.panelBackgroundNS
+    window?.backgroundColor = ReframedColors.backgroundContainerNS
   }
 
   func windowWillClose(_ notification: Notification) {

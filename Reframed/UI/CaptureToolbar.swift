@@ -26,11 +26,11 @@ struct CaptureToolbar: View {
     }
     .padding(.horizontal, 10)
     .padding(.vertical, 6)
-    .background(ReframedColors.panelBackground)
-    .clipShape(RoundedRectangle(cornerRadius: 10))
+    .background(ReframedColors.background)
+    .clipShape(RoundedRectangle(cornerRadius: Radius.xl))
     .overlay(
-      RoundedRectangle(cornerRadius: 10)
-        .strokeBorder(ReframedColors.subtleBorder, lineWidth: 0.5)
+      RoundedRectangle(cornerRadius: Radius.xl)
+        .strokeBorder(ReframedColors.border, lineWidth: 0.5)
     )
     .alert("Restart Recording?", isPresented: $showRestartAlert) {
       Button("Cancel", role: .cancel) {}
@@ -106,7 +106,7 @@ struct CaptureToolbar: View {
               session.selectMode(.device)
               session.startDeviceRecordingWith(deviceId: deviceId)
             }
-            .presentationBackground(ReframedColors.panelBackground)
+            .presentationBackground(ReframedColors.backgroundPopover)
           }
         }
 
@@ -167,7 +167,7 @@ struct CaptureToolbar: View {
         .hoverEffect(id: "btn.options")
         .popover(isPresented: $showOptions, arrowEdge: .bottom) {
           OptionsPopover(options: session.options)
-            .presentationBackground(ReframedColors.panelBackground)
+            .presentationBackground(ReframedColors.backgroundPopover)
         }
 
         ToolbarDivider()
@@ -190,7 +190,7 @@ struct CaptureToolbar: View {
         .hoverEffect(id: "btn.settings")
         .popover(isPresented: $showSettings, arrowEdge: .bottom) {
           SettingsView(options: session.options)
-            .presentationBackground(ReframedColors.panelBackground)
+            .presentationBackground(ReframedColors.backgroundPopover)
         }
       }
     }
@@ -259,6 +259,7 @@ struct CaptureToolbar: View {
       ProgressView()
         .controlSize(.small)
         .scaleEffect(0.8)
+        .tint(ReframedColors.primaryText)
       Text("Processing...")
         .font(.system(size: 12, weight: .medium))
         .foregroundStyle(ReframedColors.primaryText)

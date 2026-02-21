@@ -145,7 +145,7 @@ struct MenuBarView: View {
       .padding(.vertical, 8)
       .frame(width: 320)
     }
-    .background(ReframedColors.panelBackground)
+    .background(ReframedColors.background)
     .task {
       await loadRecentProjects()
     }

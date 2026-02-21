@@ -36,8 +36,8 @@ struct WindowSelectionView: View {
           context.fill(targetPath, with: .color(.black))
           context.blendMode = .normal
 
-          context.fill(targetPath, with: .color(Color(nsColor: .controlAccentColor).opacity(0.3)))
-          context.stroke(targetPath, with: .color(Color(nsColor: .controlAccentColor)), lineWidth: 2)
+          context.fill(targetPath, with: .color(.white.opacity(0.8)))
+          context.stroke(targetPath, with: .color(.white), lineWidth: 2)
         }
         .edgesIgnoringSafeArea(.all)
 
@@ -57,31 +57,21 @@ struct WindowSelectionView: View {
 
             Text(current.appName)
               .font(.title2.bold())
-              .foregroundStyle(.white)
-              .shadow(color: .black.opacity(0.3), radius: 4)
+              .foregroundStyle(Color.black)
+              .shadow(color: .white.opacity(0.3), radius: 4)
 
             HStack(spacing: 8) {
               Text("\(Int(current.frame.width)) \u{00d7} \(Int(current.frame.height))")
                 .font(.system(size: 15))
-                .foregroundStyle(.white)
-                .shadow(color: .black.opacity(0.3), radius: 4)
+                .foregroundStyle(Color.black)
+                .shadow(color: .white.opacity(0.3), radius: 4)
 
-              Button {
-                showingResize.toggle()
-              } label: {
-                Text("Resize")
-                  .font(.system(size: 13))
-                  .foregroundStyle(.white)
-                  .padding(.horizontal, 12)
-                  .padding(.vertical, 5)
-                  .background(Color(nsColor: .controlAccentColor))
-                  .clipShape(RoundedRectangle(cornerRadius: 5))
-              }
-              .buttonStyle(.plain)
-              .popover(isPresented: $showingResize, arrowEdge: .bottom) {
-                ResizePopover(windowController: windowController, window: current)
-                  .background(ReframedColors.panelBackground)
-              }
+              Button("Resize") { showingResize.toggle() }
+                .buttonStyle(PrimaryButtonStyle(size: .small, forceLightMode: true))
+                .popover(isPresented: $showingResize, arrowEdge: .bottom) {
+                  ResizePopover(windowController: windowController, window: current)
+                    .background(ReframedColors.background)
+                }
             }
 
             StartRecordingButton(

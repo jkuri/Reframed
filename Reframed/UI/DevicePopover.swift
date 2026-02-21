@@ -9,7 +9,10 @@ struct DevicePopover: View {
     DeviceDiscovery.shared.availableDevices
   }
 
+  @Environment(\.colorScheme) private var colorScheme
+
   var body: some View {
+    let _ = colorScheme
     VStack(alignment: .leading, spacing: 0) {
       if devices.isEmpty {
         emptyState
@@ -28,21 +31,10 @@ struct DevicePopover: View {
         guard let id = selectedDeviceId else { return }
         onStart(id)
       } label: {
-        HStack(spacing: 5) {
-          Image(systemName: "iphone.and.arrow.right.inward")
-            .font(.system(size: 12, weight: .semibold))
-          Text("Open Device")
-            .font(.system(size: 12, weight: .semibold))
-        }
-        .foregroundStyle(.white)
-        .frame(maxWidth: .infinity)
-        .frame(height: 32)
-        .background(Color(nsColor: .controlAccentColor))
-        .clipShape(RoundedRectangle(cornerRadius: 7))
+        Label("Open Device", systemImage: "iphone.and.arrow.right.inward")
       }
-      .buttonStyle(.plain)
+      .buttonStyle(PrimaryButtonStyle(size: .medium, fullWidth: true))
       .disabled(selectedDeviceId == nil)
-      .opacity(1)
       .padding(.horizontal, 12)
       .padding(.vertical, 8)
     }
@@ -113,7 +105,7 @@ private struct DeviceRow: View {
       HStack(spacing: 10) {
         Image(systemName: isIPad ? "ipad" : "iphone")
           .font(.system(size: 20))
-          .foregroundStyle(isSelected ? Color(nsColor: .controlAccentColor) : ReframedColors.secondaryText)
+          .foregroundStyle(isSelected ? ReframedColors.primaryText : ReframedColors.secondaryText)
           .frame(width: 28)
 
         VStack(alignment: .leading, spacing: 1) {
@@ -132,21 +124,21 @@ private struct DeviceRow: View {
         if isSelected {
           Image(systemName: "checkmark")
             .font(.system(size: 12, weight: .semibold))
-            .foregroundStyle(Color(nsColor: .controlAccentColor))
+            .foregroundStyle(ReframedColors.primaryText)
         }
       }
       .padding(.horizontal, 10)
       .padding(.vertical, 8)
       .background(
-        RoundedRectangle(cornerRadius: 7)
+        RoundedRectangle(cornerRadius: Radius.md)
           .strokeBorder(
-            isSelected ? Color(nsColor: .controlAccentColor).opacity(0.6) : ReframedColors.subtleBorder,
+            isSelected ? ReframedColors.ring : ReframedColors.border,
             lineWidth: isSelected ? 1.5 : 0.5
           )
           .background(
-            RoundedRectangle(cornerRadius: 7)
+            RoundedRectangle(cornerRadius: Radius.md)
               .fill(
-                isSelected ? Color(nsColor: .controlAccentColor).opacity(0.08) : (isHovered ? ReframedColors.hoverBackground : Color.clear)
+                isSelected ? ReframedColors.accent : (isHovered ? ReframedColors.hoverBackground : Color.clear)
               )
           )
       )

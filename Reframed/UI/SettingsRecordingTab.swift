@@ -3,52 +3,24 @@ import SwiftUI
 extension SettingsView {
   var recordingContent: some View {
     Group {
-      captureQualitySection
-      retinaCaptureSection
-      frameRateSection
-      timerDelaySection
-    }
-  }
-
-  var captureQualitySection: some View {
-    VStack(alignment: .leading, spacing: Layout.compactSpacing) {
-      sectionLabel("Capture Quality")
-
-      HStack {
-        Text("Quality")
-          .font(.system(size: 13))
-          .foregroundStyle(ReframedColors.primaryText)
-        Spacer()
-        SegmentPicker(
+      settingsRow(label: "Capture Quality") {
+        FullWidthSegmentPicker(
           items: CaptureQuality.allCases,
           label: { $0.label },
-          isSelected: { options?.captureQuality == $0 },
-          onSelect: { options?.captureQuality = $0 }
+          selection: Binding(
+            get: { options?.captureQuality ?? .standard },
+            set: { options?.captureQuality = $0 }
+          )
         )
       }
-      .padding(.horizontal, 10)
 
       Text(captureQualityDescription)
         .font(.system(size: 11))
-        .foregroundStyle(ReframedColors.secondaryText)
-        .padding(.horizontal, 10)
-    }
-  }
-
-  var captureQualityDescription: String {
-    switch options?.captureQuality ?? .standard {
-    case .standard: "H.265 (HEVC) 10-bit — great quality, smaller files"
-    case .high: "ProRes 422 — near-lossless, larger files"
-    case .veryHigh: "ProRes 4444 — lossless quality, massive files"
-    }
-  }
-
-  var retinaCaptureSection: some View {
-    VStack(alignment: .leading, spacing: Layout.compactSpacing) {
-      sectionLabel("Retina Capture")
+        .foregroundStyle(ReframedColors.dimLabel)
+        .padding(.top, -10)
 
       settingsToggle(
-        "Supersample",
+        "Retina Capture (Supersample)",
         isOn: Binding(
           get: { options?.retinaCapture ?? false },
           set: { options?.retinaCapture = $0 }
@@ -59,50 +31,38 @@ extension SettingsView {
         "Doubles capture resolution for better zoom quality. Only enable this on retina displays, otherwise it will result in blurry video."
       )
       .font(.system(size: 11))
-      .foregroundStyle(ReframedColors.secondaryText)
-      .padding(.horizontal, 10)
-    }
-  }
+      .foregroundStyle(ReframedColors.dimLabel)
+      .padding(.top, -10)
 
-  var frameRateSection: some View {
-    VStack(alignment: .leading, spacing: Layout.compactSpacing) {
-      sectionLabel("Frame Rate")
-
-      HStack {
-        Text("FPS")
-          .font(.system(size: 13))
-          .foregroundStyle(ReframedColors.primaryText)
-        Spacer()
-        SegmentPicker(
+      settingsRow(label: "Frame Rate") {
+        FullWidthSegmentPicker(
           items: fpsOptions,
           label: { "\($0)" },
-          isSelected: { options?.fps == $0 },
-          onSelect: { options?.fps = $0 },
-          itemWidth: 44
+          selection: Binding(
+            get: { options?.fps ?? 30 },
+            set: { options?.fps = $0 }
+          )
         )
       }
-      .padding(.horizontal, 10)
-    }
-  }
 
-  var timerDelaySection: some View {
-    VStack(alignment: .leading, spacing: Layout.compactSpacing) {
-      sectionLabel("Timer Delay")
-
-      HStack {
-        Text("Countdown")
-          .font(.system(size: 13))
-          .foregroundStyle(ReframedColors.primaryText)
-        Spacer()
-        SegmentPicker(
+      settingsRow(label: "Timer Delay") {
+        FullWidthSegmentPicker(
           items: TimerDelay.allCases,
           label: { $0.label },
-          isSelected: { options?.timerDelay == $0 },
-          onSelect: { options?.timerDelay = $0 }
+          selection: Binding(
+            get: { options?.timerDelay ?? .none },
+            set: { options?.timerDelay = $0 }
+          )
         )
       }
-      .padding(.horizontal, 10)
     }
   }
 
+  var captureQualityDescription: String {
+    switch options?.captureQuality ?? .standard {
+    case .standard: "H.265 (HEVC) 10-bit — great quality, smaller files"
+    case .high: "ProRes 422 — near-lossless, larger files"
+    case .veryHigh: "ProRes 4444 — lossless quality, massive files"
+    }
+  }
 }

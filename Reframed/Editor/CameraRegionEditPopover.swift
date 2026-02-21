@@ -24,7 +24,6 @@ struct CameraRegionEditPopover: View {
   @State private var localEntryDuration: Double = 0.3
   @State private var localExitTransition: CameraTransitionType = .none
   @State private var localExitDuration: Double = 0.3
-  @State private var showBorderColorPopover = false
   @State private var didInit = false
   @Environment(\.colorScheme) private var colorScheme
 
@@ -59,19 +58,9 @@ struct CameraRegionEditPopover: View {
       Button {
         onRemove()
       } label: {
-        HStack(spacing: 5) {
-          Image(systemName: "trash")
-            .font(.system(size: 12, weight: .semibold))
-          Text("Remove")
-            .font(.system(size: 12, weight: .semibold))
-        }
-        .foregroundStyle(.white)
-        .frame(maxWidth: .infinity)
-        .frame(height: 32)
-        .background(Color.red.opacity(0.8))
-        .clipShape(RoundedRectangle(cornerRadius: 7))
+        Label("Remove", systemImage: "trash")
       }
-      .buttonStyle(.plain)
+      .buttonStyle(OutlineButtonStyle(size: .medium, fullWidth: true))
       .padding(.horizontal, 12)
       .padding(.vertical, 8)
     }
@@ -153,7 +142,7 @@ struct CameraRegionEditPopover: View {
               .font(.system(size: 11))
               .frame(width: 28, height: 28)
               .background(ReframedColors.fieldBackground)
-              .clipShape(RoundedRectangle(cornerRadius: 4))
+              .clipShape(RoundedRectangle(cornerRadius: Radius.sm))
           }
           .buttonStyle(.plain)
           .foregroundStyle(ReframedColors.primaryText)
@@ -162,13 +151,11 @@ struct CameraRegionEditPopover: View {
 
       SectionHeader(icon: "aspectratio", title: "Aspect Ratio")
 
-      Picker("", selection: $localAspect) {
-        ForEach(CameraAspect.allCases) { aspect in
-          Text(aspect.label).tag(aspect)
-        }
-      }
-      .pickerStyle(.segmented)
-      .labelsHidden()
+      FullWidthSegmentPicker(
+        items: CameraAspect.allCases,
+        label: { $0.label },
+        selection: $localAspect
+      )
 
       SectionHeader(icon: "paintbrush", title: "Style")
 
@@ -259,7 +246,6 @@ struct CameraRegionEditPopover: View {
     return TailwindColorPicker(
       displayColor: Color(cgColor: localBorderColor.cgColor),
       displayName: currentName,
-      isPresented: $showBorderColorPopover,
       isSelected: { $0.color == localBorderColor },
       onSelect: { localBorderColor = $0.color }
     )

@@ -16,7 +16,7 @@ struct TimelineView: View {
   let sidebarWidth: CGFloat = 70
   private let rulerHeight: CGFloat = 32
   private let playheadInset: CGFloat = 7
-  let trackHeight: CGFloat = 32
+  let trackHeight: CGFloat = Track.height
 
   @State var scrollOffset: CGFloat = 0
   @State private var scrollPosition = ScrollPosition(edge: .leading)
@@ -121,13 +121,11 @@ struct TimelineView: View {
                   audioTrackContent(
                     trackType: .system,
                     samples: systemAudioSamples,
-                    accentColor: ReframedColors.systemAudioColor,
                     width: cw
                   )
                 } else if editorState.hasSystemAudio {
                   audioLoadingContent(
                     progress: systemAudioProgress ?? 0,
-                    accentColor: ReframedColors.systemAudioColor,
                     width: cw
                   )
                 }
@@ -136,14 +134,12 @@ struct TimelineView: View {
                   audioTrackContent(
                     trackType: .mic,
                     samples: micAudioSamples,
-                    accentColor: ReframedColors.micAudioColor,
                     width: cw
                   )
                 } else if editorState.hasMicAudio {
                   audioLoadingContent(
                     progress: micAudioProgress ?? 0,
                     message: micAudioMessage,
-                    accentColor: ReframedColors.micAudioColor,
                     width: cw
                   )
                 }
@@ -200,7 +196,7 @@ struct TimelineView: View {
       .padding(.trailing, 8)
     }
     .frame(height: timelineHeight)
-    .background(ReframedColors.panelBackground)
+    .background(ReframedColors.backgroundCard)
     .padding(.vertical, 8)
   }
 
@@ -238,7 +234,7 @@ struct TimelineView: View {
       }
     }
     .frame(width: width, height: rulerHeight)
-    .background(ReframedColors.panelBackground)
+    .background(ReframedColors.backgroundCard)
     .contentShape(Rectangle())
     .gesture(rulerScrubGesture(width: width))
   }
@@ -278,11 +274,11 @@ struct TimelineView: View {
   }
 
   func trackSidebar(label: String, icon: String) -> some View {
-    VStack(spacing: 2) {
+    VStack(spacing: 4) {
       Image(systemName: icon)
-        .font(.system(size: 14))
+        .font(.system(size: 12))
       Text(label)
-        .font(.system(size: 10))
+        .font(.system(size: 10, weight: .medium))
     }
     .foregroundStyle(ReframedColors.primaryText)
   }
@@ -293,14 +289,13 @@ struct TimelineView: View {
     return ZStack(alignment: .leading) {
       videoTrackBackground(width: width, height: h, trimStart: videoTrimStart, trimEnd: videoTrimEnd)
     }
-    .clipShape(RoundedRectangle(cornerRadius: 10))
+    .clipShape(RoundedRectangle(cornerRadius: Track.borderRadius))
     .overlay {
       trimBorderOverlay(
         width: width,
         height: h,
         trimStart: videoTrimStart,
-        trimEnd: videoTrimEnd,
-        borderColor: ReframedColors.screenTrackColor
+        trimEnd: videoTrimEnd
       )
     }
     .contentShape(Rectangle())
@@ -329,13 +324,11 @@ struct TimelineView: View {
     trimStart: Double,
     trimEnd: Double
   ) -> some View {
-    let accentColor = isWebcam ? ReframedColors.webcamTrackColor : ReframedColors.screenTrackColor
-
     return ZStack(alignment: .leading) {
       Color.clear
 
-      RoundedRectangle(cornerRadius: 10)
-        .fill(accentColor.opacity(0.6))
+      RoundedRectangle(cornerRadius: Track.borderRadius)
+        .fill(Track.background)
         .frame(width: max(0, width * (trimEnd - trimStart)), height: height)
         .offset(x: width * trimStart)
     }
@@ -370,8 +363,7 @@ struct TimelineView: View {
     width: CGFloat,
     height: CGFloat,
     trimStart: Double,
-    trimEnd: Double,
-    borderColor: Color
+    trimEnd: Double
   ) -> some View {
     let startX = width * trimStart
     let endX = width * trimEnd
@@ -380,8 +372,8 @@ struct TimelineView: View {
     return ZStack(alignment: .leading) {
       Color.clear.frame(width: width, height: height)
 
-      RoundedRectangle(cornerRadius: 10)
-        .stroke(borderColor, lineWidth: 2)
+      RoundedRectangle(cornerRadius: Track.borderRadius)
+        .stroke(Track.borderColor, lineWidth: Track.borderWidth)
         .frame(width: max(0, selectionWidth), height: height)
         .offset(x: startX)
     }
@@ -434,13 +426,13 @@ struct TimelineView: View {
 
       ZStack {
         Rectangle()
-          .fill(ReframedColors.controlAccentColor.opacity(0.9))
+          .fill(ReframedColors.primaryText.opacity(0.9))
           .frame(width: 2, height: lineHeight)
           .position(x: centerX, y: rulerHeight + lineHeight / 2)
           .allowsHitTesting(false)
 
-        RoundedRectangle(cornerRadius: 6)
-          .fill(ReframedColors.controlAccentColor.opacity(0.9))
+        RoundedRectangle(cornerRadius: Radius.md)
+          .fill(ReframedColors.primaryText.opacity(0.9))
           .frame(width: 12, height: 32)
           .position(x: centerX, y: rulerHeight / 2)
           .gesture(

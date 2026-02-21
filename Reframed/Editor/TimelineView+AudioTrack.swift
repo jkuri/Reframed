@@ -4,7 +4,6 @@ extension TimelineView {
   func audioTrackContent(
     trackType: AudioTrackType,
     samples: [Float],
-    accentColor: Color,
     width: CGFloat
   ) -> some View {
     let h = trackHeight
@@ -23,8 +22,7 @@ extension TimelineView {
           trackType: trackType,
           samples: samples,
           width: width,
-          height: h,
-          accentColor: accentColor
+          height: h
         )
       }
 
@@ -33,7 +31,7 @@ extension TimelineView {
         let visibleCenterX = scrollOffset + viewportWidth / 2
         Text("Double-click to add audio region")
           .font(.system(size: 11))
-          .foregroundStyle(ReframedColors.dimLabel)
+          .foregroundStyle(ReframedColors.secondaryText)
           .fixedSize()
           .position(x: visibleCenterX, y: h / 2)
           .allowsHitTesting(false)
@@ -60,7 +58,6 @@ extension TimelineView {
   func audioLoadingContent(
     progress: Double,
     message: String? = nil,
-    accentColor: Color,
     width: CGFloat
   ) -> some View {
     let h = trackHeight
@@ -69,30 +66,30 @@ extension TimelineView {
     let visibleCenterX = scrollOffset + viewportWidth / 2
 
     return ZStack {
-      RoundedRectangle(cornerRadius: 10)
-        .fill(accentColor.opacity(0.06))
+      RoundedRectangle(cornerRadius: Track.borderRadius)
+        .fill(Track.background)
 
       HStack(spacing: 10) {
         ZStack(alignment: .leading) {
           RoundedRectangle(cornerRadius: 2.5)
-            .fill(accentColor.opacity(0.15))
+            .fill(ReframedColors.border)
             .frame(width: 100, height: 5)
           RoundedRectangle(cornerRadius: 2.5)
-            .fill(accentColor.opacity(0.6))
+            .fill(ReframedColors.primaryText)
             .frame(width: 100 * max(0, min(1, progress)), height: 5)
         }
         .fixedSize()
 
         Text(message ?? "Generating waveform… \(Int(progress * 100))%")
           .font(.system(size: 10).monospacedDigit())
-          .foregroundStyle(ReframedColors.dimLabel)
+          .foregroundStyle(ReframedColors.primaryText)
           .frame(width: 160, alignment: .leading)
       }
       .fixedSize()
       .position(x: visibleCenterX, y: h / 2)
     }
     .frame(width: width, height: h)
-    .clipShape(RoundedRectangle(cornerRadius: 10))
+    .clipShape(RoundedRectangle(cornerRadius: Track.borderRadius))
   }
 
   func audioRegionCanvas(
@@ -117,7 +114,7 @@ extension TimelineView {
       }
 
       let fullPath = buildWaveformPath(top: topPoints, bottom: bottomPoints, minX: 0, maxX: size.width)
-      context.fill(fullPath, with: .color(ReframedColors.tertiaryText.opacity(0.4)))
+      context.fill(fullPath, with: .color(ReframedColors.mutedForeground.opacity(0.2)))
     }
     .frame(width: width, height: height)
     .allowsHitTesting(false)
@@ -129,8 +126,7 @@ extension TimelineView {
     trackType: AudioTrackType,
     samples: [Float],
     width: CGFloat,
-    height: CGFloat,
-    accentColor: Color
+    height: CGFloat
   ) -> some View {
     let effective = effectiveAudioRegion(region, width: width)
     let startX = max(0, CGFloat(effective.start / totalSeconds) * width)
@@ -139,8 +135,8 @@ extension TimelineView {
     let edgeThreshold = min(8.0, regionWidth * 0.2)
 
     ZStack {
-      RoundedRectangle(cornerRadius: 6)
-        .fill(accentColor.opacity(0.15))
+      RoundedRectangle(cornerRadius: Track.borderRadius)
+        .fill(Track.background)
 
       audioRegionWaveform(
         samples: samples,
@@ -148,12 +144,12 @@ extension TimelineView {
         endX: endX,
         fullWidth: width,
         fullHeight: height,
-        accentColor: accentColor
+        accentColor: ReframedColors.primaryText.opacity(0.9)
       )
-      .clipShape(RoundedRectangle(cornerRadius: 6))
+      .clipShape(RoundedRectangle(cornerRadius: Track.borderRadius))
 
-      RoundedRectangle(cornerRadius: 6)
-        .strokeBorder(accentColor, lineWidth: 2)
+      RoundedRectangle(cornerRadius: Track.borderRadius)
+        .strokeBorder(Track.borderColor, lineWidth: Track.borderWidth)
     }
     .frame(width: regionWidth, height: height)
     .contentShape(Rectangle())

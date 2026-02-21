@@ -2,8 +2,10 @@ import SwiftUI
 
 struct OptionsPopover: View {
   @Bindable var options: RecordingOptions
+  @Environment(\.colorScheme) private var colorScheme
 
   var body: some View {
+    let _ = colorScheme
     VStack(alignment: .leading, spacing: 0) {
       SectionHeader(title: "Timer")
 

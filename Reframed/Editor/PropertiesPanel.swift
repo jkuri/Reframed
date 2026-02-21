@@ -23,8 +23,6 @@ struct PropertiesPanel: View {
   @State var selectedGradientId: Int = 0
   @State var selectedColorId: String? = "Black"
   @State var backgroundImageFilename: String?
-  @State var showClickColorPopover = false
-  @State var showBorderColorPopover = false
   @State private var screenInfo: MediaFileInfo?
   @State private var webcamInfo: MediaFileInfo?
   @State private var systemAudioInfo: MediaFileInfo?
@@ -64,7 +62,7 @@ struct PropertiesPanel: View {
       }
       .padding(Layout.panelPadding)
     }
-    .frame(width: 300)
+    .frame(width: 340)
     .onChange(of: backgroundMode) { _, newValue in
       updateBackgroundStyle(mode: newValue)
     }
@@ -297,13 +295,11 @@ struct PropertiesPanel: View {
     VStack(alignment: .leading, spacing: Layout.itemSpacing) {
       SectionHeader(icon: "rectangle.dashed", title: "Canvas")
 
-      Picker("", selection: $editorState.canvasAspect) {
-        ForEach(CanvasAspect.allCases) { aspect in
-          Text(aspect.label).tag(aspect)
-        }
-      }
-      .pickerStyle(.segmented)
-      .labelsHidden()
+      FullWidthSegmentPicker(
+        items: CanvasAspect.allCases,
+        label: { $0.label },
+        selection: $editorState.canvasAspect
+      )
       .onChange(of: editorState.canvasAspect) { _, _ in
         editorState.clampCameraPosition()
       }

@@ -1,6 +1,6 @@
 import SwiftUI
 
-struct FullWidthSegmentPicker<Item: Hashable & Identifiable>: View {
+struct FullWidthSegmentPicker<Item: Hashable>: View {
   let items: [Item]
   let label: (Item) -> String
   @Binding var selection: Item
@@ -8,24 +8,51 @@ struct FullWidthSegmentPicker<Item: Hashable & Identifiable>: View {
 
   var body: some View {
     let _ = colorScheme
-    HStack(spacing: 4) {
-      ForEach(items) { item in
+    HStack(spacing: Layout.segmentSpacing) {
+      ForEach(items, id: \.self) { item in
         let isSelected = selection == item
-        Button {
+        ToggleGroupItem(
+          text: label(item),
+          isSelected: isSelected
+        ) {
           selection = item
-        } label: {
-          Text(label(item))
-            .font(.system(size: 11, weight: isSelected ? .semibold : .medium))
-            .foregroundStyle(isSelected ? ReframedColors.primaryText : ReframedColors.secondaryText)
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 6)
-            .background(
-              isSelected ? ReframedColors.selectedBackground : ReframedColors.fieldBackground,
-              in: RoundedRectangle(cornerRadius: 6)
-            )
         }
-        .buttonStyle(.plain)
       }
     }
+  }
+}
+
+private struct ToggleGroupItem: View {
+  let text: String
+  let isSelected: Bool
+  let action: () -> Void
+
+  @State private var isHovered = false
+
+  var body: some View {
+    Button(action: action) {
+      Text(text)
+        .font(.system(size: 11, weight: .medium))
+        .foregroundStyle(
+          isSelected
+            ? ReframedColors.primaryText
+            : (isHovered ? ReframedColors.primaryText : ReframedColors.mutedForeground)
+        )
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 6)
+        .padding(.horizontal, 6)
+        .background(
+          isSelected
+            ? ReframedColors.muted
+            : (isHovered ? ReframedColors.muted : Color.clear),
+          in: RoundedRectangle(cornerRadius: Radius.md)
+        )
+        .overlay(
+          RoundedRectangle(cornerRadius: Radius.md)
+            .stroke(ReframedColors.border, lineWidth: 1)
+        )
+    }
+    .buttonStyle(.plain)
+    .onHover { isHovered = $0 }
   }
 }

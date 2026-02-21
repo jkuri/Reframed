@@ -65,6 +65,8 @@ enum ReframedColors {
   }
 
   static let overlayBackground = NSColor.black.withAlphaComponent(0.5)
+  static let overlayCardBackground = Color.white
+  static let overlayDimBackground = Color.black.opacity(0.4)
   static let selectionBorder = NSColor(white: 0.55, alpha: 0.6)
   static let selectionGrid = NSColor(white: 0.55, alpha: 0.5)
   static let selectionCenter = NSColor(white: 0.65, alpha: 0.6)
@@ -72,20 +74,36 @@ enum ReframedColors {
   static let handleStroke = NSColor(white: 0.7, alpha: 0.8)
   static let crosshair = NSColor.white.withAlphaComponent(0.3)
 
-  static var panelBackground: Color {
+  static var background: Color {
     isDark ? Color(white: 0) : Color(white: 1)
   }
 
-  static var panelBackgroundNS: NSColor {
+  static var backgroundNS: NSColor {
     isDark ? NSColor(white: 0, alpha: 1) : NSColor(white: 1, alpha: 1)
+  }
+
+  static var backgroundContainer: Color {
+    isDark ? Color.hex("#0e0e0e") : Color.hex("#fdfdfd")
+  }
+
+  static var backgroundCard: Color {
+    isDark ? Color.hex("#171717") : Color.hex("#ffffff")
+  }
+
+  static var backgroundPopover: Color {
+    isDark ? Color.hex("#0f0f0f") : Color.hex("#ffffff")
+  }
+
+  static var backgroundContainerNS: NSColor {
+    isDark ? NSColor(red: 0.055, green: 0.055, blue: 0.055, alpha: 1) : NSColor(red: 0.992, green: 0.992, blue: 0.992, alpha: 1)
   }
 
   static var secondaryTextNS: NSColor {
     isDark ? NSColor.white.withAlphaComponent(0.7) : NSColor.black.withAlphaComponent(0.6)
   }
 
-  static var subtleBorderNS: NSColor {
-    isDark ? NSColor.white.withAlphaComponent(0.1) : NSColor.black.withAlphaComponent(0.1)
+  static var borderNS: NSColor {
+    isDark ? NSColor.white.withAlphaComponent(0.18) : NSColor.black.withAlphaComponent(0.1)
   }
 
   static var fieldBackground: Color {
@@ -120,8 +138,8 @@ enum ReframedColors {
     isDark ? Color.white.opacity(0.22) : Color.black.opacity(0.12)
   }
 
-  static var subtleBorder: Color {
-    isDark ? Color.white.opacity(0.1) : Color.black.opacity(0.1)
+  static var border: Color {
+    isDark ? Color.white.opacity(0.18) : Color.black.opacity(0.1)
   }
 
   static var hoverBackground: Color {
@@ -156,18 +174,44 @@ enum ReframedColors {
     isDark ? Color.white.opacity(0.8) : Color.black.opacity(0.7)
   }
 
-  static var controlAccentColor: Color {
-    Color(nsColor: .controlAccentColor)
+  static var primary: Color {
+    isDark ? .white : Color(white: 0.09)
   }
 
-  static let screenTrackColor = Color.hex("#3b82f5")
-  static let webcamTrackColor = Color.hex("#21c45e")
-  static let webcamHiddenTrackColor = Color.hex("#fde047")
-  static let webcamCustomTrackColor = Color.hex("#38bdf8")
+  static var primaryForeground: Color {
+    isDark ? .black : .white
+  }
 
-  static let systemAudioColor = Color.hex("#db2777")
-  static let micAudioColor = Color.hex("#dc2626")
+  static var primaryNS: NSColor {
+    isDark ? .white : NSColor(white: 0.09, alpha: 1)
+  }
 
-  static let zoomColor = Color.hex("#734dbf")
-  static let zoomEaseColor = Color.hex("#734dbf").opacity(0.5)
+  static var ring: Color {
+    isDark ? Color.white.opacity(0.35) : Color.black.opacity(0.25)
+  }
+
+  static var accent: Color {
+    isDark ? Color.white.opacity(0.12) : Color.black.opacity(0.06)
+  }
+
+  static var accentForeground: Color {
+    isDark ? .white : .black
+  }
+
+  static var muted: Color {
+    isDark ? Color.white.opacity(0.08) : Color(white: 0.96)
+  }
+
+  static var mutedForeground: Color {
+    isDark ? Color.white.opacity(0.5) : Color(white: 0.45)
+  }
+
+  static var destructive: Color {
+    Color(red: 0.937, green: 0.267, blue: 0.267)
+  }
+
+  static var destructiveForeground: Color {
+    .white
+  }
+
 }

@@ -19,7 +19,7 @@ extension TimelineView {
         let visibleCenterX = scrollOffset + viewportWidth / 2
         Text("Double-click to add camera region")
           .font(.system(size: 11))
-          .foregroundStyle(ReframedColors.dimLabel)
+          .foregroundStyle(ReframedColors.secondaryText)
           .fixedSize()
           .position(x: visibleCenterX, y: h / 2)
           .allowsHitTesting(false)
@@ -49,12 +49,6 @@ extension TimelineView {
     width: CGFloat,
     height: CGFloat
   ) -> some View {
-    let accentColor: Color =
-      switch region.type {
-      case .fullscreen: ReframedColors.webcamTrackColor
-      case .hidden: ReframedColors.webcamHiddenTrackColor
-      case .custom: ReframedColors.webcamCustomTrackColor
-      }
     let effective = effectiveCameraRegion(region, width: width)
     let startX = max(0, CGFloat(effective.start / totalSeconds) * width)
     let endX = min(width, CGFloat(effective.end / totalSeconds) * width)
@@ -63,13 +57,25 @@ extension TimelineView {
     let isPopoverShown = popoverCameraRegionId == region.id
 
     ZStack {
-      RoundedRectangle(cornerRadius: 6)
-        .fill(accentColor.opacity(0.6))
+      RoundedRectangle(cornerRadius: Track.borderRadius)
+        .fill(Track.background)
 
-      RoundedRectangle(cornerRadius: 6)
-        .strokeBorder(accentColor, lineWidth: 2)
+      HStack(spacing: 3) {
+        Image(systemName: region.type.icon)
+          .font(.system(size: Track.fontSize))
+        if regionWidth > 50 {
+          Text(region.type.label)
+            .font(.system(size: Track.fontSize, weight: Track.fontWeight))
+            .lineLimit(1)
+        }
+      }
+      .foregroundStyle(Track.regionTextColor)
+
+      RoundedRectangle(cornerRadius: Track.borderRadius)
+        .strokeBorder(Track.borderColor, lineWidth: Track.borderWidth)
     }
     .frame(width: regionWidth, height: height)
+    .clipShape(RoundedRectangle(cornerRadius: Track.borderRadius))
     .contentShape(Rectangle())
     .overlay {
       RightClickOverlay {
@@ -121,7 +127,7 @@ extension TimelineView {
           editorState.removeCameraRegion(regionId: region.id)
         }
       )
-      .presentationBackground(ReframedColors.panelBackground)
+      .presentationBackground(ReframedColors.backgroundPopover)
     }
     .gesture(
       DragGesture(minimumDistance: 3, coordinateSpace: .named("cameraRegion"))
@@ -181,16 +187,18 @@ extension TimelineView {
     let prevEnd: Double = idx > 0 ? regions[idx - 1].endSeconds : 0
     let nextStart: Double = idx < regions.count - 1 ? regions[idx + 1].startSeconds : dur
 
+    let minDuration = max(0.1, (24.0 / width) * dur)
+
     switch dt {
     case .move:
       let regionDur = region.endSeconds - region.startSeconds
       let clampedStart = max(prevEnd, min(nextStart - regionDur, region.startSeconds + timeDelta))
       return (clampedStart, clampedStart + regionDur)
     case .resizeLeft:
-      let newStart = max(prevEnd, min(region.endSeconds - 0.01, region.startSeconds + timeDelta))
+      let newStart = max(prevEnd, min(region.endSeconds - minDuration, region.startSeconds + timeDelta))
       return (newStart, region.endSeconds)
     case .resizeRight:
-      let newEnd = max(region.startSeconds + 0.01, min(nextStart, region.endSeconds + timeDelta))
+      let newEnd = max(region.startSeconds + minDuration, min(nextStart, region.endSeconds + timeDelta))
       return (region.startSeconds, newEnd)
     }
   }

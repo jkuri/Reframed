@@ -89,7 +89,7 @@ private struct ResizeRow: View {
     }
     .buttonStyle(.plain)
     .background(
-      RoundedRectangle(cornerRadius: 4)
+      RoundedRectangle(cornerRadius: Radius.sm)
         .fill(isHovered ? ReframedColors.hoverBackground : Color.clear)
         .padding(.horizontal, 4)
     )

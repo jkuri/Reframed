@@ -12,10 +12,10 @@ extension PropertiesPanel {
             Image(nsImage: CursorRenderer.previewImage(for: style, size: 42))
               .frame(width: 42, height: 42)
               .background(ReframedColors.fieldBackground)
-              .clipShape(RoundedRectangle(cornerRadius: 5))
+              .clipShape(RoundedRectangle(cornerRadius: Radius.md))
               .overlay(
-                RoundedRectangle(cornerRadius: 5)
-                  .stroke(isSelected ? ReframedColors.controlAccentColor : Color.clear, lineWidth: 2)
+                RoundedRectangle(cornerRadius: Radius.md)
+                  .stroke(isSelected ? ReframedColors.ring : Color.clear, lineWidth: 2)
               )
             Text(style.label)
               .font(.system(size: 8, weight: isSelected ? .semibold : .regular))
@@ -81,7 +81,6 @@ extension PropertiesPanel {
     return TailwindColorPicker(
       displayColor: Color(cgColor: editorState.clickHighlightColor.cgColor),
       displayName: currentName,
-      isPresented: $showClickColorPopover,
       isSelected: { $0.color == editorState.clickHighlightColor },
       onSelect: { editorState.clickHighlightColor = $0.color }
     )

@@ -3,7 +3,6 @@ import SwiftUI
 struct ToggleRow: View {
   let label: String
   @Binding var isOn: Bool
-
   @Environment(\.colorScheme) private var colorScheme
 
   var body: some View {
@@ -13,10 +12,7 @@ struct ToggleRow: View {
         .font(.system(size: 12))
         .foregroundStyle(ReframedColors.primaryText)
       Spacer()
-      Toggle("", isOn: $isOn)
-        .toggleStyle(.switch)
-        .controlSize(.mini)
-        .labelsHidden()
+      CustomToggle(isOn: $isOn)
     }
   }
 }

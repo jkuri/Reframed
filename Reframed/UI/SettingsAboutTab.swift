@@ -45,11 +45,12 @@ extension SettingsView {
           if updateCheckInProgress {
             ProgressView()
               .controlSize(.mini)
+              .tint(ReframedColors.primaryText)
           }
           Text(updateCheckInProgress ? "Checking..." : "Check for Updates")
         }
       }
-      .buttonStyle(SettingsButtonStyle())
+      .buttonStyle(OutlineButtonStyle(size: .small))
       .disabled(updateCheckInProgress)
 
       if let status = updateStatus {
@@ -75,7 +76,7 @@ extension SettingsView {
       VStack(spacing: 8) {
         HStack(spacing: 6) {
           Image(systemName: "arrow.up.circle.fill")
-            .foregroundStyle(.blue)
+            .foregroundStyle(ReframedColors.primaryText)
             .font(.system(size: 13))
           Text("Version \(version) is available")
             .font(.system(size: 12, weight: .medium))
@@ -87,7 +88,7 @@ extension SettingsView {
             NSWorkspace.shared.open(downloadURL)
           }
         }
-        .buttonStyle(SettingsButtonStyle())
+        .buttonStyle(OutlineButtonStyle(size: .small))
       }
 
     case .error(let message):

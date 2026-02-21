@@ -7,8 +7,10 @@ struct InlineEditableText: View {
   @State private var isEditing = false
   @State private var editText = ""
   @FocusState private var isFocused: Bool
+  @Environment(\.colorScheme) private var colorScheme
 
   var body: some View {
+    let _ = colorScheme
     if isEditing {
       TextField("", text: $editText)
         .font(.system(size: 12))
@@ -17,7 +19,7 @@ struct InlineEditableText: View {
         .padding(.horizontal, 8)
         .padding(.vertical, 6)
         .background(ReframedColors.fieldBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 6))
+        .clipShape(RoundedRectangle(cornerRadius: Radius.md))
         .focused($isFocused)
         .onSubmit { commit() }
         .onChange(of: isFocused) { _, focused in
@@ -41,7 +43,7 @@ struct InlineEditableText: View {
       .padding(.horizontal, 8)
       .padding(.vertical, 6)
       .background(ReframedColors.fieldBackground.opacity(0.5))
-      .clipShape(RoundedRectangle(cornerRadius: 6))
+      .clipShape(RoundedRectangle(cornerRadius: Radius.md))
       .onTapGesture { startEditing() }
     }
   }

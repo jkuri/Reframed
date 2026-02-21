@@ -13,11 +13,11 @@ struct StartRecordingOverlayView: View {
     VStack(spacing: 12) {
       Text(displayName)
         .font(.system(size: 14, weight: .medium))
-        .foregroundStyle(ReframedColors.primaryText)
+        .foregroundStyle(Color.black)
 
       Text(resolution)
         .font(.system(size: 12))
-        .foregroundStyle(ReframedColors.secondaryText)
+        .foregroundStyle(Color.black.opacity(0.6))
 
       StartRecordingButton(
         delay: delay,
@@ -27,11 +27,11 @@ struct StartRecordingOverlayView: View {
       )
     }
     .padding(24)
-    .background(ReframedColors.panelBackground)
+    .background(ReframedColors.overlayCardBackground)
     .clipShape(RoundedRectangle(cornerRadius: 16))
     .shadow(radius: 20)
     .frame(maxWidth: .infinity, maxHeight: .infinity)
-    .background(.black.opacity(0.4))
+    .background(ReframedColors.overlayDimBackground)
     .overlay {
       Button("") { onCancel() }
         .keyboardShortcut(.escape, modifiers: [])

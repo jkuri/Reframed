@@ -6,8 +6,10 @@ struct NumberField: View {
   var height: CGFloat = 40
   var fontSize: CGFloat = 14
   var onCommit: (() -> Void)?
+  @Environment(\.colorScheme) private var colorScheme
 
   var body: some View {
+    let _ = colorScheme
     TextField("", value: $value, format: .number)
       .textFieldStyle(.plain)
       .font(.system(size: fontSize, design: .monospaced))
@@ -16,7 +18,7 @@ struct NumberField: View {
       .multilineTextAlignment(.center)
       .frame(width: width, height: height)
       .background(ReframedColors.fieldBackground)
-      .clipShape(RoundedRectangle(cornerRadius: 6))
+      .clipShape(RoundedRectangle(cornerRadius: Radius.md))
       .onSubmit { onCommit?() }
   }
 }

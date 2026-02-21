@@ -13,8 +13,8 @@ struct HoverEffectScope<Content: View>: View {
       .environment(\.hoverID, $hoveredID)
       .background {
         if let hoveredID {
-          RoundedRectangle(cornerRadius: 8)
-            .fill(ReframedColors.hoverBackground)
+          RoundedRectangle(cornerRadius: Radius.lg)
+            .fill(ReframedColors.muted)
             .matchedGeometryEffect(id: hoveredID, in: hoverNamespace, isSource: false)
             .animation(.spring(response: 0.3, dampingFraction: 0.75), value: hoveredID)
             .transition(.opacity.animation(.easeInOut(duration: 0.2)))

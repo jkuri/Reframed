@@ -34,7 +34,7 @@ extension PropertiesPanel {
               .font(.system(size: 11))
               .frame(width: 28, height: 28)
               .background(ReframedColors.fieldBackground)
-              .clipShape(RoundedRectangle(cornerRadius: 4))
+              .clipShape(RoundedRectangle(cornerRadius: Radius.sm))
           }
           .buttonStyle(.plain)
           .foregroundStyle(ReframedColors.primaryText)
@@ -49,13 +49,11 @@ extension PropertiesPanel {
     VStack(alignment: .leading, spacing: Layout.itemSpacing) {
       SectionHeader(icon: "aspectratio", title: "Aspect Ratio")
 
-      Picker("", selection: $editorState.cameraAspect) {
-        ForEach(CameraAspect.allCases) { aspect in
-          Text(aspect.label).tag(aspect)
-        }
-      }
-      .pickerStyle(.segmented)
-      .labelsHidden()
+      FullWidthSegmentPicker(
+        items: CameraAspect.allCases,
+        label: { $0.label },
+        selection: $editorState.cameraAspect
+      )
       .onChange(of: editorState.cameraAspect) { _, _ in
         editorState.clampCameraPosition()
       }
@@ -114,13 +112,11 @@ extension PropertiesPanel {
         Text("Aspect Ratio")
           .font(.system(size: 12))
           .foregroundStyle(ReframedColors.secondaryText)
-        Picker("", selection: $editorState.cameraFullscreenAspect) {
-          ForEach(CameraFullscreenAspect.allCases) { aspect in
-            Text(aspect.label).tag(aspect)
-          }
-        }
-        .pickerStyle(.segmented)
-        .labelsHidden()
+        FullWidthSegmentPicker(
+          items: CameraFullscreenAspect.allCases,
+          label: { $0.label },
+          selection: $editorState.cameraFullscreenAspect
+        )
       }
 
       VStack(alignment: .leading, spacing: 4) {
@@ -144,7 +140,6 @@ extension PropertiesPanel {
     return TailwindColorPicker(
       displayColor: Color(cgColor: editorState.cameraBorderColor.cgColor),
       displayName: currentName,
-      isPresented: $showBorderColorPopover,
       isSelected: { $0.color == editorState.cameraBorderColor },
       onSelect: { editorState.cameraBorderColor = $0.color }
     )

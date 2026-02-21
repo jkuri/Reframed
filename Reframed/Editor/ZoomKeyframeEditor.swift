@@ -24,8 +24,8 @@ struct ZoomKeyframeEditor: View {
   var body: some View {
     let _ = colorScheme
     ZStack(alignment: .leading) {
-      RoundedRectangle(cornerRadius: 10)
-        .fill(ReframedColors.panelBackground)
+      RoundedRectangle(cornerRadius: Track.borderRadius)
+        .fill(ReframedColors.backgroundCard)
         .frame(width: width, height: height)
         .contentShape(Rectangle())
         .onTapGesture(count: 2) { location in
@@ -46,7 +46,7 @@ struct ZoomKeyframeEditor: View {
         let visibleCenterX = scrollOffset + viewportWidth / 2
         Text("Double-click to add zoom region")
           .font(.system(size: 11))
-          .foregroundStyle(ReframedColors.dimLabel)
+          .foregroundStyle(ReframedColors.secondaryText)
           .fixedSize()
           .position(x: visibleCenterX, y: height / 2)
           .allowsHitTesting(false)
@@ -57,7 +57,7 @@ struct ZoomKeyframeEditor: View {
       }
     }
     .frame(width: width, height: height)
-    .clipShape(RoundedRectangle(cornerRadius: 10))
+    .clipShape(RoundedRectangle(cornerRadius: Track.borderRadius))
     .coordinateSpace(name: "zoomEditor")
   }
 
@@ -69,17 +69,24 @@ struct ZoomKeyframeEditor: View {
     }
     let timeDelta = (dragOffset / width) * duration
 
+    let otherRegions = regions.filter { $0.startIndex != region.startIndex }
+    let prevEnd: Double = otherRegions.last(where: { $0.endTime <= region.startTime })?.endTime ?? 0
+    let nextStart: Double = otherRegions.first(where: { $0.startTime >= region.endTime })?.startTime ?? duration
+
     switch dt {
     case .move:
+      let regionDur = region.endTime - region.startTime
+      let clampedStart = max(prevEnd, min(nextStart - regionDur, region.startTime + timeDelta))
+      let shift = clampedStart - region.startTime
       return (
-        region.startTime + timeDelta,
-        region.zoomStartTime + timeDelta,
-        region.zoomEndTime + timeDelta,
-        region.endTime + timeDelta
+        clampedStart,
+        region.zoomStartTime + shift,
+        region.zoomEndTime + shift,
+        clampedStart + regionDur
       )
     case .resizeLeft:
       let origEaseIn = region.zoomStartTime - region.startTime
-      let newStart = max(0, region.startTime + timeDelta)
+      let newStart = max(prevEnd, min(region.endTime - 0.05, region.startTime + timeDelta))
       var newHoldStart = newStart + origEaseIn
       newHoldStart = min(newHoldStart, region.zoomEndTime - 0.01)
       let clampedStart = min(newStart, newHoldStart)
@@ -91,7 +98,7 @@ struct ZoomKeyframeEditor: View {
       )
     case .resizeRight:
       let origEaseOut = region.endTime - region.zoomEndTime
-      let newEnd = min(duration, region.endTime + timeDelta)
+      let newEnd = max(region.startTime + 0.05, min(nextStart, region.endTime + timeDelta))
       var newHoldEnd = newEnd - origEaseOut
       newHoldEnd = max(newHoldEnd, region.zoomStartTime + 0.01)
       let clampedEnd = max(newEnd, newHoldEnd)
@@ -170,40 +177,40 @@ struct ZoomKeyframeEditor: View {
     let startX = max(0, (times.start / duration) * width)
     let endX = min(width, (times.end / duration) * width)
     let regionWidth = max(4, endX - startX)
-    let fillColor = ReframedColors.zoomColor
-    let easeColor = ReframedColors.zoomEaseColor
-
-    let zoomStartX = (times.zoomStart / duration) * width
-    let zoomEndX = (times.zoomEnd / duration) * width
-
-    let leadTransWidth = max(0, min(regionWidth, zoomStartX - startX))
-    let trailTransWidth = max(0, min(regionWidth - leadTransWidth, endX - zoomEndX))
-    let holdWidth = max(0, regionWidth - leadTransWidth - trailTransWidth)
+    let totalDur = times.end - times.start
+    let easeIn = times.zoomStart - times.start
+    let easeOut = times.end - times.zoomEnd
 
     let edgeThreshold = min(8.0, regionWidth * 0.2)
 
-    HStack(spacing: 0) {
-      if leadTransWidth > 0 {
-        Rectangle()
-          .fill(easeColor)
-          .frame(width: leadTransWidth, height: height)
-      }
+    ZStack {
+      RoundedRectangle(cornerRadius: Track.borderRadius)
+        .fill(Track.background)
 
-      Rectangle()
-        .fill(fillColor)
-        .frame(width: holdWidth, height: height)
-
-      if trailTransWidth > 0 {
-        Rectangle()
-          .fill(easeColor)
-          .frame(width: trailTransWidth, height: height)
+      HStack(spacing: 3) {
+        Image(systemName: region.isAuto ? "sparkle.magnifyingglass" : "plus.magnifyingglass")
+          .font(.system(size: Track.fontSize))
+        if regionWidth > 50 {
+          Text(String(format: "%.1fx", region.peakZoom))
+            .font(.system(size: Track.fontSize, weight: Track.fontWeight))
+            .lineLimit(1)
+        }
+        if regionWidth > 90 {
+          Text(String(format: "%.1fs", totalDur))
+            .font(.system(size: Track.fontSize))
+            .lineLimit(1)
+        }
+        if regionWidth > 160, easeIn > 0.01 || easeOut > 0.01 {
+          Text(String(format: "↗%.1fs ↘%.1fs", easeIn, easeOut))
+            .font(.system(size: Track.fontSize - 1))
+            .lineLimit(1)
+        }
       }
+      .foregroundStyle(Track.regionTextColor)
+
+      RoundedRectangle(cornerRadius: Track.borderRadius)
+        .strokeBorder(Track.borderColor, lineWidth: Track.borderWidth)
     }
-    .clipShape(RoundedRectangle(cornerRadius: 10))
-    .overlay(
-      RoundedRectangle(cornerRadius: 10)
-        .strokeBorder(fillColor, lineWidth: 2)
-    )
     .frame(width: regionWidth, height: height)
     .contentShape(Rectangle())
     .overlay {
@@ -259,7 +266,7 @@ struct ZoomKeyframeEditor: View {
           onRemoveRegion(region.startIndex, region.count)
         }
       )
-      .presentationBackground(ReframedColors.panelBackground)
+      .presentationBackground(ReframedColors.backgroundPopover)
     }
     .onContinuousHover { phase in
       guard !region.isAuto else { return }

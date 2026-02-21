@@ -7,7 +7,7 @@ struct ExportSettings: Sendable {
   var resolution: ExportResolution = .original
   var codec: ExportCodec = .h265
   var audioBitrate: ExportAudioBitrate = .kbps320
-  var mode: ExportMode = .normal
+  var mode: ExportMode = .parallel
   var gifQuality: GIFQuality = .high
 }
 
@@ -48,8 +48,8 @@ enum GIFQuality: Sendable, CaseIterable, Identifiable {
 }
 
 enum ExportMode: Sendable, CaseIterable, Identifiable {
-  case normal
   case parallel
+  case normal
 
   var id: Self { self }
 

@@ -17,6 +17,7 @@ struct EditorTopBar: View {
         } else {
           HStack(spacing: 8) {
             ProgressView(value: editorState.exportProgress)
+              .tint(ReframedColors.primaryText)
               .frame(width: 200)
             Text("\(Int(editorState.exportProgress * 100))%")
               .font(.system(size: 11).monospacedDigit())
@@ -42,30 +43,13 @@ struct EditorTopBar: View {
         IconButton(systemName: "trash", color: ReframedColors.secondaryText, action: onDelete)
 
         if editorState.isExporting {
-          Button(action: { editorState.cancelExport() }) {
-            Text("Cancel")
-              .font(.system(size: 13, weight: .semibold))
-              .foregroundStyle(ReframedColors.primaryText)
-              .padding(.horizontal, 18)
-              .frame(height: 28)
-              .background(ReframedColors.secondaryText.opacity(0.15))
-              .clipShape(RoundedRectangle(cornerRadius: 6))
-          }
-          .buttonStyle(.plain)
+          Button("Cancel") { editorState.cancelExport() }
+            .buttonStyle(OutlineButtonStyle(size: .small))
         }
 
-        Button(action: { editorState.showExportSheet = true }) {
-          Text("Export")
-            .font(.system(size: 13, weight: .semibold))
-            .foregroundStyle(.white)
-            .padding(.horizontal, 18)
-            .frame(height: 28)
-            .background(ReframedColors.controlAccentColor)
-            .clipShape(RoundedRectangle(cornerRadius: 6))
-        }
-        .buttonStyle(.plain)
-        .disabled(editorState.isExporting)
-        .opacity(editorState.isExporting ? 0.5 : 1.0)
+        Button("Export") { editorState.showExportSheet = true }
+          .buttonStyle(PrimaryButtonStyle(size: .small))
+          .disabled(editorState.isExporting)
       }
     }
     .padding(.leading, 16)

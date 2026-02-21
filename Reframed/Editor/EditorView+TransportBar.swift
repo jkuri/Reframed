@@ -12,7 +12,7 @@ extension EditorView {
 
       Text("\(formatPreciseDuration(editorState.currentTime)) / \(formatPreciseDuration(editorState.duration))")
         .font(.system(size: 12, design: .monospaced))
-        .foregroundStyle(ReframedColors.secondaryText)
+        .foregroundStyle(ReframedColors.primaryText)
 
       Spacer()
 
@@ -48,7 +48,7 @@ extension EditorView {
       }
       .popover(isPresented: $showHistoryPopover, arrowEdge: .top) {
         HistoryPopover(editorState: editorState)
-          .presentationBackground(ReframedColors.panelBackground)
+          .presentationBackground(ReframedColors.backgroundPopover)
       }
 
       IconButton(
@@ -72,8 +72,8 @@ extension EditorView {
     }
     .padding(.horizontal, 8)
     .padding(.vertical, 4)
-    .background(ReframedColors.panelBackground)
-    .clipShape(RoundedRectangle(cornerRadius: 10))
-    .overlay(RoundedRectangle(cornerRadius: 10).stroke(ReframedColors.divider, lineWidth: 1))
+    .background(ReframedColors.backgroundCard)
+    .clipShape(RoundedRectangle(cornerRadius: Radius.xl))
+    .overlay(RoundedRectangle(cornerRadius: Radius.xl).stroke(ReframedColors.divider, lineWidth: 1))
   }
 }

@@ -86,6 +86,14 @@ enum CameraRegionType: String, Codable, Sendable, CaseIterable, Identifiable {
     case .custom: "Custom"
     }
   }
+
+  var icon: String {
+    switch self {
+    case .fullscreen: "arrow.up.left.and.arrow.down.right"
+    case .hidden: "eye.slash"
+    case .custom: "pip"
+    }
+  }
 }
 
 struct CameraRegionData: Codable, Sendable, Identifiable, Equatable {

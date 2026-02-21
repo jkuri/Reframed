@@ -50,7 +50,7 @@ extension PropertiesPanel {
           .resizable()
           .aspectRatio(contentMode: .fit)
           .frame(maxWidth: .infinity, maxHeight: 60)
-          .clipShape(RoundedRectangle(cornerRadius: 8))
+          .clipShape(RoundedRectangle(cornerRadius: Radius.lg))
       }
       Button {
         pickBackgroundImage()
@@ -63,7 +63,7 @@ extension PropertiesPanel {
         .frame(maxWidth: .infinity)
         .padding(.vertical, 6)
         .background(ReframedColors.fieldBackground)
-        .clipShape(RoundedRectangle(cornerRadius: 6))
+        .clipShape(RoundedRectangle(cornerRadius: Radius.md))
       }
       .buttonStyle(.plain)
       .foregroundStyle(ReframedColors.primaryText)

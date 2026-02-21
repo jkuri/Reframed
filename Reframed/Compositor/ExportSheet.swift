@@ -6,35 +6,37 @@ struct ExportSheet: View {
   let sourceFPS: Int
   let hasAudio: Bool
   let onExport: (ExportSettings) -> Void
+  @Environment(\.colorScheme) private var colorScheme
 
   var body: some View {
+    let _ = colorScheme
     VStack(spacing: 0) {
-      Text("Export Settings")
-        .font(.system(size: 16, weight: .semibold))
-        .foregroundStyle(ReframedColors.primaryText)
-        .padding(.top, 24)
-        .padding(.bottom, 20)
+      HStack {
+        Text("Export Settings")
+          .font(.system(size: 16, weight: .semibold))
+          .foregroundStyle(ReframedColors.primaryText)
+        Spacer()
+      }
+      .padding(.horizontal, 28)
+      .padding(.top, 24)
+      .padding(.bottom, 20)
 
       VStack(alignment: .leading, spacing: 18) {
         settingsRow(label: "Format") {
-          Picker("", selection: $settings.format) {
-            ForEach(ExportFormat.allCases) { format in
-              Text(format.label).tag(format)
-            }
-          }
-          .pickerStyle(.segmented)
-          .labelsHidden()
+          FullWidthSegmentPicker(
+            items: ExportFormat.allCases,
+            label: { $0.label },
+            selection: $settings.format
+          )
         }
 
         if settings.format.isGIF {
           settingsRow(label: "Quality") {
-            Picker("", selection: $settings.gifQuality) {
-              ForEach(GIFQuality.allCases) { quality in
-                Text(quality.label).tag(quality)
-              }
-            }
-            .pickerStyle(.segmented)
-            .labelsHidden()
+            FullWidthSegmentPicker(
+              items: GIFQuality.allCases,
+              label: { $0.label },
+              selection: $settings.gifQuality
+            )
           }
 
           Text(settings.gifQuality.description)
@@ -43,13 +45,11 @@ struct ExportSheet: View {
             .padding(.top, -10)
         } else {
           settingsRow(label: "Codec") {
-            Picker("", selection: $settings.codec) {
-              ForEach(ExportCodec.allCases) { codec in
-                Text(codec.label).tag(codec)
-              }
-            }
-            .pickerStyle(.segmented)
-            .labelsHidden()
+            FullWidthSegmentPicker(
+              items: ExportCodec.allCases,
+              label: { $0.label },
+              selection: $settings.codec
+            )
           }
 
           Text(settings.codec.description)
@@ -59,14 +59,11 @@ struct ExportSheet: View {
         }
 
         settingsRow(label: "Frame Rate") {
-          Picker("", selection: $settings.fps) {
-            ForEach(gifAllowedFPSCases) { fps in
-              Text(fps.label).tag(fps)
-            }
-          }
-          .pickerStyle(.segmented)
-          .labelsHidden()
-          .disabled(false)
+          FullWidthSegmentPicker(
+            items: gifAllowedFPSCases,
+            label: { $0.label },
+            selection: $settings.fps
+          )
           .onChange(of: settings.fps) { _, newValue in
             if let fpsVal = newValue.numericValue, fpsVal > sourceFPS {
               settings.fps = .original
@@ -82,36 +79,30 @@ struct ExportSheet: View {
         }
 
         settingsRow(label: "Resolution") {
-          Picker("", selection: $settings.resolution) {
-            ForEach(ExportResolution.allCases) { res in
-              Text(res.label).tag(res)
-            }
-          }
-          .pickerStyle(.segmented)
-          .labelsHidden()
+          FullWidthSegmentPicker(
+            items: ExportResolution.allCases,
+            label: { $0.label },
+            selection: $settings.resolution
+          )
         }
 
         if hasAudio && !settings.format.isGIF {
           settingsRow(label: "Audio Bitrate (kbps)") {
-            Picker("", selection: $settings.audioBitrate) {
-              ForEach(ExportAudioBitrate.allCases) { bitrate in
-                Text(bitrate.label).tag(bitrate)
-              }
-            }
-            .pickerStyle(.segmented)
-            .labelsHidden()
+            FullWidthSegmentPicker(
+              items: ExportAudioBitrate.allCases,
+              label: { $0.label },
+              selection: $settings.audioBitrate
+            )
           }
         }
 
         if !settings.format.isGIF {
           settingsRow(label: "Renderer") {
-            Picker("", selection: $settings.mode) {
-              ForEach(ExportMode.allCases) { mode in
-                Text(mode.label).tag(mode)
-              }
-            }
-            .pickerStyle(.segmented)
-            .labelsHidden()
+            FullWidthSegmentPicker(
+              items: ExportMode.allCases,
+              label: { $0.label },
+              selection: $settings.mode
+            )
           }
 
           Text(settings.mode.description)
@@ -137,24 +128,27 @@ struct ExportSheet: View {
         }
       }
 
-      Spacer().frame(height: 28)
+      HStack {
+        Spacer()
+        HStack(spacing: 8) {
+          Button("Cancel") {
+            isPresented = false
+          }
+          .buttonStyle(OutlineButtonStyle(size: .small))
 
-      HStack(spacing: 12) {
-        Button("Cancel") {
-          isPresented = false
+          Button("Export") {
+            isPresented = false
+            onExport(settings)
+          }
+          .buttonStyle(PrimaryButtonStyle(size: .small))
         }
-        .buttonStyle(ExportSheetButtonStyle(isPrimary: false))
-
-        Button("Export") {
-          isPresented = false
-          onExport(settings)
-        }
-        .buttonStyle(ExportSheetButtonStyle(isPrimary: true))
       }
+      .padding(.horizontal, 28)
+      .padding(.top, 20)
       .padding(.bottom, 24)
     }
     .frame(width: 520)
-    .background(ReframedColors.panelBackground)
+    .background(ReframedColors.backgroundPopover)
   }
 
   private var gifAllowedFPSCases: [ExportFPS] {
@@ -174,25 +168,5 @@ struct ExportSheet: View {
         .foregroundStyle(ReframedColors.secondaryText)
       content()
     }
-  }
-}
-
-struct ExportSheetButtonStyle: ButtonStyle {
-  let isPrimary: Bool
-  @Environment(\.isEnabled) private var isEnabled
-
-  func makeBody(configuration: Configuration) -> some View {
-    configuration.label
-      .font(.system(size: 13, weight: .medium))
-      .foregroundStyle(isPrimary ? .white : ReframedColors.primaryText)
-      .padding(.horizontal, 20)
-      .frame(height: 30)
-      .background(
-        isPrimary
-          ? ReframedColors.controlAccentColor
-          : (configuration.isPressed ? ReframedColors.buttonPressed : ReframedColors.buttonBackground)
-      )
-      .clipShape(RoundedRectangle(cornerRadius: 6))
-      .opacity(isEnabled ? 1.0 : 0.4)
   }
 }

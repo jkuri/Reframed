@@ -13,7 +13,10 @@ struct ShortcutRow: View {
     shortcut == action.defaultShortcut
   }
 
+  @Environment(\.colorScheme) private var colorScheme
+
   var body: some View {
+    let _ = colorScheme
     HStack {
       Text(action.label)
         .font(.system(size: 13))

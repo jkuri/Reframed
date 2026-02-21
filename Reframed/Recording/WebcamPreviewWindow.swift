@@ -31,7 +31,7 @@ final class WebcamPreviewWindow {
     container.wantsLayer = true
     container.layer?.cornerRadius = cornerRadius
     container.layer?.masksToBounds = true
-    container.layer?.backgroundColor = ReframedColors.panelBackgroundNS.cgColor
+    container.layer?.backgroundColor = ReframedColors.backgroundNS.cgColor
 
     let spinner = NSProgressIndicator(frame: NSRect(x: (videoWidth - 24) / 2, y: (videoHeight - 24) / 2 + 10, width: 24, height: 24))
     spinner.style = .spinning
@@ -101,7 +101,7 @@ final class WebcamPreviewWindow {
     container.wantsLayer = true
     container.layer?.cornerRadius = cornerRadius
     container.layer?.masksToBounds = true
-    container.layer?.backgroundColor = ReframedColors.panelBackgroundNS.cgColor
+    container.layer?.backgroundColor = ReframedColors.backgroundNS.cgColor
 
     let icon = NSImageView(frame: NSRect(x: (videoWidth - 24) / 2, y: (videoHeight - 24) / 2 + 10, width: 24, height: 24))
     icon.image = NSImage(systemSymbolName: "exclamationmark.triangle", accessibilityDescription: "Error")
@@ -192,7 +192,7 @@ final class WebcamPreviewWindow {
 
   private func updateColors() {
     if let container = loadingView {
-      container.layer?.backgroundColor = ReframedColors.panelBackgroundNS.cgColor
+      container.layer?.backgroundColor = ReframedColors.backgroundNS.cgColor
       for subview in container.subviews {
         if let label = subview as? NSTextField {
           label.textColor = ReframedColors.secondaryTextNS

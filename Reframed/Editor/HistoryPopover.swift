@@ -62,7 +62,7 @@ struct HistoryPopover: View {
     } label: {
       HStack(spacing: 8) {
         Circle()
-          .fill(isCurrent ? ReframedColors.controlAccentColor : ReframedColors.subtleBorder)
+          .fill(isCurrent ? ReframedColors.primaryText : ReframedColors.border)
           .frame(width: 6, height: 6)
 
         VStack(alignment: .leading, spacing: 2) {
@@ -103,7 +103,7 @@ struct HistoryPopover: View {
       .padding(.vertical, 6)
       .frame(maxWidth: .infinity, alignment: .leading)
       .background(
-        RoundedRectangle(cornerRadius: 5)
+        RoundedRectangle(cornerRadius: Radius.md)
           .fill(isCurrent ? ReframedColors.selectedBackground : Color.clear)
       )
       .contentShape(Rectangle())

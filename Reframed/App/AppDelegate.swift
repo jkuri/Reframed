@@ -45,7 +45,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     window.isReleasedWhenClosed = false
     window.titlebarAppearsTransparent = true
     window.isMovableByWindowBackground = true
-    window.backgroundColor = ReframedColors.panelBackgroundNS
+    window.backgroundColor = ReframedColors.backgroundNS
     window.center()
 
     window.collectionBehavior.insert(.moveToActiveSpace)

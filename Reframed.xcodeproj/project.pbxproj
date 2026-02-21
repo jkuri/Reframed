@@ -79,7 +79,6 @@
 		A20000000000000000000016 /* EditorTopBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000016 /* EditorTopBar.swift */; };
 		A20000000000000000000017 /* ExportSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000017 /* ExportSheet.swift */; };
 		A20000000000000000000018 /* PropertiesPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000018 /* PropertiesPanel.swift */; };
-		A20000000000000000000019 /* EditorBottomBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000019 /* EditorBottomBar.swift */; };
 		A2000000000000000000001A /* CompositionInstruction.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000001A /* CompositionInstruction.swift */; };
 		A2000000000000000000000C /* EditorView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000C /* EditorView.swift */; };
 		A2000000000000000000000D /* EditorWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000000D /* EditorWindow.swift */; };
@@ -148,6 +147,8 @@
 		A1000000000000000000004A /* InlineEditableText.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000004A /* InlineEditableText.swift */; };
 		A1000000000000000000004B /* SettingsAboutTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000004B /* SettingsAboutTab.swift */; };
 		A1000000000000000000004C /* UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000004C /* UpdateChecker.swift */; };
+		A1000000000000000000004D /* PrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000004D /* PrimaryButton.swift */; };
+		A1000000000000000000004E /* SelectButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000004E /* SelectButton.swift */; };
 		A2000000000000000000002A /* EditorView+TransportBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000002A /* EditorView+TransportBar.swift */; };
 		A2000000000000000000002B /* ResizePopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000002B /* ResizePopover.swift */; };
 		A2000000000000000000002C /* ExportResultSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000002C /* ExportResultSheet.swift */; };
@@ -233,7 +234,6 @@
 		B20000000000000000000016 /* EditorTopBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorTopBar.swift; sourceTree = "<group>"; };
 		B20000000000000000000017 /* ExportSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportSheet.swift; sourceTree = "<group>"; };
 		B20000000000000000000018 /* PropertiesPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PropertiesPanel.swift; sourceTree = "<group>"; };
-		B20000000000000000000019 /* EditorBottomBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorBottomBar.swift; sourceTree = "<group>"; };
 		B2000000000000000000001A /* CompositionInstruction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CompositionInstruction.swift; sourceTree = "<group>"; };
 		B2000000000000000000000C /* EditorView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorView.swift; sourceTree = "<group>"; };
 		B2000000000000000000000D /* EditorWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorWindow.swift; sourceTree = "<group>"; };
@@ -301,6 +301,8 @@
 		B1000000000000000000004A /* InlineEditableText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InlineEditableText.swift; sourceTree = "<group>"; };
 		B1000000000000000000004B /* SettingsAboutTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsAboutTab.swift; sourceTree = "<group>"; };
 		B1000000000000000000004C /* UpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateChecker.swift; sourceTree = "<group>"; };
+		B1000000000000000000004D /* PrimaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrimaryButton.swift; sourceTree = "<group>"; };
+		B1000000000000000000004E /* SelectButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectButton.swift; sourceTree = "<group>"; };
 		B2000000000000000000002A /* EditorView+TransportBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EditorView+TransportBar.swift"; sourceTree = "<group>"; };
 		B2000000000000000000002B /* ResizePopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ResizePopover.swift; sourceTree = "<group>"; };
 		B2000000000000000000002C /* ExportResultSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportResultSheet.swift; sourceTree = "<group>"; };
@@ -491,6 +493,8 @@
 				B10000000000000000000049 /* IconButton.swift */,
 				B1000000000000000000004A /* InlineEditableText.swift */,
 				B1000000000000000000004B /* SettingsAboutTab.swift */,
+				B1000000000000000000004D /* PrimaryButton.swift */,
+				B1000000000000000000004E /* SelectButton.swift */,
 			);
 			path = UI;
 			sourceTree = "<group>";
@@ -560,7 +564,6 @@
 			isa = PBXGroup;
 			children = (
 				B2000000000000000000000B /* AudioWaveformGenerator.swift */,
-				B20000000000000000000019 /* EditorBottomBar.swift */,
 				B20000000000000000000006 /* EditorState.swift */,
 				B20000000000000000000016 /* EditorTopBar.swift */,
 				B20000000000000000000022 /* History.swift */,
@@ -757,7 +760,6 @@
 				A20000000000000000000016 /* EditorTopBar.swift in Sources */,
 				A20000000000000000000017 /* ExportSheet.swift in Sources */,
 				A20000000000000000000018 /* PropertiesPanel.swift in Sources */,
-				A20000000000000000000019 /* EditorBottomBar.swift in Sources */,
 				A2000000000000000000001A /* CompositionInstruction.swift in Sources */,
 				A2000000000000000000000C /* EditorView.swift in Sources */,
 				A2000000000000000000000D /* EditorWindow.swift in Sources */,
@@ -829,6 +831,8 @@
 				A1000000000000000000004A /* InlineEditableText.swift in Sources */,
 				A1000000000000000000004B /* SettingsAboutTab.swift in Sources */,
 				A1000000000000000000004C /* UpdateChecker.swift in Sources */,
+				A1000000000000000000004D /* PrimaryButton.swift in Sources */,
+				A1000000000000000000004E /* SelectButton.swift in Sources */,
 				A2000000000000000000002A /* EditorView+TransportBar.swift in Sources */,
 				A2000000000000000000002B /* ResizePopover.swift in Sources */,
 				A2000000000000000000002C /* ExportResultSheet.swift in Sources */,

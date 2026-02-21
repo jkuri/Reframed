@@ -54,8 +54,8 @@ struct CaptureAreaView: View {
       }
       .padding(.horizontal, 30)
       .padding(.vertical, 30)
-      .background(ReframedColors.panelBackground)
-      .clipShape(RoundedRectangle(cornerRadius: 6))
+      .background(ReframedColors.background)
+      .clipShape(RoundedRectangle(cornerRadius: Radius.md))
 
       StartRecordingButton(
         delay: session.options.timerDelay.rawValue,

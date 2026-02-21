@@ -7,8 +7,10 @@ struct PermissionsView: View {
   @State private var accessibilityGranted = Permissions.hasAccessibilityPermission
 
   private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
+  @Environment(\.colorScheme) private var colorScheme
 
   var body: some View {
+    let _ = colorScheme
     VStack(spacing: 32) {
       Image(nsImage: NSApp.applicationIconImage)
         .resizable()
@@ -90,7 +92,7 @@ private struct PermissionRow: View {
         .frame(width: 260)
         .padding(.vertical, 8)
         .background(
-          RoundedRectangle(cornerRadius: 8)
+          RoundedRectangle(cornerRadius: Radius.lg)
             .stroke(granted ? Color.green.opacity(0.5) : ReframedColors.permissionBorder, lineWidth: 1)
         )
         .foregroundStyle(granted ? .green : ReframedColors.permissionText)

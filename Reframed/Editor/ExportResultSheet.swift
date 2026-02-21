@@ -4,8 +4,10 @@ import SwiftUI
 struct ExportResultSheet: View {
   @Bindable var editorState: EditorState
   @Binding var isPresented: Bool
+  @Environment(\.colorScheme) private var colorScheme
 
   var body: some View {
+    let _ = colorScheme
     VStack(spacing: 0) {
       if editorState.exportResultIsError {
         errorContent
@@ -14,7 +16,7 @@ struct ExportResultSheet: View {
       }
     }
     .frame(width: 520)
-    .background(ReframedColors.panelBackground)
+    .background(ReframedColors.backgroundPopover)
   }
 
   private var successContent: some View {
@@ -49,18 +51,18 @@ struct ExportResultSheet: View {
         Button("Copy to Clipboard") {
           copyToClipboard()
         }
-        .buttonStyle(ExportSheetButtonStyle(isPrimary: false))
+        .buttonStyle(OutlineButtonStyle(size: .small))
 
         Button("Show in Finder") {
           editorState.openExportedFile()
           isPresented = false
         }
-        .buttonStyle(ExportSheetButtonStyle(isPrimary: false))
+        .buttonStyle(OutlineButtonStyle(size: .small))
 
         Button("Done") {
           isPresented = false
         }
-        .buttonStyle(ExportSheetButtonStyle(isPrimary: true))
+        .buttonStyle(PrimaryButtonStyle(size: .small))
       }
       .padding(.bottom, 28)
     }
@@ -89,7 +91,7 @@ struct ExportResultSheet: View {
       Button("OK") {
         isPresented = false
       }
-      .buttonStyle(ExportSheetButtonStyle(isPrimary: true))
+      .buttonStyle(PrimaryButtonStyle(size: .small))
       .padding(.bottom, 28)
     }
   }

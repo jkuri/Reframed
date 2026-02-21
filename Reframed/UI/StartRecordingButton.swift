@@ -28,25 +28,16 @@ struct StartRecordingButton: View {
       HStack(spacing: 6) {
         if let remaining {
           Image(systemName: "timer")
-            .font(.system(size: 15, weight: .semibold))
           Text("Recording in \(remaining)...")
-            .font(.system(size: 15, weight: .semibold))
         } else {
           Image(systemName: "record.circle")
-            .font(.system(size: 15, weight: .semibold))
           Text("Start recording")
-            .font(.system(size: 15, weight: .semibold))
         }
       }
-      .foregroundStyle(.white)
-      .padding(.horizontal, 24)
-      .frame(height: 48)
-      .background(Color(nsColor: .controlAccentColor))
-      .clipShape(RoundedRectangle(cornerRadius: 10))
       .contentTransition(.numericText())
       .animation(.default, value: remaining)
     }
-    .buttonStyle(.plain)
+    .buttonStyle(PrimaryButtonStyle(size: .large, forceLightMode: true))
     .onDisappear {
       countdownTask?.cancel()
       countdownTask = nil

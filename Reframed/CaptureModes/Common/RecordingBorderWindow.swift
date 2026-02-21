@@ -94,7 +94,7 @@ private final class RecordingBorderLayerView: NSView {
     }
 
     borderLayer.fillColor = nil
-    borderLayer.strokeColor = NSColor.controlAccentColor.cgColor
+    borderLayer.strokeColor = ReframedColors.primaryNS.cgColor
     borderLayer.lineWidth = 2
     layer?.addSublayer(borderLayer)
 

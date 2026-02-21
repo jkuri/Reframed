@@ -88,19 +88,9 @@ struct RegionEditPopover: View {
       Button {
         onRemove()
       } label: {
-        HStack(spacing: 5) {
-          Image(systemName: "trash")
-            .font(.system(size: 12, weight: .semibold))
-          Text("Remove")
-            .font(.system(size: 12, weight: .semibold))
-        }
-        .foregroundStyle(.white)
-        .frame(maxWidth: .infinity)
-        .frame(height: 32)
-        .background(Color.red.opacity(0.8))
-        .clipShape(RoundedRectangle(cornerRadius: 7))
+        Label("Remove", systemImage: "trash")
       }
-      .buttonStyle(.plain)
+      .buttonStyle(OutlineButtonStyle(size: .medium, fullWidth: true))
       .padding(.horizontal, 12)
       .padding(.vertical, 8)
     }

@@ -3,8 +3,10 @@ import SwiftUI
 struct ShortcutRecorderButton: View {
   @Binding var shortcut: KeyboardShortcut
   @State private var isRecording = false
+  @Environment(\.colorScheme) private var colorScheme
 
   var body: some View {
+    let _ = colorScheme
     ZStack {
       if isRecording {
         HStack(spacing: 4) {
@@ -26,10 +28,10 @@ struct ShortcutRecorderButton: View {
         .frame(height: 28)
         .frame(minWidth: 120)
         .background(ReframedColors.fieldBackground.opacity(0.8))
-        .clipShape(RoundedRectangle(cornerRadius: 6))
+        .clipShape(RoundedRectangle(cornerRadius: Radius.md))
         .overlay(
-          RoundedRectangle(cornerRadius: 6)
-            .stroke(Color.accentColor, lineWidth: 1.5)
+          RoundedRectangle(cornerRadius: Radius.md)
+            .stroke(ReframedColors.ring, lineWidth: 1.5)
         )
       } else {
         Button {
@@ -38,14 +40,9 @@ struct ShortcutRecorderButton: View {
           Text(shortcut.displayString)
             .font(.system(size: 13, weight: .medium, design: .monospaced))
             .tracking(3)
-            .foregroundStyle(ReframedColors.primaryText)
-            .padding(.horizontal, 10)
-            .frame(height: 28)
-            .frame(minWidth: 60)
-            .background(ReframedColors.fieldBackground)
-            .clipShape(RoundedRectangle(cornerRadius: 6))
+            .frame(width: 80)
         }
-        .buttonStyle(.plain)
+        .buttonStyle(OutlineButtonStyle(size: .small))
       }
     }
   }
