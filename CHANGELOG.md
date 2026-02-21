@@ -1,5 +1,28 @@
 # Changelog
 
+## [v0.9.4](https://github.com/jkuri/Reframed/compare/v0.9.3...v0.9.4) (2026-02-21)
+
+### Features
+
+- **recording:** add option to hide webcam preview while recording ([1daaa78](https://github.com/jkuri/Reframed/commit/1daaa7806f986fb2d1444e3c7c51c217e00158cc))
+
+### Bug Fixes
+
+- **tranisiton:** make slide camera animation go off screen no matter what height is configured ([bba8bda](https://github.com/jkuri/Reframed/commit/bba8bda593b62d00aaaf5a15d1ef236a19fa8def))
+- **cursor:** make webcam PiP have higher z-index than cursor ([fd8009a](https://github.com/jkuri/Reframed/commit/fd8009aa393a32f535df866a1a53e774474b9efa))
+
+### Performance
+
+- **transitions:** show background capture while in full-screen webcam transition mode ([1ad8cd9](https://github.com/jkuri/Reframed/commit/1ad8cd9332da1ee30af6669561fa45d6712b5c5f))
+
+### Styling
+
+- **app:** restyle the whole app using shadcn monochrome colours ([be3e89b](https://github.com/jkuri/Reframed/commit/be3e89be1b1228513efaaf74bf3eefe3f24b8f7e))
+
+### Documentation
+
+- **claude:** update CLAUDE.md specs ([4bad85f](https://github.com/jkuri/Reframed/commit/4bad85f195ef3755bf90f5727d0b7cdcfb40ce64))
+
 ## [v0.9.3](https://github.com/jkuri/Reframed/compare/v0.9.2...v0.9.3) (2026-02-20)
 
 ### Features
