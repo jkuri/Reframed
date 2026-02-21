@@ -33,20 +33,48 @@ final class ZoomTimeline: @unchecked Sendable {
       return CGRect(x: 0, y: 0, width: 1, height: 1)
     }
 
-    let zoom = interpolatedZoom(at: time, keyframes: kfs)
+    if time <= kfs.first!.t {
+      return ztpRect(for: kfs.first!)
+    }
+    if time >= kfs.last!.t {
+      return ztpRect(for: kfs.last!)
+    }
 
-    if zoom.zoomLevel <= 1.0 {
+    var lo = 0
+    var hi = kfs.count - 1
+    while lo < hi - 1 {
+      let mid = (lo + hi) / 2
+      if kfs[mid].t <= time {
+        lo = mid
+      } else {
+        hi = mid
+      }
+    }
+
+    let k0 = kfs[lo]
+    let k1 = kfs[hi]
+    let span = k1.t - k0.t
+    guard span > 0 else {
+      return ztpRect(for: k1)
+    }
+
+    let linearT = (time - k0.t) / span
+    let t = easeInOut(linearT)
+
+    let inv0 = 1.0 / k0.zoomLevel
+    let inv1 = 1.0 / k1.zoomLevel
+    let zoom = 1.0 / (inv0 + (inv1 - inv0) * t)
+
+    if zoom <= 1.0 {
       return CGRect(x: 0, y: 0, width: 1, height: 1)
     }
 
-    let visibleW = 1.0 / zoom.zoomLevel
-    let visibleH = 1.0 / zoom.zoomLevel
-
-    var originX = zoom.centerX - visibleW / 2
-    var originY = zoom.centerY - visibleH / 2
-
-    originX = max(0, min(1 - visibleW, originX))
-    originY = max(0, min(1 - visibleH, originY))
+    let cx = k0.centerX + (k1.centerX - k0.centerX) * t
+    let cy = k0.centerY + (k1.centerY - k0.centerY) * t
+    let visibleW = 1.0 / zoom
+    let visibleH = 1.0 / zoom
+    let originX = cx * (1 - visibleW)
+    let originY = cy * (1 - visibleH)
 
     return CGRect(x: originX, y: originY, width: visibleW, height: visibleH)
   }
@@ -87,54 +115,23 @@ final class ZoomTimeline: @unchecked Sendable {
     return empty
   }
 
-  private func interpolatedZoom(at time: Double, keyframes kfs: [ZoomKeyframe]) -> (zoomLevel: Double, centerX: Double, centerY: Double) {
-    guard !kfs.isEmpty else {
-      return (1.0, 0.5, 0.5)
+  private func ztpRect(for k: ZoomKeyframe) -> CGRect {
+    if k.zoomLevel <= 1.0 {
+      return CGRect(x: 0, y: 0, width: 1, height: 1)
     }
-
-    if time <= kfs.first!.t {
-      let k = kfs.first!
-      return (k.zoomLevel, k.centerX, k.centerY)
-    }
-    if time >= kfs.last!.t {
-      let k = kfs.last!
-      return (k.zoomLevel, k.centerX, k.centerY)
-    }
-
-    var lo = 0
-    var hi = kfs.count - 1
-    while lo < hi - 1 {
-      let mid = (lo + hi) / 2
-      if kfs[mid].t <= time {
-        lo = mid
-      } else {
-        hi = mid
-      }
-    }
-
-    let k0 = kfs[lo]
-    let k1 = kfs[hi]
-    let span = k1.t - k0.t
-    guard span > 0 else {
-      return (k1.zoomLevel, k1.centerX, k1.centerY)
-    }
-
-    let linearT = (time - k0.t) / span
-    let t = easeInOut(linearT)
-
-    let inv0 = 1.0 / k0.zoomLevel
-    let inv1 = 1.0 / k1.zoomLevel
-    let zoom = 1.0 / (inv0 + (inv1 - inv0) * t)
-    let cx = k0.centerX + (k1.centerX - k0.centerX) * t
-    let cy = k0.centerY + (k1.centerY - k0.centerY) * t
-
-    return (zoom, cx, cy)
+    let visibleW = 1.0 / k.zoomLevel
+    let visibleH = 1.0 / k.zoomLevel
+    let originX = k.centerX * (1 - visibleW)
+    let originY = k.centerY * (1 - visibleH)
+    return CGRect(x: originX, y: originY, width: visibleW, height: visibleH)
   }
 
   static func followCursor(_ rect: CGRect, cursorPosition: CGPoint) -> CGRect {
     guard rect.width < 1.0 || rect.height < 1.0 else { return rect }
-    let originX = max(0, min(1 - rect.width, cursorPosition.x - rect.width / 2))
-    let originY = max(0, min(1 - rect.height, cursorPosition.y - rect.height / 2))
+    let cx = max(0, min(1, cursorPosition.x))
+    let cy = max(0, min(1, cursorPosition.y))
+    let originX = cx * (1 - rect.width)
+    let originY = cy * (1 - rect.height)
     return CGRect(x: originX, y: originY, width: rect.width, height: rect.height)
   }
 
