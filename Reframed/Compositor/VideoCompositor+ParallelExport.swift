@@ -5,11 +5,52 @@ import Logging
 import VideoToolbox
 
 extension VideoCompositor {
+  private final class CancelToken: @unchecked Sendable {
+    private let lock = NSLock()
+    private var _isCancelled = false
+    var isCancelled: Bool {
+      lock.lock()
+      defer { lock.unlock() }
+      return _isCancelled
+    }
+    func cancel() {
+      lock.lock()
+      _isCancelled = true
+      lock.unlock()
+    }
+  }
+
+  private final class SafeContinuation: @unchecked Sendable {
+    private let lock = NSLock()
+    private var cont: CheckedContinuation<Void, any Error>?
+
+    init(_ cont: CheckedContinuation<Void, any Error>) {
+      self.cont = cont
+    }
+
+    func resume() {
+      lock.lock()
+      let c = cont
+      cont = nil
+      lock.unlock()
+      c?.resume()
+    }
+
+    func resume(throwing error: any Error) {
+      lock.lock()
+      let c = cont
+      cont = nil
+      lock.unlock()
+      c?.resume(throwing: error)
+    }
+  }
+
   private final class OrderedFrameWriter: @unchecked Sendable {
     private let lock = NSLock()
     private var pending: [Int: (CVPixelBuffer, CMTime)] = [:]
     private var nextIndex = 0
     private var draining = false
+    private var isCancelled = false
     private let adaptor: AVAssetWriterInputPixelBufferAdaptor
     private let input: AVAssetWriterInput
     private var finished = false
@@ -19,14 +60,14 @@ extension VideoCompositor {
     private let totalFrames: Int
     private let progressHandler: (@MainActor @Sendable (Double, Double?) -> Void)?
     private let startTime: CFAbsoluteTime
-    private let backpressure: DispatchSemaphore?
+    private let backpressure: DispatchSemaphore
 
     init(
       adaptor: AVAssetWriterInputPixelBufferAdaptor,
       input: AVAssetWriterInput,
       totalFrames: Int,
       progressHandler: (@MainActor @Sendable (Double, Double?) -> Void)?,
-      backpressure: DispatchSemaphore? = nil
+      backpressure: DispatchSemaphore
     ) {
       self.adaptor = adaptor
       self.input = input
@@ -46,6 +87,11 @@ extension VideoCompositor {
 
     func submit(index: Int, buffer: CVPixelBuffer, time: CMTime) {
       lock.lock()
+      if isCancelled {
+        lock.unlock()
+        backpressure.signal()
+        return
+      }
       pending[index] = (buffer, time)
       lock.unlock()
       drain()
@@ -58,29 +104,47 @@ extension VideoCompositor {
       drain()
     }
 
+    func cancel() {
+      lock.lock()
+      isCancelled = true
+      let pendingCount = pending.count
+      pending.removeAll()
+      finished = true
+      let shouldSignalDone = !hasSignaled
+      if shouldSignalDone { hasSignaled = true }
+      draining = false
+      lock.unlock()
+
+      for _ in 0..<pendingCount {
+        backpressure.signal()
+      }
+
+      if shouldSignalDone {
+        doneSignal.signal()
+      }
+    }
+
     func waitUntilDone() {
       doneSignal.wait()
     }
 
     private func drain() {
       lock.lock()
-      if draining {
+      if draining || isCancelled {
         lock.unlock()
         return
       }
       draining = true
 
-      while true {
-        guard input.isReadyForMoreMediaData, let (buf, time) = pending[nextIndex] else {
-          break
-        }
+      while !isCancelled && input.isReadyForMoreMediaData {
+        guard let (buf, time) = pending[nextIndex] else { break }
         pending.removeValue(forKey: nextIndex)
         nextIndex += 1
         let writtenCount = nextIndex
         lock.unlock()
 
         adaptor.append(buf, withPresentationTime: time)
-        backpressure?.signal()
+        backpressure.signal()
 
         if writtenCount % 30 == 0 || writtenCount == totalFrames {
           let progress = (Double(writtenCount) / Double(max(totalFrames, 1))) * 0.99
@@ -96,7 +160,7 @@ extension VideoCompositor {
         lock.lock()
       }
 
-      let shouldSignalDone = finished && pending.isEmpty && !hasSignaled
+      let shouldSignalDone = finished && pending.isEmpty && !hasSignaled && !isCancelled
       if shouldSignalDone { hasSignaled = true }
       draining = false
       lock.unlock()
@@ -243,11 +307,10 @@ extension VideoCompositor {
     assetWriter.startSession(atSourceTime: .zero)
 
     let coreCount = ProcessInfo.processInfo.activeProcessorCount
-    let batchSize = max(coreCount * 3, 24)
 
     let bytesPerFrame = Int(renderSize.width) * Int(renderSize.height) * 8
     let maxMemoryBytes = 1_500_000_000
-    let maxInFlight = max(batchSize * 3, min(maxMemoryBytes / max(bytesPerFrame, 1), 120))
+    let maxInFlight = max(coreCount * 4, min(maxMemoryBytes / max(bytesPerFrame, 1), 120))
 
     var poolRef: CVPixelBufferPool?
     let poolAttrs: NSDictionary = [kCVPixelBufferPoolMinimumBufferCountKey: maxInFlight + 4]
@@ -275,14 +338,22 @@ extension VideoCompositor {
     nonisolated(unsafe) let pipelineVideoInput = videoInput
     nonisolated(unsafe) let pipelineAdaptor = adaptor
 
-    nonisolated(unsafe) let cancelled = UnsafeMutablePointer<Bool>.allocate(capacity: 1)
-    cancelled.initialize(to: false)
-    defer { cancelled.deallocate() }
+    let cancelToken = CancelToken()
+    let sem = DispatchSemaphore(value: maxInFlight)
 
     try await withTaskCancellationHandler {
       try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, any Error>) in
+        let safeCont = SafeContinuation(cont)
+
         DispatchQueue.global(qos: .userInitiated).async {
           let audioGroup = DispatchGroup()
+
+          final class AudioState: @unchecked Sendable {
+            var finished = false
+            let lock = NSLock()
+          }
+          let audioState = AudioState()
+
           if let aOut = pipelineAudioOutput, let aIn = pipelineAudioWriterInput,
             pipelineAudioReader?.status == .reading
           {
@@ -292,16 +363,24 @@ extension VideoCompositor {
             let audioQueue = DispatchQueue(label: "eu.jankuri.reframed.audio", qos: .userInitiated)
             safeAudioInput.requestMediaDataWhenReady(on: audioQueue) {
               while safeAudioInput.isReadyForMoreMediaData {
-                if cancelled.pointee {
+                audioState.lock.lock()
+                if audioState.finished { audioState.lock.unlock(); break }
+                audioState.lock.unlock()
+
+                if cancelToken.isCancelled {
                   safeAudioInput.markAsFinished()
-                  audioGroup.leave()
-                  return
+                  audioState.lock.lock()
+                  if !audioState.finished { audioState.finished = true; audioGroup.leave() }
+                  audioState.lock.unlock()
+                  break
                 }
                 if let sample = safeAudioOutput.copyNextSampleBuffer() {
                   safeAudioInput.append(sample)
                 } else {
                   safeAudioInput.markAsFinished()
-                  audioGroup.leave()
+                  audioState.lock.lock()
+                  if !audioState.finished { audioState.finished = true; audioGroup.leave() }
+                  audioState.lock.unlock()
                   break
                 }
               }
@@ -310,7 +389,6 @@ extension VideoCompositor {
             pipelineAudioWriterInput?.markAsFinished()
           }
 
-          let sem = DispatchSemaphore(value: maxInFlight)
           let frameWriter = OrderedFrameWriter(
             adaptor: pipelineAdaptor,
             input: pipelineVideoInput,
@@ -320,121 +398,120 @@ extension VideoCompositor {
           )
           frameWriter.start()
 
+          let renderQueue = DispatchQueue(
+            label: "eu.jankuri.reframed.render",
+            qos: .userInitiated,
+            attributes: .concurrent
+          )
+          let renderGroup = DispatchGroup()
+
           var latestScreenSample: CMSampleBuffer?
           var nextScreenSample: CMSampleBuffer? = pipelineScreenOutput.copyNextSampleBuffer()
           var latestWebcamSample: CMSampleBuffer?
           var nextWebcamSample: CMSampleBuffer? = pipelineWebcamOutput?.copyNextSampleBuffer()
 
-          for batchStart in stride(from: 0, to: totalFrames, by: batchSize) {
-            if cancelled.pointee { break }
+          for frameIndex in 0..<totalFrames {
+            if cancelToken.isCancelled { break }
 
-            let batchEnd = min(batchStart + batchSize, totalFrames)
-            let batchCount = batchEnd - batchStart
+            let outputTime = CMTime(value: CMTimeValue(frameIndex), timescale: timescale)
+            let outputSeconds = CMTimeGetSeconds(outputTime)
 
-            var batchScreenSamples: [CMSampleBuffer?] = Array(repeating: nil, count: batchCount)
-            var batchWebcamSamples: [CMSampleBuffer?] = Array(repeating: nil, count: batchCount)
-            var batchScreenBuffers: [CVPixelBuffer?] = Array(repeating: nil, count: batchCount)
-            var batchWebcamBuffers: [CVPixelBuffer?] = Array(repeating: nil, count: batchCount)
-            var batchTimes: [CMTime] = Array(repeating: .zero, count: batchCount)
+            while let next = nextScreenSample {
+              if CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(next))
+                <= outputSeconds + 0.001
+              {
+                latestScreenSample = next
+                nextScreenSample = pipelineScreenOutput.copyNextSampleBuffer()
+              } else {
+                break
+              }
+            }
 
-            for i in 0..<batchCount {
-              let frameIndex = batchStart + i
-              let outputTime = CMTime(value: CMTimeValue(frameIndex), timescale: timescale)
-              let outputSeconds = CMTimeGetSeconds(outputTime)
-
-              while let next = nextScreenSample {
+            if pipelineWebcamOutput != nil {
+              while let next = nextWebcamSample {
                 if CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(next))
                   <= outputSeconds + 0.001
                 {
-                  latestScreenSample = next
-                  nextScreenSample = pipelineScreenOutput.copyNextSampleBuffer()
+                  latestWebcamSample = next
+                  nextWebcamSample = pipelineWebcamOutput!.copyNextSampleBuffer()
                 } else {
                   break
                 }
               }
+            }
 
-              if pipelineWebcamOutput != nil {
-                while let next = nextWebcamSample {
-                  if CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(next))
-                    <= outputSeconds + 0.001
-                  {
-                    latestWebcamSample = next
-                    nextWebcamSample = pipelineWebcamOutput!.copyNextSampleBuffer()
-                  } else {
-                    break
-                  }
-                }
+            guard let screenBuffer = latestScreenSample.flatMap({ CMSampleBufferGetImageBuffer($0) })
+            else { continue }
+            let webcamBuffer = latestWebcamSample.flatMap { CMSampleBufferGetImageBuffer($0) }
+
+            sem.wait()
+            if cancelToken.isCancelled { sem.signal(); break }
+
+            var outBuf: CVPixelBuffer?
+            CVPixelBufferPoolCreatePixelBuffer(nil, pipelineOutputPool, &outBuf)
+            guard let outputBuffer = outBuf else {
+              sem.signal()
+              continue
+            }
+
+            nonisolated(unsafe) let capturedScreen = screenBuffer
+            nonisolated(unsafe) let capturedWebcam = webcamBuffer
+            nonisolated(unsafe) let capturedOutput = outputBuffer
+
+            renderGroup.enter()
+            renderQueue.async {
+              autoreleasepool {
+                CameraVideoCompositor.renderFrame(
+                  screenBuffer: capturedScreen,
+                  webcamBuffer: capturedWebcam,
+                  outputBuffer: capturedOutput,
+                  compositionTime: outputTime,
+                  instruction: instruction
+                )
+                frameWriter.submit(index: frameIndex, buffer: capturedOutput, time: outputTime)
               }
-
-              batchScreenSamples[i] = latestScreenSample
-              batchWebcamSamples[i] = latestWebcamSample
-              batchScreenBuffers[i] = latestScreenSample.flatMap { CMSampleBufferGetImageBuffer($0) }
-              batchWebcamBuffers[i] = latestWebcamSample.flatMap { CMSampleBufferGetImageBuffer($0) }
-              batchTimes[i] = outputTime
+              renderGroup.leave()
             }
+          }
 
-            var outputBuffers: [CVPixelBuffer?] = Array(repeating: nil, count: batchCount)
-            for i in 0..<batchCount {
-              if cancelled.pointee { break }
-              guard batchScreenBuffers[i] != nil else { continue }
-              sem.wait()
-              if cancelled.pointee { sem.signal(); break }
-              var outBuf: CVPixelBuffer?
-              CVPixelBufferPoolCreatePixelBuffer(nil, pipelineOutputPool, &outBuf)
-              if outBuf == nil { sem.signal() }
-              outputBuffers[i] = outBuf
-            }
+          latestScreenSample = nil
+          nextScreenSample = nil
+          latestWebcamSample = nil
+          nextWebcamSample = nil
 
-            if cancelled.pointee { break }
+          renderGroup.wait()
 
-            nonisolated(unsafe) let screenBufs = batchScreenBuffers
-            nonisolated(unsafe) let webcamBufs = batchWebcamBuffers
-            nonisolated(unsafe) let outBufs = outputBuffers
-            let times = batchTimes
-
-            DispatchQueue.concurrentPerform(iterations: batchCount) { i in
-              guard let screenBuf = screenBufs[i],
-                let outputBuf = outBufs[i]
-              else { return }
-              CameraVideoCompositor.renderFrame(
-                screenBuffer: screenBuf,
-                webcamBuffer: webcamBufs[i],
-                outputBuffer: outputBuf,
-                compositionTime: times[i],
-                instruction: instruction
-              )
-            }
-
-            for i in 0..<batchCount {
-              guard let outputBuf = outputBuffers[i] else { continue }
-              frameWriter.submit(
-                index: batchStart + i,
-                buffer: outputBuf,
-                time: batchTimes[i]
-              )
-            }
-
-            batchScreenSamples.removeAll()
-            batchWebcamSamples.removeAll()
+          if cancelToken.isCancelled {
+            frameWriter.cancel()
+            pipelineAudioReader?.cancelReading()
+            pipelineReader.cancelReading()
+            pipelineWriter.cancelWriting()
+            CVPixelBufferPoolFlush(pipelineOutputPool, CVPixelBufferPoolFlushFlags(rawValue: 1))
+            try? FileManager.default.removeItem(at: outputURL)
+            safeCont.resume(throwing: CancellationError())
+            return
           }
 
           frameWriter.finish()
           frameWriter.waitUntilDone()
+
           pipelineVideoInput.markAsFinished()
           pipelineReader.cancelReading()
 
           audioGroup.wait()
 
-          if cancelled.pointee {
+          if cancelToken.isCancelled {
             pipelineWriter.cancelWriting()
+            CVPixelBufferPoolFlush(pipelineOutputPool, CVPixelBufferPoolFlushFlags(rawValue: 1))
             try? FileManager.default.removeItem(at: outputURL)
-            cont.resume(throwing: CancellationError())
+            safeCont.resume(throwing: CancellationError())
             return
           }
 
           pipelineWriter.finishWriting {
+            CVPixelBufferPoolFlush(pipelineOutputPool, CVPixelBufferPoolFlushFlags(rawValue: 1))
             if pipelineWriter.status == .failed {
-              cont.resume(
+              safeCont.resume(
                 throwing: pipelineWriter.error
                   ?? CaptureError.recordingFailed("Export writing failed")
               )
@@ -443,13 +520,14 @@ extension VideoCompositor {
               if let handler = progressHandler {
                 Task { @MainActor in handler(1.0, nil) }
               }
-              cont.resume()
+              safeCont.resume()
             }
           }
         }
       }
     } onCancel: {
-      cancelled.pointee = true
+      cancelToken.cancel()
+      sem.signal()
     }
   }
 }
