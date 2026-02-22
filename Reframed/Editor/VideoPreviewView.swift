@@ -31,24 +31,30 @@ struct VideoPreviewView: NSViewRepresentable {
   var cameraFullscreenRegions:
     [(
       start: Double, end: Double,
-      entryTransition: CameraTransitionType, entryDuration: Double,
-      exitTransition: CameraTransitionType, exitDuration: Double
+      entryTransition: RegionTransitionType, entryDuration: Double,
+      exitTransition: RegionTransitionType, exitDuration: Double
     )] = []
   var cameraHiddenRegions:
     [(
       start: Double, end: Double,
-      entryTransition: CameraTransitionType, entryDuration: Double,
-      exitTransition: CameraTransitionType, exitDuration: Double
+      entryTransition: RegionTransitionType, entryDuration: Double,
+      exitTransition: RegionTransitionType, exitDuration: Double
     )] = []
   var cameraCustomRegions:
     [(
       start: Double, end: Double, layout: CameraLayout, cameraAspect: CameraAspect, cornerRadius: CGFloat, shadow: CGFloat,
       borderWidth: CGFloat, borderColor: CGColor, mirrored: Bool,
-      entryTransition: CameraTransitionType, entryDuration: Double,
-      exitTransition: CameraTransitionType, exitDuration: Double
+      entryTransition: RegionTransitionType, entryDuration: Double,
+      exitTransition: RegionTransitionType, exitDuration: Double
     )] = []
   var cameraFullscreenFillMode: CameraFullscreenFillMode = .fit
   var cameraFullscreenAspect: CameraFullscreenAspect = .original
+  var videoRegions:
+    [(
+      start: Double, end: Double,
+      entryTransition: RegionTransitionType, entryDuration: Double,
+      exitTransition: RegionTransitionType, exitDuration: Double
+    )] = []
 
   func makeNSView(context: Context) -> VideoPreviewContainer {
     let container = VideoPreviewContainer()
@@ -114,16 +120,16 @@ struct VideoPreviewView: NSViewRepresentable {
       return 1.0
     }()
 
-    let activeTransitionType: CameraTransitionType = {
+    let activeTransitionType: RegionTransitionType = {
       func resolveType(
         time: Double,
         start: Double,
         end: Double,
-        entryTransition: CameraTransitionType,
+        entryTransition: RegionTransitionType,
         entryDuration: Double,
-        exitTransition: CameraTransitionType,
+        exitTransition: RegionTransitionType,
         exitDuration: Double
-      ) -> CameraTransitionType {
+      ) -> RegionTransitionType {
         let elapsed = time - start
         let remaining = end - time
         if entryTransition != .none && elapsed < entryDuration { return entryTransition }
@@ -168,6 +174,32 @@ struct VideoPreviewView: NSViewRepresentable {
 
     nsView.cameraTransitionProgress = transitionProgress
     nsView.cameraTransitionType = activeTransitionType
+
+    let videoRegion = videoRegions.first(where: { currentTime >= $0.start && currentTime <= $0.end })
+    let screenTransitionProgress: CGFloat = {
+      guard let r = videoRegion else { return 1.0 }
+      return Self.computeTransitionProgress(
+        time: currentTime,
+        start: r.start,
+        end: r.end,
+        entryTransition: r.entryTransition,
+        entryDuration: r.entryDuration,
+        exitTransition: r.exitTransition,
+        exitDuration: r.exitDuration
+      )
+    }()
+    let screenTransitionType: RegionTransitionType = {
+      guard let r = videoRegion else { return .none }
+      let elapsed = currentTime - r.start
+      let remaining = r.end - currentTime
+      if r.entryTransition != .none && elapsed < r.entryDuration { return r.entryTransition }
+      if r.exitTransition != .none && remaining < r.exitDuration { return r.exitTransition }
+      return .none
+    }()
+    nsView.screenTransitionProgress = screenTransitionProgress
+    nsView.screenTransitionType = screenTransitionType
+    nsView.isScreenHidden = false
+
     let effectiveLayout = customRegion?.layout ?? cameraLayout
 
     nsView.updateCameraLayout(
@@ -231,9 +263,9 @@ struct VideoPreviewView: NSViewRepresentable {
     time: Double,
     start: Double,
     end: Double,
-    entryTransition: CameraTransitionType,
+    entryTransition: RegionTransitionType,
     entryDuration: Double,
-    exitTransition: CameraTransitionType,
+    exitTransition: RegionTransitionType,
     exitDuration: Double
   ) -> CGFloat {
     let elapsed = time - start
@@ -282,7 +314,10 @@ final class VideoPreviewContainer: NSView {
   var currentFullscreenFillMode: CameraFullscreenFillMode = .fit
   var currentFullscreenAspect: CameraFullscreenAspect = .original
   var cameraTransitionProgress: CGFloat = 1.0
-  var cameraTransitionType: CameraTransitionType = .none
+  var cameraTransitionType: RegionTransitionType = .none
+  var screenTransitionProgress: CGFloat = 1.0
+  var screenTransitionType: RegionTransitionType = .none
+  var isScreenHidden = false
   private var isDraggingCamera = false
   private var currentLayout = CameraLayout()
   private var currentWebcamSize: CGSize?
@@ -538,6 +573,45 @@ final class VideoPreviewContainer: NSView {
       screenPlayerLayer.frame = CGRect(x: px, y: py, width: pw, height: ph)
     } else {
       screenPlayerLayer.frame = screenContainerLayer.bounds
+    }
+
+    if isScreenHidden && screenTransitionType == .none {
+      screenContainerLayer.opacity = 0
+      screenShadowLayer.opacity = 0
+      cursorOverlay.isHidden = true
+    } else if screenTransitionType != .none {
+      let p = Float(screenTransitionProgress)
+      switch screenTransitionType {
+      case .none:
+        screenContainerLayer.opacity = 1
+        screenContainerLayer.transform = CATransform3DIdentity
+        screenShadowLayer.opacity = currentVideoShadow > 0 ? 0.6 : 0
+      case .fade:
+        screenContainerLayer.opacity = p
+        screenContainerLayer.transform = CATransform3DIdentity
+        screenShadowLayer.opacity = currentVideoShadow > 0 ? p * 0.6 : 0
+      case .scale:
+        screenContainerLayer.opacity = 1
+        let cx = screenRect.width / 2
+        let cy = screenRect.height / 2
+        var transform = CATransform3DIdentity
+        transform = CATransform3DTranslate(transform, cx, cy, 0)
+        transform = CATransform3DScale(transform, CGFloat(p), CGFloat(p), 1)
+        transform = CATransform3DTranslate(transform, -cx, -cy, 0)
+        screenContainerLayer.transform = transform
+        screenShadowLayer.opacity = currentVideoShadow > 0 ? p * 0.6 : 0
+      case .slide:
+        screenContainerLayer.opacity = 1
+        let offsetY = (1.0 - CGFloat(p)) * (screenRect.origin.y + screenRect.height)
+        screenContainerLayer.transform = CATransform3DMakeTranslation(0, -offsetY, 0)
+        screenShadowLayer.opacity = currentVideoShadow > 0 ? p * 0.6 : 0
+      }
+      cursorOverlay.isHidden = false
+    } else {
+      screenContainerLayer.opacity = 1
+      screenContainerLayer.transform = CATransform3DIdentity
+      screenShadowLayer.opacity = currentVideoShadow > 0 ? 0.6 : 0
+      cursorOverlay.isHidden = false
     }
 
     guard let ws = currentWebcamSize, webcamPlayerLayer.player != nil else {

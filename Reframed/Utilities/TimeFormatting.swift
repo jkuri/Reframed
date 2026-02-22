@@ -16,7 +16,10 @@ func formatDuration(_ time: CMTime) -> String {
 }
 
 func formatPreciseDuration(_ time: CMTime) -> String {
-  let raw = max(0, CMTimeGetSeconds(time))
+  formatPreciseDuration(seconds: max(0, CMTimeGetSeconds(time)))
+}
+
+func formatPreciseDuration(seconds raw: Double) -> String {
   let totalSeconds = Int(raw)
   let centiseconds = Int((raw - Double(totalSeconds)) * 100)
   let minutes = totalSeconds / 60

@@ -123,6 +123,7 @@ final class EditorState {
   var systemAudioRegions: [AudioRegionData] = []
   var micAudioRegions: [AudioRegionData] = []
   var cameraRegions: [CameraRegionData] = []
+  var videoRegions: [VideoRegionData] = []
   var isExporting = false
   var exportProgress: Double = 0
   var exportETA: Double?
@@ -206,6 +207,16 @@ final class EditorState {
   var duration: CMTime { playerController.duration }
   var hasWebcam: Bool { result.webcamVideoURL != nil }
 
+  var videoRegionsTotalDuration: Double {
+    videoRegions.reduce(0) { $0 + ($1.endSeconds - $1.startSeconds) }
+  }
+
+  var hasVideoRegionCuts: Bool {
+    let dur = CMTimeGetSeconds(duration)
+    guard !videoRegions.isEmpty else { return false }
+    return abs(videoRegionsTotalDuration - dur) > 0.01
+  }
+
   init(project: ReframedProject) {
     self.project = project
     self.result = project.recordingResult
@@ -253,6 +264,7 @@ final class EditorState {
     if result.microphoneAudioURL != nil {
       micAudioRegions = [AudioRegionData(startSeconds: 0, endSeconds: dur)]
     }
+    videoRegions = [VideoRegionData(startSeconds: 0, endSeconds: dur)]
     playerController.trimEnd = trimEnd
     syncAudioRegionsToPlayer()
     playerController.setupTimeObserver()
@@ -307,6 +319,9 @@ final class EditorState {
           CameraRegionData(id: $0.id, startSeconds: $0.startSeconds, endSeconds: $0.endSeconds, type: .fullscreen)
         }
       }
+      if let savedVideoRegions = saved.videoRegions, !savedVideoRegions.isEmpty {
+        videoRegions = savedVideoRegions
+      }
       if let audioSettings = saved.audioSettings {
         systemAudioVolume = audioSettings.systemAudioVolume
         micAudioVolume = audioSettings.micAudioVolume
@@ -322,6 +337,10 @@ final class EditorState {
     } else if hasWebcam {
       setCameraCorner(.bottomRight)
     }
+
+    trimStart = .zero
+    trimEnd = playerController.duration
+    playerController.trimEnd = playerController.duration
 
     if let proj = project, let historyData = proj.loadHistory() {
       history.load(from: historyData)
@@ -339,7 +358,17 @@ final class EditorState {
     if isPlaying {
       pause()
     } else {
-      if trimEnd.isValid && CMTimeCompare(currentTime, trimEnd) >= 0 {
+      if isPreviewMode && hasVideoRegionCuts {
+        let t = CMTimeGetSeconds(currentTime)
+        let inRegion = videoRegions.contains { t >= $0.startSeconds && t < $0.endSeconds }
+        if !inRegion {
+          if let next = videoRegions.first(where: { $0.startSeconds > t }) {
+            seek(to: CMTime(seconds: next.startSeconds, preferredTimescale: 600))
+          } else {
+            seek(to: CMTime(seconds: videoRegions[0].startSeconds, preferredTimescale: 600))
+          }
+        }
+      } else if trimEnd.isValid && CMTimeCompare(currentTime, trimEnd) >= 0 {
         seek(to: trimStart)
       }
       play()
@@ -500,6 +529,11 @@ final class EditorState {
         end: CMTime(seconds: region.endSeconds, preferredTimescale: 600)
       )
     }
+    syncVideoRegionsToPlayer()
+  }
+
+  func syncVideoRegionsToPlayer() {
+    playerController.videoRegions = videoRegions.map { (start: $0.startSeconds, end: $0.endSeconds) }
   }
 
   func syncAudioVolumes() {
@@ -703,9 +737,9 @@ final class EditorState {
 
   func updateCameraRegionTransition(
     regionId: UUID,
-    entryTransition: CameraTransitionType? = nil,
+    entryTransition: RegionTransitionType? = nil,
     entryDuration: Double? = nil,
-    exitTransition: CameraTransitionType? = nil,
+    exitTransition: RegionTransitionType? = nil,
     exitDuration: Double? = nil
   ) {
     guard let idx = cameraRegions.firstIndex(where: { $0.id == regionId }) else { return }
@@ -813,6 +847,91 @@ final class EditorState {
     cameraRegions.sort { $0.startSeconds < $1.startSeconds }
   }
 
+  func addVideoRegion(atTime time: Double) {
+    if videoRegions.contains(where: { time >= $0.startSeconds && time <= $0.endSeconds }) {
+      return
+    }
+
+    let dur = CMTimeGetSeconds(duration)
+    let desiredHalf = min(5.0, dur / 2)
+    var gapStart: Double = 0
+    var gapEnd: Double = dur
+    var insertIdx = videoRegions.count
+
+    for i in 0..<videoRegions.count {
+      if time < videoRegions[i].startSeconds {
+        gapEnd = videoRegions[i].startSeconds
+        insertIdx = i
+        break
+      }
+      gapStart = videoRegions[i].endSeconds
+    }
+    if insertIdx == videoRegions.count {
+      gapEnd = dur
+    }
+
+    guard gapEnd - gapStart >= 0.05 else { return }
+
+    let regionStart = max(gapStart, time - desiredHalf)
+    let regionEnd = min(gapEnd, time + desiredHalf)
+    let finalStart = max(gapStart, min(regionStart, regionEnd - 0.05))
+    let finalEnd = min(gapEnd, max(regionEnd, finalStart + 0.05))
+
+    videoRegions.insert(
+      VideoRegionData(startSeconds: finalStart, endSeconds: finalEnd),
+      at: insertIdx
+    )
+    videoRegions.sort { $0.startSeconds < $1.startSeconds }
+  }
+
+  func removeVideoRegion(regionId: UUID) {
+    videoRegions.removeAll { $0.id == regionId }
+  }
+
+  func updateVideoRegionStart(regionId: UUID, newStart: Double) {
+    guard let idx = videoRegions.firstIndex(where: { $0.id == regionId }) else { return }
+    let dur = CMTimeGetSeconds(duration)
+    let minStart: Double = idx > 0 ? videoRegions[idx - 1].endSeconds : 0
+    let maxStart = videoRegions[idx].endSeconds - 0.01
+    videoRegions[idx].startSeconds = max(minStart, min(maxStart, min(dur, newStart)))
+    videoRegions.sort { $0.startSeconds < $1.startSeconds }
+  }
+
+  func updateVideoRegionEnd(regionId: UUID, newEnd: Double) {
+    guard let idx = videoRegions.firstIndex(where: { $0.id == regionId }) else { return }
+    let dur = CMTimeGetSeconds(duration)
+    let maxEnd: Double = idx < videoRegions.count - 1 ? videoRegions[idx + 1].startSeconds : dur
+    let minEnd = videoRegions[idx].startSeconds + 0.01
+    videoRegions[idx].endSeconds = max(minEnd, min(maxEnd, newEnd))
+    videoRegions.sort { $0.startSeconds < $1.startSeconds }
+  }
+
+  func moveVideoRegion(regionId: UUID, newStart: Double) {
+    guard let idx = videoRegions.firstIndex(where: { $0.id == regionId }) else { return }
+    let dur = CMTimeGetSeconds(duration)
+    let regionDuration = videoRegions[idx].endSeconds - videoRegions[idx].startSeconds
+    let minStart: Double = idx > 0 ? videoRegions[idx - 1].endSeconds : 0
+    let maxStart: Double = (idx < videoRegions.count - 1 ? videoRegions[idx + 1].startSeconds : dur) - regionDuration
+    let clampedStart = max(minStart, min(maxStart, newStart))
+    videoRegions[idx].startSeconds = clampedStart
+    videoRegions[idx].endSeconds = clampedStart + regionDuration
+    videoRegions.sort { $0.startSeconds < $1.startSeconds }
+  }
+
+  func updateVideoRegionTransition(
+    regionId: UUID,
+    entryTransition: RegionTransitionType? = nil,
+    entryDuration: Double? = nil,
+    exitTransition: RegionTransitionType? = nil,
+    exitDuration: Double? = nil
+  ) {
+    guard let idx = videoRegions.firstIndex(where: { $0.id == regionId }) else { return }
+    if let entryTransition { videoRegions[idx].entryTransition = entryTransition }
+    if let entryDuration { videoRegions[idx].entryTransitionDuration = entryDuration }
+    if let exitTransition { videoRegions[idx].exitTransition = exitTransition }
+    if let exitDuration { videoRegions[idx].exitTransitionDuration = exitDuration }
+  }
+
   func setCameraCorner(_ corner: CameraCorner) {
     let margin: CGFloat = 0.02
     let canvas = canvasSize(for: result.screenSize)
@@ -909,7 +1028,7 @@ final class EditorState {
       )
     }
     let camFsRegions = cameraRegions.filter { $0.type == .fullscreen }.map {
-      CameraRegionInfo(
+      RegionTransitionInfo(
         timeRange: CMTimeRange(
           start: CMTime(seconds: $0.startSeconds, preferredTimescale: 600),
           end: CMTime(seconds: $0.endSeconds, preferredTimescale: 600)
@@ -921,7 +1040,7 @@ final class EditorState {
       )
     }
     let camHiddenRegions = cameraRegions.filter { $0.type == .hidden }.map {
-      CameraRegionInfo(
+      RegionTransitionInfo(
         timeRange: CMTimeRange(
           start: CMTime(seconds: $0.startSeconds, preferredTimescale: 600),
           end: CMTime(seconds: $0.endSeconds, preferredTimescale: 600)
@@ -955,6 +1074,31 @@ final class EditorState {
         )
       }
 
+    let trimStartSec = CMTimeGetSeconds(trimStart)
+    let trimEndSec = CMTimeGetSeconds(trimEnd)
+    let isSingleFullRange =
+      videoRegions.count == 1
+      && abs(videoRegions[0].startSeconds - trimStartSec) < 0.01
+      && abs(videoRegions[0].endSeconds - trimEndSec) < 0.01
+      && (videoRegions[0].entryTransition ?? RegionTransitionType.none) == RegionTransitionType.none
+      && (videoRegions[0].exitTransition ?? RegionTransitionType.none) == RegionTransitionType.none
+
+    let vidRegions: [RegionTransitionInfo] =
+      isSingleFullRange
+      ? []
+      : videoRegions.map {
+        RegionTransitionInfo(
+          timeRange: CMTimeRange(
+            start: CMTime(seconds: $0.startSeconds, preferredTimescale: 600),
+            end: CMTime(seconds: $0.endSeconds, preferredTimescale: 600)
+          ),
+          entryTransition: $0.entryTransition ?? .none,
+          entryDuration: $0.entryTransitionDuration ?? 0.3,
+          exitTransition: $0.exitTransition ?? .none,
+          exitDuration: $0.exitTransitionDuration ?? 0.3
+        )
+      }
+
     let exportResult: RecordingResult
     if webcamEnabled {
       exportResult = result
@@ -977,12 +1121,15 @@ final class EditorState {
       result: exportResult,
       cameraLayout: cameraLayout,
       cameraAspect: cameraAspect,
-      trimRange: CMTimeRange(start: trimStart, end: trimEnd),
+      trimRange: vidRegions.isEmpty
+        ? CMTimeRange(start: trimStart, end: trimEnd)
+        : CMTimeRange(start: .zero, end: duration),
       systemAudioRegions: sysRegions.isEmpty ? nil : sysRegions,
       micAudioRegions: micRegions.isEmpty ? nil : micRegions,
       cameraFullscreenRegions: camFsRegions.isEmpty ? nil : camFsRegions,
       cameraHiddenRegions: camHiddenRegions.isEmpty ? nil : camHiddenRegions,
       cameraCustomRegions: camCustomRegions.isEmpty ? nil : camCustomRegions,
+      videoRegions: vidRegions.isEmpty ? nil : vidRegions,
       backgroundStyle: backgroundStyle,
       backgroundImageURL: backgroundImageURL(),
       backgroundImageFillMode: backgroundImageFillMode,
@@ -1284,7 +1431,8 @@ final class EditorState {
       audioSettings: audioSettings,
       systemAudioRegions: systemAudioRegions.isEmpty ? nil : systemAudioRegions,
       micAudioRegions: micAudioRegions.isEmpty ? nil : micAudioRegions,
-      cameraRegions: cameraRegions.isEmpty ? nil : cameraRegions
+      cameraRegions: cameraRegions.isEmpty ? nil : cameraRegions,
+      videoRegions: videoRegions.isEmpty ? nil : videoRegions
     )
   }
 
@@ -1294,13 +1442,9 @@ final class EditorState {
 
     let prev = createSnapshot()
 
-    let start = CMTime(seconds: data.trimStartSeconds, preferredTimescale: 600)
-    let end = CMTime(seconds: data.trimEndSeconds, preferredTimescale: 600)
-    if CMTimeCompare(start, .zero) >= 0 && CMTimeCompare(end, start) > 0 {
-      trimStart = start
-      trimEnd = CMTimeMinimum(end, playerController.duration)
-      playerController.trimEnd = trimEnd
-    }
+    trimStart = .zero
+    trimEnd = playerController.duration
+    playerController.trimEnd = playerController.duration
 
     backgroundStyle = data.backgroundStyle
     backgroundImageFillMode = data.backgroundImageFillMode ?? .fill
@@ -1361,6 +1505,12 @@ final class EditorState {
       cameraRegions = legacyRegions.map {
         CameraRegionData(id: $0.id, startSeconds: $0.startSeconds, endSeconds: $0.endSeconds, type: .fullscreen)
       }
+    }
+    if let savedVideoRegions = data.videoRegions, !savedVideoRegions.isEmpty {
+      videoRegions = savedVideoRegions
+    } else {
+      let dur = CMTimeGetSeconds(duration)
+      videoRegions = [VideoRegionData(startSeconds: 0, endSeconds: dur)]
     }
 
     if let audioSettings = data.audioSettings {
@@ -1490,15 +1640,19 @@ final class EditorState {
       _ = self.systemAudioRegions
       _ = self.micAudioRegions
       _ = self.cameraRegions
+      _ = self.videoRegions
       _ = self.systemAudioVolume
       _ = self.micAudioVolume
       _ = self.systemAudioMuted
       _ = self.micAudioMuted
       _ = self.micNoiseReductionEnabled
       _ = self.micNoiseReductionIntensity
+      _ = self.isPreviewMode
     } onChange: {
       Task { @MainActor [weak self] in
         guard let self else { return }
+        self.syncVideoRegionsToPlayer()
+        self.playerController.previewMode = self.isPreviewMode
         self.scheduleSave()
         if !self.isRestoringState {
           self.scheduleUndoSnapshot()

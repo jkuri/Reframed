@@ -16,6 +16,8 @@ final class SyncedPlayerController {
   var trimEnd: CMTime = .zero
   var systemAudioRegions: [(start: CMTime, end: CMTime)] = []
   var micAudioRegions: [(start: CMTime, end: CMTime)] = []
+  var videoRegions: [(start: Double, end: Double)] = []
+  var previewMode = false
 
   private var micAudioEngine: AVAudioEngine?
   private var micPlayerNode: AVAudioPlayerNode?
@@ -109,7 +111,28 @@ final class SyncedPlayerController {
         if self.trimEnd.isValid && CMTimeCompare(time, self.trimEnd) >= 0 {
           self.pause()
         }
+        if self.previewMode && self.isPlaying {
+          self.handlePreviewGapSkip(at: CMTimeGetSeconds(time))
+        }
         self.updateAudioMuting(at: time)
+      }
+    }
+  }
+
+  private func handlePreviewGapSkip(at time: Double) {
+    let regions = videoRegions
+    guard !regions.isEmpty else { return }
+    let inRegion = regions.contains { time >= $0.start && time < $0.end }
+    if !inRegion {
+      if let next = regions.first(where: { $0.start > time }) {
+        let seekTime = CMTime(seconds: next.start, preferredTimescale: 600)
+        seek(to: seekTime)
+        screenPlayer.play()
+        webcamPlayer?.play()
+        systemAudioPlayer?.play()
+        scheduleMicPlayback(from: seekTime)
+      } else {
+        pause()
       }
     }
   }

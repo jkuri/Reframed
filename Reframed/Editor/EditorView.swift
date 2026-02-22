@@ -291,7 +291,16 @@ struct EditorView: View {
                 )
               } : [],
           cameraFullscreenFillMode: editorState.cameraFullscreenFillMode,
-          cameraFullscreenAspect: editorState.cameraFullscreenAspect
+          cameraFullscreenAspect: editorState.cameraFullscreenAspect,
+          videoRegions: editorState.videoRegions.map { r in
+            (
+              start: r.startSeconds, end: r.endSeconds,
+              entryTransition: r.entryTransition ?? .none,
+              entryDuration: r.entryTransitionDuration ?? 0.3,
+              exitTransition: r.exitTransition ?? .none,
+              exitDuration: r.exitTransitionDuration ?? 0.3
+            )
+          }
         )
       }
       .frame(maxWidth: .infinity, maxHeight: .infinity)

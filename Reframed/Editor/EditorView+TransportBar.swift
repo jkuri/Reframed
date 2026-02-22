@@ -10,9 +10,17 @@ extension EditorView {
 
       Spacer()
 
-      Text("\(formatPreciseDuration(editorState.currentTime)) / \(formatPreciseDuration(editorState.duration))")
-        .font(.system(size: 12, design: .monospaced))
-        .foregroundStyle(ReframedColors.primaryText)
+      HStack(spacing: 4) {
+        Text("\(formatPreciseDuration(editorState.currentTime)) / \(formatPreciseDuration(editorState.duration))")
+          .font(.system(size: 12, design: .monospaced))
+          .foregroundStyle(ReframedColors.primaryText)
+
+        if editorState.hasVideoRegionCuts {
+          Text("(\(formatPreciseDuration(seconds: editorState.videoRegionsTotalDuration)))")
+            .font(.system(size: 11, design: .monospaced))
+            .foregroundStyle(ReframedColors.secondaryText)
+        }
+      }
 
       Spacer()
 

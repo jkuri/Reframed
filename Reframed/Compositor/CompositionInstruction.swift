@@ -1,11 +1,11 @@
 import AVFoundation
 import CoreMedia
 
-struct CameraRegionInfo: Sendable {
+struct RegionTransitionInfo: Sendable {
   let timeRange: CMTimeRange
-  let entryTransition: CameraTransitionType
+  let entryTransition: RegionTransitionType
   let entryDuration: Double
-  let exitTransition: CameraTransitionType
+  let exitTransition: RegionTransitionType
   let exitDuration: Double
 }
 
@@ -18,9 +18,9 @@ struct CameraCustomRegion: Sendable {
   let borderWidth: CGFloat
   let borderColor: CGColor
   let mirrored: Bool
-  let entryTransition: CameraTransitionType
+  let entryTransition: RegionTransitionType
   let entryDuration: Double
-  let exitTransition: CameraTransitionType
+  let exitTransition: RegionTransitionType
   let exitDuration: Double
 }
 
@@ -62,9 +62,10 @@ final class CompositionInstruction: NSObject, AVVideoCompositionInstructionProto
   let zoomFollowCursor: Bool
   let zoomTimeline: ZoomTimeline?
   let trimStartSeconds: Double
-  let cameraFullscreenRegions: [CameraRegionInfo]
-  let cameraHiddenRegions: [CameraRegionInfo]
+  let cameraFullscreenRegions: [RegionTransitionInfo]
+  let cameraHiddenRegions: [RegionTransitionInfo]
   let cameraCustomRegions: [CameraCustomRegion]
+  let videoRegions: [RegionTransitionInfo]
   let webcamSize: CGSize?
   let cameraAspect: CameraAspect
   let cameraFullscreenFillMode: CameraFullscreenFillMode
@@ -101,9 +102,10 @@ final class CompositionInstruction: NSObject, AVVideoCompositionInstructionProto
     zoomFollowCursor: Bool = true,
     zoomTimeline: ZoomTimeline? = nil,
     trimStartSeconds: Double = 0,
-    cameraFullscreenRegions: [CameraRegionInfo] = [],
-    cameraHiddenRegions: [CameraRegionInfo] = [],
+    cameraFullscreenRegions: [RegionTransitionInfo] = [],
+    cameraHiddenRegions: [RegionTransitionInfo] = [],
     cameraCustomRegions: [CameraCustomRegion] = [],
+    videoRegions: [RegionTransitionInfo] = [],
     webcamSize: CGSize? = nil,
     cameraAspect: CameraAspect = .original,
     cameraFullscreenFillMode: CameraFullscreenFillMode = .fit,
@@ -142,6 +144,7 @@ final class CompositionInstruction: NSObject, AVVideoCompositionInstructionProto
     self.cameraFullscreenRegions = cameraFullscreenRegions
     self.cameraHiddenRegions = cameraHiddenRegions
     self.cameraCustomRegions = cameraCustomRegions
+    self.videoRegions = videoRegions
     self.webcamSize = webcamSize
     self.cameraAspect = cameraAspect
     self.cameraFullscreenFillMode = cameraFullscreenFillMode

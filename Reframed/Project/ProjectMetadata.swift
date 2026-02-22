@@ -57,7 +57,7 @@ struct AudioRegionData: Codable, Sendable, Identifiable, Equatable {
   var endSeconds: Double
 }
 
-enum CameraTransitionType: String, Codable, Sendable, CaseIterable, Identifiable {
+enum RegionTransitionType: String, Codable, Sendable, CaseIterable, Identifiable {
   case none, fade, scale, slide
 
   var id: String { rawValue }
@@ -108,9 +108,19 @@ struct CameraRegionData: Codable, Sendable, Identifiable, Equatable {
   var customBorderWidth: CGFloat?
   var customBorderColor: CodableColor?
   var customMirrored: Bool?
-  var entryTransition: CameraTransitionType?
+  var entryTransition: RegionTransitionType?
   var entryTransitionDuration: Double?
-  var exitTransition: CameraTransitionType?
+  var exitTransition: RegionTransitionType?
+  var exitTransitionDuration: Double?
+}
+
+struct VideoRegionData: Codable, Sendable, Identifiable, Equatable {
+  var id: UUID = UUID()
+  var startSeconds: Double
+  var endSeconds: Double
+  var entryTransition: RegionTransitionType?
+  var entryTransitionDuration: Double?
+  var exitTransition: RegionTransitionType?
   var exitTransitionDuration: Double?
 }
 
@@ -141,6 +151,7 @@ struct EditorStateData: Codable, Sendable {
   var micAudioRegions: [AudioRegionData]?
   var cameraRegions: [CameraRegionData]?
   var cameraFullscreenRegions: [AudioRegionData]?
+  var videoRegions: [VideoRegionData]?
 }
 
 struct CodableSize: Codable, Sendable {

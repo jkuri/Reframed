@@ -106,6 +106,36 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
       height: CGFloat(height) - 2 * instruction.paddingV
     )
 
+    let screenTransition: (type: RegionTransitionType, progress: CGFloat)? = {
+      guard !instruction.videoRegions.isEmpty else { return nil }
+      guard let region = instruction.videoRegions.first(where: { $0.timeRange.containsTime(compositionTime) }) else {
+        return nil
+      }
+      let p = computeRegionTransition(compositionTime: compositionTime, region: region)
+      let t = resolveActiveTransitionType(compositionTime: compositionTime, region: region)
+      guard t != .none else { return nil }
+      return (t, p)
+    }()
+
+    if let st = screenTransition {
+      context.saveGState()
+      switch st.type {
+      case .none:
+        break
+      case .fade:
+        context.setAlpha(st.progress)
+      case .scale:
+        let cx = CGFloat(width) / 2
+        let cy = CGFloat(height) / 2
+        context.translateBy(x: cx, y: cy)
+        context.scaleBy(x: st.progress, y: st.progress)
+        context.translateBy(x: -cx, y: -cy)
+      case .slide:
+        let offsetY = (1.0 - st.progress) * CGFloat(height)
+        context.translateBy(x: 0, y: -offsetY)
+      }
+    }
+
     let screenImage = createImage(from: screenBuffer, colorSpace: colorSpace)
     if let img = screenImage {
       let screenAspect = CGSize(width: img.width, height: img.height)
@@ -245,12 +275,16 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
       }
     }
 
+    if screenTransition != nil {
+      context.restoreGState()
+    }
+
     if let webcamBuffer {
       let hiddenRegion = instruction.cameraHiddenRegions.first {
         $0.timeRange.containsTime(compositionTime)
       }
 
-      let hiddenTransition: (type: CameraTransitionType, progress: CGFloat)? = {
+      let hiddenTransition: (type: RegionTransitionType, progress: CGFloat)? = {
         guard let r = hiddenRegion else { return nil }
         let p = computeRegionTransition(compositionTime: compositionTime, region: r)
         return (resolveActiveTransitionType(compositionTime: compositionTime, region: r), 1.0 - p)
@@ -265,7 +299,7 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
       }
       let isCamFullscreen = hiddenRegion == nil && fsRegion != nil
 
-      let regionTransition: (type: CameraTransitionType, progress: CGFloat)? = {
+      let regionTransition: (type: RegionTransitionType, progress: CGFloat)? = {
         if let ht = hiddenTransition, ht.type != .none { return ht }
         if let r = fsRegion {
           let p = computeRegionTransition(compositionTime: compositionTime, region: r)
@@ -273,7 +307,7 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
           if t != .none { return (t, p) }
         }
         if let r = instruction.cameraCustomRegions.first(where: { $0.timeRange.containsTime(compositionTime) }) {
-          let info = CameraRegionInfo(
+          let info = RegionTransitionInfo(
             timeRange: r.timeRange,
             entryTransition: r.entryTransition,
             entryDuration: r.entryDuration,
@@ -553,7 +587,7 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
 
   private static func computeRegionTransition(
     compositionTime: CMTime,
-    region: CameraRegionInfo
+    region: RegionTransitionInfo
   ) -> CGFloat {
     let t = CMTimeGetSeconds(compositionTime)
     let start = CMTimeGetSeconds(region.timeRange.start)
@@ -571,8 +605,8 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
 
   private static func resolveActiveTransitionType(
     compositionTime: CMTime,
-    region: CameraRegionInfo
-  ) -> CameraTransitionType {
+    region: RegionTransitionInfo
+  ) -> RegionTransitionType {
     let t = CMTimeGetSeconds(compositionTime)
     let start = CMTimeGetSeconds(region.timeRange.start)
     let end = CMTimeGetSeconds(region.timeRange.end)

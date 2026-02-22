@@ -10,7 +10,7 @@ struct CameraRegionEditPopover: View {
     (
       CameraAspect?, CGFloat?, CGFloat?, CGFloat?, CodableColor?, Bool?
     ) -> Void
-  let onUpdateTransition: (CameraTransitionType?, Double?, CameraTransitionType?, Double?) -> Void
+  let onUpdateTransition: (RegionTransitionType?, Double?, RegionTransitionType?, Double?) -> Void
   let onRemove: () -> Void
 
   @State private var localLayout: CameraLayout = CameraLayout()
@@ -20,9 +20,9 @@ struct CameraRegionEditPopover: View {
   @State private var localBorderWidth: CGFloat = 0
   @State private var localBorderColor: CodableColor = CodableColor(r: 0, g: 0, b: 0, a: 1)
   @State private var localMirrored: Bool = false
-  @State private var localEntryTransition: CameraTransitionType = .none
+  @State private var localEntryTransition: RegionTransitionType = .none
   @State private var localEntryDuration: Double = 0.3
-  @State private var localExitTransition: CameraTransitionType = .none
+  @State private var localExitTransition: RegionTransitionType = .none
   @State private var localExitDuration: Double = 0.3
   @State private var didInit = false
   @Environment(\.colorScheme) private var colorScheme
@@ -201,7 +201,7 @@ struct CameraRegionEditPopover: View {
       SectionHeader(icon: "arrow.right", title: "Entry Transition")
 
       FullWidthSegmentPicker(
-        items: CameraTransitionType.allCases,
+        items: RegionTransitionType.allCases,
         label: { $0.label },
         selection: $localEntryTransition
       )
@@ -221,7 +221,7 @@ struct CameraRegionEditPopover: View {
       SectionHeader(icon: "arrow.left", title: "Exit Transition")
 
       FullWidthSegmentPicker(
-        items: CameraTransitionType.allCases,
+        items: RegionTransitionType.allCases,
         label: { $0.label },
         selection: $localExitTransition
       )

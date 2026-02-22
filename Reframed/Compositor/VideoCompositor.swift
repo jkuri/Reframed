@@ -19,9 +19,10 @@ enum VideoCompositor {
     trimRange: CMTimeRange,
     systemAudioRegions: [CMTimeRange]? = nil,
     micAudioRegions: [CMTimeRange]? = nil,
-    cameraFullscreenRegions: [CameraRegionInfo]? = nil,
-    cameraHiddenRegions: [CameraRegionInfo]? = nil,
+    cameraFullscreenRegions: [RegionTransitionInfo]? = nil,
+    cameraHiddenRegions: [RegionTransitionInfo]? = nil,
     cameraCustomRegions: [CameraCustomRegion]? = nil,
+    videoRegions: [RegionTransitionInfo]? = nil,
     backgroundStyle: BackgroundStyle = .none,
     backgroundImageURL: URL? = nil,
     backgroundImageFillMode: BackgroundImageFillMode = .fill,
@@ -69,11 +70,35 @@ enum VideoCompositor {
       effectiveTrim = screenTimeRange
     }
 
+    let hasVideoRegions = videoRegions != nil && !videoRegions!.isEmpty
     let compScreenTrack = composition.addMutableTrack(
       withMediaType: .video,
       preferredTrackID: 1
     )
-    try compScreenTrack?.insertTimeRange(effectiveTrim, of: screenVideoTrack, at: .zero)
+
+    struct VideoSegment {
+      let sourceRange: CMTimeRange
+      let compositionStart: CMTime
+    }
+    var videoSegments: [VideoSegment] = []
+    let compositionDuration: CMTime
+
+    if hasVideoRegions, let vRegions = videoRegions {
+      var insertTime = CMTime.zero
+      for region in vRegions {
+        let overlapStart = CMTimeMaximum(region.timeRange.start, effectiveTrim.start)
+        let overlapEnd = CMTimeMinimum(region.timeRange.end, effectiveTrim.end)
+        guard CMTimeCompare(overlapEnd, overlapStart) > 0 else { continue }
+        let segmentRange = CMTimeRange(start: overlapStart, end: overlapEnd)
+        try compScreenTrack?.insertTimeRange(segmentRange, of: screenVideoTrack, at: insertTime)
+        videoSegments.append(VideoSegment(sourceRange: segmentRange, compositionStart: insertTime))
+        insertTime = CMTimeAdd(insertTime, segmentRange.duration)
+      }
+      compositionDuration = insertTime
+    } else {
+      try compScreenTrack?.insertTimeRange(effectiveTrim, of: screenVideoTrack, at: .zero)
+      compositionDuration = effectiveTrim.duration
+    }
 
     var processedMicURL: URL?
     var shouldCleanupProcessedMic = false
@@ -98,18 +123,48 @@ enum VideoCompositor {
       }
     }
 
+    func remapAudioRegions(_ regions: [CMTimeRange]) -> [CMTimeRange] {
+      guard hasVideoRegions else { return regions }
+      var result: [CMTimeRange] = []
+      for audioRegion in regions {
+        for seg in videoSegments {
+          let overlapStart = max(CMTimeGetSeconds(audioRegion.start), CMTimeGetSeconds(seg.sourceRange.start))
+          let overlapEnd = min(CMTimeGetSeconds(audioRegion.end), CMTimeGetSeconds(seg.sourceRange.end))
+          guard overlapEnd > overlapStart else { continue }
+          let segStart = CMTimeGetSeconds(seg.sourceRange.start)
+          let compStart = CMTimeGetSeconds(seg.compositionStart)
+          let mappedStart = compStart + (overlapStart - segStart)
+          let mappedEnd = compStart + (overlapEnd - segStart)
+          result.append(
+            CMTimeRange(
+              start: CMTime(seconds: mappedStart, preferredTimescale: 600),
+              end: CMTime(seconds: mappedEnd, preferredTimescale: 600)
+            )
+          )
+        }
+      }
+      return result
+    }
+
+    let effectiveAudioRegions: [CMTimeRange] =
+      hasVideoRegions
+      ? videoSegments.map { CMTimeRange(start: $0.compositionStart, duration: $0.sourceRange.duration) }
+      : [effectiveTrim]
+
     var audioSources: [AudioSource] = []
     if let sysURL = result.systemAudioURL, systemAudioVolume > 0 {
+      let sysRegs = systemAudioRegions.map { remapAudioRegions($0) } ?? effectiveAudioRegions
       audioSources.append(
-        AudioSource(url: sysURL, regions: systemAudioRegions ?? [effectiveTrim], volume: systemAudioVolume)
+        AudioSource(url: sysURL, regions: sysRegs, volume: systemAudioVolume)
       )
     }
     if let micURL = result.microphoneAudioURL, micAudioVolume > 0 {
       let effectiveMicURL = processedMicURL ?? micURL
+      let micRegs = micAudioRegions.map { remapAudioRegions($0) } ?? effectiveAudioRegions
       audioSources.append(
         AudioSource(
           url: effectiveMicURL,
-          regions: micAudioRegions ?? [effectiveTrim],
+          regions: micRegs,
           volume: micAudioVolume
         )
       )
@@ -140,7 +195,7 @@ enum VideoCompositor {
       || exportSettings.fps != .original
     let needsCompositor =
       hasVisualEffects || hasWebcam || needsReencode || hasCursor || hasZoom
-      || exportSettings.format.isGIF
+      || exportSettings.format.isGIF || hasVideoRegions
 
     let canvasSize: CGSize
     if let baseSize = canvasAspect.size(for: screenNaturalSize) {
@@ -173,7 +228,13 @@ enum VideoCompositor {
             withMediaType: .video,
             preferredTrackID: 2
           )
-          try wTrack?.insertTimeRange(effectiveTrim, of: webcamVideoTrack, at: .zero)
+          if hasVideoRegions {
+            for seg in videoSegments {
+              try wTrack?.insertTimeRange(seg.sourceRange, of: webcamVideoTrack, at: seg.compositionStart)
+            }
+          } else {
+            try wTrack?.insertTimeRange(effectiveTrim, of: webcamVideoTrack, at: .zero)
+          }
           webcamTrackID = 2
           cameraRect = cameraLayout.pixelRect(
             screenSize: canvasSize,
@@ -216,8 +277,149 @@ enum VideoCompositor {
         return min(videoFitRect.width, videoFitRect.height) * (videoCornerRadius / 100.0)
       }()
 
+      func remapRegion(_ region: RegionTransitionInfo) -> [RegionTransitionInfo] {
+        if hasVideoRegions {
+          var results: [RegionTransitionInfo] = []
+          for seg in videoSegments {
+            let overlapStart = max(
+              CMTimeGetSeconds(region.timeRange.start),
+              CMTimeGetSeconds(seg.sourceRange.start)
+            )
+            let overlapEnd = min(
+              CMTimeGetSeconds(region.timeRange.end),
+              CMTimeGetSeconds(seg.sourceRange.end)
+            )
+            guard overlapEnd > overlapStart else { continue }
+            let segStart = CMTimeGetSeconds(seg.sourceRange.start)
+            let compStart = CMTimeGetSeconds(seg.compositionStart)
+            let mappedStart = compStart + (overlapStart - segStart)
+            let mappedEnd = compStart + (overlapEnd - segStart)
+            results.append(
+              RegionTransitionInfo(
+                timeRange: CMTimeRange(
+                  start: CMTime(seconds: mappedStart, preferredTimescale: 600),
+                  end: CMTime(seconds: mappedEnd, preferredTimescale: 600)
+                ),
+                entryTransition: region.entryTransition,
+                entryDuration: region.entryDuration,
+                exitTransition: region.exitTransition,
+                exitDuration: region.exitDuration
+              )
+            )
+          }
+          return results
+        }
+        let overlapStart = CMTimeMaximum(region.timeRange.start, effectiveTrim.start)
+        let overlapEnd = CMTimeMinimum(region.timeRange.end, effectiveTrim.end)
+        guard CMTimeCompare(overlapEnd, overlapStart) > 0 else { return [] }
+        return [
+          RegionTransitionInfo(
+            timeRange: CMTimeRange(
+              start: CMTimeSubtract(overlapStart, effectiveTrim.start),
+              end: CMTimeSubtract(overlapEnd, effectiveTrim.start)
+            ),
+            entryTransition: region.entryTransition,
+            entryDuration: region.entryDuration,
+            exitTransition: region.exitTransition,
+            exitDuration: region.exitDuration
+          )
+        ]
+      }
+
+      func remapCustomRegion(_ region: CameraCustomRegion) -> [CameraCustomRegion] {
+        if hasVideoRegions {
+          var results: [CameraCustomRegion] = []
+          for seg in videoSegments {
+            let overlapStart = max(
+              CMTimeGetSeconds(region.timeRange.start),
+              CMTimeGetSeconds(seg.sourceRange.start)
+            )
+            let overlapEnd = min(
+              CMTimeGetSeconds(region.timeRange.end),
+              CMTimeGetSeconds(seg.sourceRange.end)
+            )
+            guard overlapEnd > overlapStart else { continue }
+            let segStart = CMTimeGetSeconds(seg.sourceRange.start)
+            let compStart = CMTimeGetSeconds(seg.compositionStart)
+            let mappedStart = compStart + (overlapStart - segStart)
+            let mappedEnd = compStart + (overlapEnd - segStart)
+            results.append(
+              CameraCustomRegion(
+                timeRange: CMTimeRange(
+                  start: CMTime(seconds: mappedStart, preferredTimescale: 600),
+                  end: CMTime(seconds: mappedEnd, preferredTimescale: 600)
+                ),
+                layout: region.layout,
+                cameraAspect: region.cameraAspect,
+                cornerRadius: region.cornerRadius,
+                shadow: region.shadow,
+                borderWidth: region.borderWidth,
+                borderColor: region.borderColor,
+                mirrored: region.mirrored,
+                entryTransition: region.entryTransition,
+                entryDuration: region.entryDuration,
+                exitTransition: region.exitTransition,
+                exitDuration: region.exitDuration
+              )
+            )
+          }
+          return results
+        }
+        let overlapStart = CMTimeMaximum(region.timeRange.start, effectiveTrim.start)
+        let overlapEnd = CMTimeMinimum(region.timeRange.end, effectiveTrim.end)
+        guard CMTimeCompare(overlapEnd, overlapStart) > 0 else { return [] }
+        return [
+          CameraCustomRegion(
+            timeRange: CMTimeRange(
+              start: CMTimeSubtract(overlapStart, effectiveTrim.start),
+              end: CMTimeSubtract(overlapEnd, effectiveTrim.start)
+            ),
+            layout: region.layout,
+            cameraAspect: region.cameraAspect,
+            cornerRadius: region.cornerRadius,
+            shadow: region.shadow,
+            borderWidth: region.borderWidth,
+            borderColor: region.borderColor,
+            mirrored: region.mirrored,
+            entryTransition: region.entryTransition,
+            entryDuration: region.entryDuration,
+            exitTransition: region.exitTransition,
+            exitDuration: region.exitDuration
+          )
+        ]
+      }
+
+      let remappedVideoRegions: [RegionTransitionInfo] = {
+        guard hasVideoRegions else { return [] }
+        var result: [RegionTransitionInfo] = []
+        for seg in videoSegments {
+          let compStart = CMTimeGetSeconds(seg.compositionStart)
+          let segDuration = CMTimeGetSeconds(seg.sourceRange.duration)
+          for vr in videoRegions! {
+            let vrStart = CMTimeGetSeconds(vr.timeRange.start)
+            let vrEnd = CMTimeGetSeconds(vr.timeRange.end)
+            let segSourceStart = CMTimeGetSeconds(seg.sourceRange.start)
+            let segSourceEnd = CMTimeGetSeconds(seg.sourceRange.end)
+            guard abs(vrStart - segSourceStart) < 0.01 && abs(vrEnd - segSourceEnd) < 0.01 else { continue }
+            result.append(
+              RegionTransitionInfo(
+                timeRange: CMTimeRange(
+                  start: CMTime(seconds: compStart, preferredTimescale: 600),
+                  end: CMTime(seconds: compStart + segDuration, preferredTimescale: 600)
+                ),
+                entryTransition: vr.entryTransition,
+                entryDuration: vr.entryDuration,
+                exitTransition: vr.exitTransition,
+                exitDuration: vr.exitDuration
+              )
+            )
+          }
+        }
+        return result
+      }()
+
       let instruction = CompositionInstruction(
-        timeRange: CMTimeRange(start: .zero, duration: effectiveTrim.duration),
+        timeRange: CMTimeRange(start: .zero, duration: compositionDuration),
         screenTrackID: 1,
         webcamTrackID: webcamTrackID,
         cameraRect: cameraRect.map { rect in
@@ -262,59 +464,11 @@ enum VideoCompositor {
         clickHighlightSize: clickHighlightSize,
         zoomFollowCursor: zoomFollowCursor,
         zoomTimeline: zoomTimeline,
-        trimStartSeconds: CMTimeGetSeconds(effectiveTrim.start),
-        cameraFullscreenRegions: (cameraFullscreenRegions ?? []).compactMap { region in
-          let overlapStart = CMTimeMaximum(region.timeRange.start, effectiveTrim.start)
-          let overlapEnd = CMTimeMinimum(region.timeRange.end, effectiveTrim.end)
-          guard CMTimeCompare(overlapEnd, overlapStart) > 0 else { return nil }
-          return CameraRegionInfo(
-            timeRange: CMTimeRange(
-              start: CMTimeSubtract(overlapStart, effectiveTrim.start),
-              end: CMTimeSubtract(overlapEnd, effectiveTrim.start)
-            ),
-            entryTransition: region.entryTransition,
-            entryDuration: region.entryDuration,
-            exitTransition: region.exitTransition,
-            exitDuration: region.exitDuration
-          )
-        },
-        cameraHiddenRegions: (cameraHiddenRegions ?? []).compactMap { region in
-          let overlapStart = CMTimeMaximum(region.timeRange.start, effectiveTrim.start)
-          let overlapEnd = CMTimeMinimum(region.timeRange.end, effectiveTrim.end)
-          guard CMTimeCompare(overlapEnd, overlapStart) > 0 else { return nil }
-          return CameraRegionInfo(
-            timeRange: CMTimeRange(
-              start: CMTimeSubtract(overlapStart, effectiveTrim.start),
-              end: CMTimeSubtract(overlapEnd, effectiveTrim.start)
-            ),
-            entryTransition: region.entryTransition,
-            entryDuration: region.entryDuration,
-            exitTransition: region.exitTransition,
-            exitDuration: region.exitDuration
-          )
-        },
-        cameraCustomRegions: (cameraCustomRegions ?? []).compactMap { region in
-          let overlapStart = CMTimeMaximum(region.timeRange.start, effectiveTrim.start)
-          let overlapEnd = CMTimeMinimum(region.timeRange.end, effectiveTrim.end)
-          guard CMTimeCompare(overlapEnd, overlapStart) > 0 else { return nil }
-          return CameraCustomRegion(
-            timeRange: CMTimeRange(
-              start: CMTimeSubtract(overlapStart, effectiveTrim.start),
-              end: CMTimeSubtract(overlapEnd, effectiveTrim.start)
-            ),
-            layout: region.layout,
-            cameraAspect: region.cameraAspect,
-            cornerRadius: region.cornerRadius,
-            shadow: region.shadow,
-            borderWidth: region.borderWidth,
-            borderColor: region.borderColor,
-            mirrored: region.mirrored,
-            entryTransition: region.entryTransition,
-            entryDuration: region.entryDuration,
-            exitTransition: region.exitTransition,
-            exitDuration: region.exitDuration
-          )
-        },
+        trimStartSeconds: hasVideoRegions ? 0 : CMTimeGetSeconds(effectiveTrim.start),
+        cameraFullscreenRegions: (cameraFullscreenRegions ?? []).flatMap { remapRegion($0) },
+        cameraHiddenRegions: (cameraHiddenRegions ?? []).flatMap { remapRegion($0) },
+        cameraCustomRegions: (cameraCustomRegions ?? []).flatMap { remapCustomRegion($0) },
+        videoRegions: remappedVideoRegions,
         webcamSize: result.webcamSize,
         cameraAspect: cameraAspect,
         cameraFullscreenFillMode: cameraFullscreenFillMode,
@@ -328,7 +482,7 @@ enum VideoCompositor {
           instruction: instruction,
           renderSize: renderSize,
           fps: exportFPS,
-          trimDuration: effectiveTrim.duration,
+          trimDuration: compositionDuration,
           outputURL: outputURL,
           gifQuality: exportSettings.gifQuality.value,
           progressHandler: progressHandler
@@ -349,7 +503,11 @@ enum VideoCompositor {
       videoComposition.renderSize = renderSize
       videoComposition.instructions = [instruction]
 
-      try await addAudioTracks(to: composition, sources: audioSources, videoTrimRange: effectiveTrim)
+      let audioSegInfo: [VideoSegmentInfo]? =
+        hasVideoRegions
+        ? videoSegments.map { VideoSegmentInfo(sourceRange: $0.sourceRange, compositionStart: $0.compositionStart) }
+        : nil
+      try await addAudioTracks(to: composition, sources: audioSources, videoTrimRange: effectiveTrim, videoSegments: audioSegInfo)
       let audioMix = buildAudioMix(for: composition, sources: audioSources)
 
       let outputURL = FileManager.default.tempRecordingURL()
@@ -360,7 +518,7 @@ enum VideoCompositor {
           instruction: instruction,
           renderSize: renderSize,
           fps: exportFPS,
-          trimDuration: effectiveTrim.duration,
+          trimDuration: compositionDuration,
           outputURL: outputURL,
           fileType: exportSettings.format.fileType,
           codec: exportSettings.codec,
@@ -372,7 +530,7 @@ enum VideoCompositor {
         try await runManualExport(
           asset: composition,
           videoComposition: videoComposition,
-          timeRange: CMTimeRange(start: .zero, duration: effectiveTrim.duration),
+          timeRange: CMTimeRange(start: .zero, duration: compositionDuration),
           renderSize: renderSize,
           codec: exportSettings.codec.videoCodecType,
           exportFPS: Double(exportFPS),

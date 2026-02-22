@@ -46,6 +46,11 @@ struct TimelineView: View {
   @State var cameraDragRegionId: UUID?
   @State var popoverCameraRegionId: UUID?
 
+  @State var videoDragOffset: CGFloat = 0
+  @State var videoDragType: RegionDragType?
+  @State var videoDragRegionId: UUID?
+  @State var popoverVideoRegionId: UUID?
+
   private var showSystemAudioTrack: Bool {
     !systemAudioSamples.isEmpty || editorState.hasSystemAudio
   }
@@ -285,36 +290,25 @@ struct TimelineView: View {
 
   private func screenTrackContent(width: CGFloat) -> some View {
     let h = trackHeight
+    let regions = editorState.videoRegions
 
     return ZStack(alignment: .leading) {
-      videoTrackBackground(width: width, height: h, trimStart: videoTrimStart, trimEnd: videoTrimEnd)
-    }
-    .clipShape(RoundedRectangle(cornerRadius: Track.borderRadius))
-    .overlay {
-      trimBorderOverlay(
-        width: width,
-        height: h,
-        trimStart: videoTrimStart,
-        trimEnd: videoTrimEnd
-      )
-    }
-    .contentShape(Rectangle())
-    .coordinateSpace(name: "timeline")
-    .overlay {
-      trimHandleOverlay(
-        width: width,
-        height: h,
-        trimStart: videoTrimStart,
-        trimEnd: videoTrimEnd,
-        onTrimStart: { f in
-          editorState.updateTrimStart(CMTime(seconds: max(0, f) * totalSeconds, preferredTimescale: 600))
-        },
-        onTrimEnd: { f in
-          editorState.updateTrimEnd(CMTime(seconds: min(1, f) * totalSeconds, preferredTimescale: 600))
-        }
-      )
+      ForEach(regions) { region in
+        videoRegionView(
+          region: region,
+          width: width,
+          height: h
+        )
+      }
     }
     .frame(width: width, height: h)
+    .clipped()
+    .coordinateSpace(name: "videoRegion")
+    .contentShape(Rectangle())
+    .onTapGesture(count: 2) { location in
+      let time = (location.x / width) * totalSeconds
+      editorState.addVideoRegion(atTime: time)
+    }
   }
 
   func videoTrackBackground(

@@ -115,6 +115,8 @@
 		A90000000000000000000009 /* ZoomRegion.swift in Sources */ = {isa = PBXBuildFile; fileRef = B90000000000000000000009 /* ZoomRegion.swift */; };
 		A9000000000000000000000A /* RegionEditPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9000000000000000000000A /* RegionEditPopover.swift */; };
 		A9000000000000000000000D /* CameraRegionEditPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9000000000000000000000D /* CameraRegionEditPopover.swift */; };
+		A2000000000000000000002D /* TimelineView+ScreenTrack.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2000000000000000000002D /* TimelineView+ScreenTrack.swift */; };
+		A9000000000000000000000E /* VideoRegionEditPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9000000000000000000000E /* VideoRegionEditPopover.swift */; };
 		A9000000000000000000000B /* RightClickOverlay.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9000000000000000000000B /* RightClickOverlay.swift */; };
 		A10000000000000000000036 /* SettingsGeneralTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000036 /* SettingsGeneralTab.swift */; };
 		A10000000000000000000037 /* SettingsRecordingTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = B10000000000000000000037 /* SettingsRecordingTab.swift */; };
@@ -270,6 +272,8 @@
 		B90000000000000000000009 /* ZoomRegion.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ZoomRegion.swift; sourceTree = "<group>"; };
 		B9000000000000000000000A /* RegionEditPopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RegionEditPopover.swift; sourceTree = "<group>"; };
 		B9000000000000000000000D /* CameraRegionEditPopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraRegionEditPopover.swift; sourceTree = "<group>"; };
+		B2000000000000000000002D /* TimelineView+ScreenTrack.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "TimelineView+ScreenTrack.swift"; sourceTree = "<group>"; };
+		B9000000000000000000000E /* VideoRegionEditPopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoRegionEditPopover.swift; sourceTree = "<group>"; };
 		B9000000000000000000000B /* RightClickOverlay.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RightClickOverlay.swift; sourceTree = "<group>"; };
 		B10000000000000000000036 /* SettingsGeneralTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsGeneralTab.swift; sourceTree = "<group>"; };
 		B10000000000000000000037 /* SettingsRecordingTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsRecordingTab.swift; sourceTree = "<group>"; };
@@ -588,6 +592,8 @@
 				B9000000000000000000000B /* RightClickOverlay.swift */,
 				B2000000000000000000001B /* TimelineView+AudioTrack.swift */,
 				B2000000000000000000001C /* TimelineView+CameraTrack.swift */,
+				B2000000000000000000002D /* TimelineView+ScreenTrack.swift */,
+				B9000000000000000000000E /* VideoRegionEditPopover.swift */,
 				B2000000000000000000001D /* PropertiesPanel+VideoTab.swift */,
 				B2000000000000000000001E /* PropertiesPanel+CameraTab.swift */,
 				B2000000000000000000001F /* PropertiesPanel+CursorZoomTab.swift */,
@@ -801,6 +807,8 @@
 				A90000000000000000000009 /* ZoomRegion.swift in Sources */,
 				A9000000000000000000000A /* RegionEditPopover.swift in Sources */,
 				A9000000000000000000000D /* CameraRegionEditPopover.swift in Sources */,
+				A2000000000000000000002D /* TimelineView+ScreenTrack.swift in Sources */,
+				A9000000000000000000000E /* VideoRegionEditPopover.swift in Sources */,
 				A9000000000000000000000B /* RightClickOverlay.swift in Sources */,
 				A10000000000000000000036 /* SettingsGeneralTab.swift in Sources */,
 				A10000000000000000000037 /* SettingsRecordingTab.swift in Sources */,
