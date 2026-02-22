@@ -356,7 +356,7 @@ final class VideoPreviewContainer: NSView {
     screenContainerLayer.addSublayer(screenPlayerLayer)
 
     cursorOverlay.zPosition = 10
-    layer?.addSublayer(cursorOverlay)
+    screenContainerLayer.addSublayer(cursorOverlay)
 
     webcamWrapper.wantsLayer = true
     webcamWrapper.layer?.zPosition = 20
@@ -469,8 +469,8 @@ final class VideoPreviewContainer: NSView {
           return (p, false)
         }
       }
-      let pixelX = screenRect.origin.x + p.x * screenRect.width
-      let pixelY = screenRect.origin.y + (1 - p.y) * screenRect.height
+      let pixelX = p.x * screenRect.width
+      let pixelY = (1 - p.y) * screenRect.height
       return (CGPoint(x: pixelX, y: pixelY), true)
     }
 
@@ -490,7 +490,7 @@ final class VideoPreviewContainer: NSView {
       style: style,
       size: size * baseScale * zoomScale,
       visible: visible && cursorVisible,
-      containerSize: bounds.size,
+      containerSize: screenRect.size,
       clicks: adjustedClicks,
       highlightColor: clickHighlightColor,
       highlightSize: clickHighlightSize * baseScale * zoomScale
@@ -580,7 +580,6 @@ final class VideoPreviewContainer: NSView {
     if isScreenHidden && screenTransitionType == .none {
       screenContainerLayer.opacity = 0
       screenShadowLayer.opacity = 0
-      cursorOverlay.isHidden = true
     } else if screenTransitionType != .none {
       let p = Float(screenTransitionProgress)
       switch screenTransitionType {
@@ -608,12 +607,10 @@ final class VideoPreviewContainer: NSView {
         screenContainerLayer.transform = CATransform3DMakeTranslation(0, -offsetY, 0)
         screenShadowLayer.opacity = currentVideoShadow > 0 ? p * 0.6 : 0
       }
-      cursorOverlay.isHidden = false
     } else {
       screenContainerLayer.opacity = 1
       screenContainerLayer.transform = CATransform3DIdentity
       screenShadowLayer.opacity = currentVideoShadow > 0 ? 0.6 : 0
-      cursorOverlay.isHidden = false
     }
 
     guard let ws = currentWebcamSize, webcamPlayerLayer.player != nil else {

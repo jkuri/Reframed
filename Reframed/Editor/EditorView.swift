@@ -206,7 +206,7 @@ struct EditorView: View {
     let hasNonDefaultBg: Bool = {
       switch editorState.backgroundStyle {
       case .none: return false
-      case .solidColor(let c): return !(c.r == 0 && c.g == 0 && c.b == 0)
+      case .solidColor: return true
       case .gradient, .image: return true
       }
     }()
