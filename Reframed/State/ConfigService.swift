@@ -155,7 +155,7 @@ final class ConfigService {
 }
 
 private struct ConfigData: Codable {
-  var outputFolder: String = "~/Movies/Reframe"
+  var outputFolder: String = "~/Movies/Reframed"
   var timerDelay: Int = 3
   var audioDeviceId: String? = nil
   var rememberLastSelection: Bool = true
