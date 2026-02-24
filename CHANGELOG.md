@@ -1,5 +1,48 @@
 # Changelog
 
+## [v0.10.0](https://github.com/jkuri/Reframed/compare/v0.9.4...v0.10.0) (2026-02-24)
+
+### Features
+
+- **capture:** support multi-display selection for entire screen recording ([1647c9a](https://github.com/jkuri/Reframed/commit/1647c9ac599943e36edbe9d72928b94bca8560b6))
+- **preview:** add progress ti preview mode and implement seek and drag to specific time section ([8bed9e2](https://github.com/jkuri/Reframed/commit/8bed9e29dcaf6906f5fffe91e77d894250f611f9))
+- **video:** introduce the video regions and cut impl ([2b37010](https://github.com/jkuri/Reframed/commit/2b370101cbb4655ca18e44061758f0b98c0b7d04))
+
+### Bug Fixes
+
+- **ui:** use muted background for cursor style picker ([2827b99](https://github.com/jkuri/Reframed/commit/2827b99af6c59b49a466e5f236bdf529b215fbb9))
+- **editor:** change default click highlight color to black ([40f05e8](https://github.com/jkuri/Reframed/commit/40f05e824b5a9dac7b0c1aca385214cb2d52bc8c))
+- **editor:** snap smoothed cursor to click positions during spring simulation ([dca316a](https://github.com/jkuri/Reframed/commit/dca316af7d6ca5a097ce839e67513d763514df72))
+- **editor:** don't show toolbar when editor window closes ([4e51114](https://github.com/jkuri/Reframed/commit/4e511140c7729abac14205bdb86f47fcf192f90b))
+- **ui:** use primaryText color for success checkmarks ([02deb0e](https://github.com/jkuri/Reframed/commit/02deb0e5fd5641c5f1909ffa268cc984b2d9a826))
+- **editor:** ensure history entries always have descriptive labels ([689de4f](https://github.com/jkuri/Reframed/commit/689de4f0a25b5177125ccfe221f131059665896e))
+- **editor:** disable delete button while exporting ([947b712](https://github.com/jkuri/Reframed/commit/947b7121d646be7bf6d8505d002ade1c6bbcada6))
+- **ui:** pin about tab footer to bottom of settings view ([9fd3b90](https://github.com/jkuri/Reframed/commit/9fd3b9013869dcd4f64deb1a0e388b95be2589b2))
+- **ui:** update SliderRow label colors on appearance change ([274f45e](https://github.com/jkuri/Reframed/commit/274f45e9a2bf059e98945769ea34717bbbcb5955))
+- **config:** correct default output folder name to ~/Movies/Reframed ([4472b3f](https://github.com/jkuri/Reframed/commit/4472b3f56a8e1b1229c9ae42bd41aa5dac359e15))
+- **transition:** fix scale transition for screen in the editor preview ([8752870](https://github.com/jkuri/Reframed/commit/87528701f8eab5d7acb0013f3e5ecc17d5784359))
+- **transition:** cursor in preview mode while in screen transiton now works properly ([400886c](https://github.com/jkuri/Reframed/commit/400886c4bfdb8e780d9c05666ebeb1db73f37f4c))
+- **transition:** fix transitions in editor preview mode ([b88526e](https://github.com/jkuri/Reframed/commit/b88526e54235cdb8231fcbe3f02132c597be7d9e))
+- **export:** fix parallel export crashing sometimes when cancel ([04492ce](https://github.com/jkuri/Reframed/commit/04492ceb82b5060cbd0d7d14f34b48310a5fbd13))
+- **zoom:** use ZTP formula for zoom in and out transition ([51f3134](https://github.com/jkuri/Reframed/commit/51f31342218188aee967004b3ef8d25cee6ff877))
+
+### Refactoring
+
+- **editor:** move cursor movement section from Animate tab to Cursor tab ([e3e2b7d](https://github.com/jkuri/Reframed/commit/e3e2b7d2f483589e382cadb4ba695b6a5e18b6b2))
+- remove unused files and function implementations, rename some methods and other stuff ([3e89f77](https://github.com/jkuri/Reframed/commit/3e89f770df80cdfe0f9d1f7d042a3be2ad4a844b))
+
+### Styling
+
+- **capture:** fix window mode capture to follow same new styles ([9da8c0f](https://github.com/jkuri/Reframed/commit/9da8c0f9972369b30752675021c66e25b773effa))
+
+### Documentation
+
+- add root-cause fix guideline to code style section ([f18ae7e](https://github.com/jkuri/Reframed/commit/f18ae7ef02faf794599a0f10bd5788471dbf02d5))
+
+### Chores
+
+- create dmg signing script ([2d818bd](https://github.com/jkuri/Reframed/commit/2d818bdd170242049cef987edbdf2abe3327a2ba))
+
 ## [v0.9.4](https://github.com/jkuri/Reframed/compare/v0.9.3...v0.9.4) (2026-02-21)
 
 ### Features
