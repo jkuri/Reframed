@@ -41,6 +41,7 @@ struct EditorTopBar: View {
         IconButton(systemName: "folder", color: ReframedColors.secondaryText, action: onOpenFolder)
 
         IconButton(systemName: "trash", color: ReframedColors.secondaryText, action: onDelete)
+          .disabled(editorState.isExporting)
 
         if editorState.isExporting {
           Button("Cancel") { editorState.cancelExport() }
