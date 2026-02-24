@@ -160,7 +160,7 @@ final class EditorState {
   var cursorSize: CGFloat = 24
 
   var showClickHighlights: Bool = false
-  var clickHighlightColor: CodableColor = CodableColor(r: 0.2, g: 0.5, b: 1.0, a: 1.0)
+  var clickHighlightColor: CodableColor = CodableColor(r: 0, g: 0, b: 0, a: 1.0)
   var clickHighlightSize: CGFloat = 36
 
   var zoomTimeline: ZoomTimeline?

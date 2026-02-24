@@ -77,7 +77,7 @@ extension PropertiesPanel {
   }
 
   var clickColorPickerButton: some View {
-    let currentName = TailwindColors.all.first { $0.color == editorState.clickHighlightColor }?.name ?? "Blue"
+    let currentName = TailwindColors.all.first { $0.color == editorState.clickHighlightColor }?.name ?? "Black"
     return TailwindColorPicker(
       displayColor: Color(cgColor: editorState.clickHighlightColor.cgColor),
       displayName: currentName,

@@ -23,7 +23,7 @@ struct VideoPreviewView: NSViewRepresentable {
   var cursorStyle: CursorStyle = .defaultArrow
   var cursorSize: CGFloat = 24
   var showClickHighlights: Bool = true
-  var clickHighlightColor: CGColor = CGColor(srgbRed: 0.2, green: 0.5, blue: 1.0, alpha: 1.0)
+  var clickHighlightColor: CGColor = CGColor(srgbRed: 0, green: 0, blue: 0, alpha: 1.0)
   var clickHighlightSize: CGFloat = 36
   var zoomFollowCursor: Bool = true
   var currentTime: Double = 0

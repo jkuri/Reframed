@@ -42,7 +42,7 @@ enum VideoCompositor {
     cursorStyle: CursorStyle = .defaultArrow,
     cursorSize: CGFloat = 24,
     showClickHighlights: Bool = true,
-    clickHighlightColor: CGColor = CGColor(srgbRed: 0.2, green: 0.5, blue: 1.0, alpha: 1.0),
+    clickHighlightColor: CGColor = CGColor(srgbRed: 0, green: 0, blue: 0, alpha: 1.0),
     clickHighlightSize: CGFloat = 36,
     zoomFollowCursor: Bool = true,
     zoomTimeline: ZoomTimeline? = nil,
