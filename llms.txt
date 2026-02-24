@@ -1,0 +1,29 @@
+# Reframed
+
+> A native and open-source macOS screen recorder and video editor for professional product demos.
+
+## Overview
+Reframed is a high-performance macOS application designed to create polished, professional-grade screen recordings. It targets developers and creators who need a "Screen Studio" alternative that is open-source and local-first. It allows users to capture their Mac screen or tethered iOS devices and then refine the footage using a built-in, non-destructive editor.
+
+## Key Features
+- **Capture Sources:** Record full screen, specific windows, custom regions, or connected iOS devices (iPhone/iPad) via USB.
+- **Overlays:** Integrated webcam support for Picture-in-Picture (PiP) recording with microphone and system audio capture.
+- **Built-in Editor:** Non-destructive editing suite to trim clips and adjust timing post-capture.
+- **Styling & Effects:** Professional visual enhancements including auto-zoom on mouse clicks, rounded corners, shadows, and customizable backgrounds.
+- **Performance:** Optimized for macOS with high-quality exports (MP4/MOV).
+- **Privacy:** Entirely local processing; no cloud account or internet connection required for core features.
+
+## Technical Stack
+- **Platform:** macOS (Universal/Native)
+- **License:** MIT License
+- **Distribution:** GitHub Releases / Open Source
+
+## Use Cases
+- Recording high-quality software demos and "Build in Public" updates.
+- Capturing iOS app previews directly from a Mac for App Store marketing.
+- Creating clean, styled tutorials without needing heavy video editing suites like Final Cut or Premiere.
+
+## Links
+- Homepage: https://reframed.dev
+- Repository: https://github.com/jkuri/Reframed
+- Issues: https://github.com/jkuri/Reframed/issues
