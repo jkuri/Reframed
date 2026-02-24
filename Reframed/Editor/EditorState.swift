@@ -1369,7 +1369,8 @@ final class EditorState {
     }
     let smoothedSamples = CursorSmoothing.smooth(
       samples: provider.metadata.samples,
-      speed: cursorMovementSpeed
+      speed: cursorMovementSpeed,
+      clicks: provider.metadata.clicks
     )
     var smoothedMetadata = provider.metadata
     smoothedMetadata.samples = smoothedSamples

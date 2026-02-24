@@ -44,18 +44,31 @@ enum CursorMovementSpeed: String, Codable, Sendable, CaseIterable, Identifiable 
     case .rapid: 0.6
     }
   }
+
+  var convergenceDuration: Double {
+    switch self {
+    case .slow: 0.3
+    case .medium: 0.2
+    case .fast: 0.15
+    case .rapid: 0.1
+    }
+  }
 }
 
 enum CursorSmoothing {
   static func smooth(
     samples: [CursorSample],
-    speed: CursorMovementSpeed
+    speed: CursorMovementSpeed,
+    clicks: [CursorClickEvent] = []
   ) -> [CursorSample] {
     guard samples.count >= 2 else { return samples }
 
     let tension = speed.tension
     let friction = speed.friction
     let mass = speed.mass
+    let convergence = speed.convergenceDuration
+    let sortedClicks = clicks.sorted { $0.t < $1.t }
+    var clickIdx = 0
 
     var result: [CursorSample] = []
     result.reserveCapacity(samples.count)
@@ -77,6 +90,9 @@ enum CursorSmoothing {
         velX = 0
         velY = 0
         result.append(CursorSample(t: target.t, x: posX, y: posY, p: target.p))
+        while clickIdx < sortedClicks.count && sortedClicks[clickIdx].t <= target.t {
+          clickIdx += 1
+        }
         continue
       }
 
@@ -92,7 +108,38 @@ enum CursorSmoothing {
         posY += velY * stepDt
       }
 
-      result.append(CursorSample(t: target.t, x: posX, y: posY, p: target.p))
+      while clickIdx < sortedClicks.count && sortedClicks[clickIdx].t <= prev.t {
+        clickIdx += 1
+      }
+
+      if clickIdx < sortedClicks.count {
+        let click = sortedClicks[clickIdx]
+        if click.t > prev.t && click.t <= target.t {
+          posX = click.x
+          posY = click.y
+          velX = 0
+          velY = 0
+          result.append(CursorSample(t: target.t, x: posX, y: posY, p: target.p))
+          clickIdx += 1
+          continue
+        }
+      }
+
+      var outX = posX
+      var outY = posY
+
+      if clickIdx < sortedClicks.count {
+        let click = sortedClicks[clickIdx]
+        let timeToClick = click.t - target.t
+        if timeToClick > 0 && timeToClick <= convergence {
+          let raw = 1.0 - timeToClick / convergence
+          let blend = raw * raw * (3.0 - 2.0 * raw)
+          outX = posX + (click.x - posX) * blend
+          outY = posY + (click.y - posY) * blend
+        }
+      }
+
+      result.append(CursorSample(t: target.t, x: outX, y: outY, p: target.p))
     }
 
     return result
