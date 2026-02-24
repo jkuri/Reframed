@@ -67,7 +67,7 @@ extension SettingsView {
     case .upToDate:
       HStack(spacing: 6) {
         Image(systemName: "checkmark.circle.fill")
-          .foregroundStyle(.green)
+          .foregroundStyle(ReframedColors.primaryText)
           .font(.system(size: 13))
         Text("You're up to date!")
           .font(.system(size: 12))

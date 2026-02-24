@@ -23,7 +23,7 @@ struct ExportResultSheet: View {
     VStack(spacing: 0) {
       Image(systemName: "checkmark.circle.fill")
         .font(.system(size: 40))
-        .foregroundStyle(.green)
+        .foregroundStyle(ReframedColors.primaryText)
         .padding(.top, 28)
         .padding(.bottom, 12)
 
