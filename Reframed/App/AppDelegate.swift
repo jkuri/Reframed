@@ -16,6 +16,8 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
     if Permissions.allPermissionsGranted {
       session.showToolbar()
+    } else {
+      showPermissionsWindow()
     }
   }
 
