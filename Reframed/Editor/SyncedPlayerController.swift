@@ -102,7 +102,7 @@ final class SyncedPlayerController {
   }
 
   func setupTimeObserver() {
-    let interval = CMTime(value: 1, timescale: 30)
+    let interval = CMTime(value: 1, timescale: 60)
     timeObserver = screenPlayer.addPeriodicTimeObserver(forInterval: interval, queue: .main) {
       [weak self] time in
       MainActor.assumeIsolated {

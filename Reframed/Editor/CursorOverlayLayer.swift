@@ -9,6 +9,9 @@ final class CursorOverlayLayer: CALayer {
   private var cursorVisible = true
   private var clickColor: CGColor?
   private var clickSize: CGFloat = 36
+  private var cachedImage: CGImage?
+  private var cachedImageStyle: CursorStyle = .defaultArrow
+  private var cachedImageSize: CGFloat = 0
 
   override init() {
     super.init()
@@ -75,14 +78,20 @@ final class CursorOverlayLayer: CALayer {
     }
     cursorLayer.frame = cursorRect
 
-    let scale = NSScreen.main?.backingScaleFactor ?? 2.0
-    cursorLayer.contentsScale = scale
-    let imgW = Int(cursorRect.width * scale)
-    let imgH = Int(cursorRect.height * scale)
-    let padPx = pad * scale
+    let needsImageUpdate = style != cachedImageStyle || abs(size - cachedImageSize) > 0.01
+    if needsImageUpdate {
+      let scale = NSScreen.main?.backingScaleFactor ?? 2.0
+      cursorLayer.contentsScale = scale
+      let imgW = Int(cursorRect.width * scale)
+      let imgH = Int(cursorRect.height * scale)
+      let padPx = pad * scale
 
-    if let cgImage = renderCursorImage(style: style, size: size * scale, padPx: padPx, width: imgW, height: imgH) {
-      cursorLayer.contents = cgImage
+      if let cgImage = renderCursorImage(style: style, size: size * scale, padPx: padPx, width: imgW, height: imgH) {
+        cursorLayer.contents = cgImage
+        cachedImage = cgImage
+        cachedImageStyle = style
+        cachedImageSize = size
+      }
     }
 
     updateClickLayers(clicks: clicks, containerSize: containerSize)
