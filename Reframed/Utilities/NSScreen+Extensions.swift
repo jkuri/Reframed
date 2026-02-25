@@ -1,6 +1,10 @@
 import AppKit
 
 extension NSScreen {
+  static var primaryScreenHeight: CGFloat {
+    screens.first?.frame.height ?? 0
+  }
+
   static var unionFrame: CGRect {
     screens.reduce(.zero) { $0.union($1.frame) }
   }

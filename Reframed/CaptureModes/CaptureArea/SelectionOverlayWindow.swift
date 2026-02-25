@@ -2,11 +2,9 @@ import AppKit
 
 @MainActor
 final class SelectionOverlayWindow: NSWindow {
-  init(session: SessionState) {
-    let unionRect = NSScreen.unionFrame
-
+  init(screen: NSScreen, session: SessionState) {
     super.init(
-      contentRect: unionRect,
+      contentRect: screen.frame,
       styleMask: .borderless,
       backing: .buffered,
       defer: false
@@ -21,11 +19,20 @@ final class SelectionOverlayWindow: NSWindow {
     hasShadow = false
     sharingType = Window.sharingType
 
-    let overlayView = SelectionOverlayView(frame: unionRect, session: session)
-    session.overlayView = overlayView
+    let localFrame = CGRect(origin: .zero, size: screen.frame.size)
+    let overlayView = SelectionOverlayView(frame: localFrame, session: session)
     contentView = overlayView
+
+    setFrame(screen.frame, display: true)
   }
 
   override var canBecomeKey: Bool { true }
   override var canBecomeMain: Bool { true }
+
+  override func sendEvent(_ event: NSEvent) {
+    if event.type == .mouseMoved, !isKeyWindow {
+      makeKey()
+    }
+    super.sendEvent(event)
+  }
 }

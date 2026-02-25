@@ -4,29 +4,40 @@ import SwiftUI
 
 struct WindowSelectionView: View {
   let session: SessionState
-  @StateObject private var windowController = WindowController()
-  @State private var eventMonitor: Any?
-  @State private var refreshTimer: Timer?
+  let screen: NSScreen
+  @ObservedObject var windowController: WindowController
   @State private var showingResize = false
 
   private func toLocal(_ rect: CGRect) -> CGRect {
-    let unionOrigin = NSScreen.unionFrame.origin
+    let screenBounds = CGDisplayBounds(screen.displayID)
     return CGRect(
-      x: rect.origin.x - unionOrigin.x,
-      y: rect.origin.y - unionOrigin.y,
+      x: rect.origin.x - screenBounds.origin.x,
+      y: rect.origin.y - screenBounds.origin.y,
       width: rect.width,
       height: rect.height
     )
+  }
+
+  private var currentWindowOnThisScreen: WindowInfo? {
+    guard let current = windowController.currentWindow else { return nil }
+    let screenBounds = CGDisplayBounds(screen.displayID)
+    let mid = CGPoint(x: current.frame.midX, y: current.frame.midY)
+    guard mid.x >= screenBounds.origin.x,
+      mid.x < screenBounds.origin.x + screenBounds.width,
+      mid.y >= screenBounds.origin.y,
+      mid.y < screenBounds.origin.y + screenBounds.height
+    else { return nil }
+    return current
   }
 
   var body: some View {
     GeometryReader { geometry in
       ZStack {
         Canvas { context, size in
-          let unionRect = CGRect(origin: .zero, size: size)
-          context.fill(Path(unionRect), with: .color(.black.opacity(0.55)))
+          let fullRect = CGRect(origin: .zero, size: size)
+          context.fill(Path(fullRect), with: .color(.black.opacity(0.55)))
 
-          guard let window = windowController.currentWindow else { return }
+          guard let window = currentWindowOnThisScreen else { return }
 
           let targetRect = toLocal(window.frame)
           let cornerRadius: CGFloat = 10.0
@@ -41,7 +52,7 @@ struct WindowSelectionView: View {
         }
         .edgesIgnoringSafeArea(.all)
 
-        if let current = windowController.currentWindow {
+        if let current = currentWindowOnThisScreen {
           let localFrame = toLocal(current.frame)
 
           VStack(spacing: 12) {
@@ -99,53 +110,5 @@ struct WindowSelectionView: View {
         .frame(width: 0, height: 0)
       }
     }
-    .onAppear {
-      Task { await windowController.updateSCWindows() }
-      startTrackingMouse()
-      startRefreshTimer()
-    }
-    .onDisappear {
-      stopTrackingMouse()
-      stopRefreshTimer()
-    }
-  }
-
-  private func updateHoveredWindow(at location: CGPoint) {
-    if let found = windowController.findWindow(at: location) {
-      windowController.currentWindow = found
-    } else {
-      windowController.currentWindow = nil
-    }
-  }
-
-  private func startTrackingMouse() {
-    eventMonitor = NSEvent.addLocalMonitorForEvents(matching: [.mouseMoved]) { event in
-      let mouseLocation = NSEvent.mouseLocation
-      let primaryScreenHeight = NSScreen.screens.first?.frame.height ?? 0
-      let flippedY = primaryScreenHeight - mouseLocation.y
-      let globalLocation = CGPoint(x: mouseLocation.x, y: flippedY)
-      updateHoveredWindow(at: globalLocation)
-      return event
-    }
-  }
-
-  private func stopTrackingMouse() {
-    if let monitor = eventMonitor {
-      NSEvent.removeMonitor(monitor)
-      eventMonitor = nil
-    }
-  }
-
-  private func startRefreshTimer() {
-    refreshTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { _ in
-      Task { @MainActor in
-        await windowController.updateSCWindows()
-      }
-    }
-  }
-
-  private func stopRefreshTimer() {
-    refreshTimer?.invalidate()
-    refreshTimer = nil
   }
 }

@@ -3,14 +3,53 @@ import ScreenCaptureKit
 
 @MainActor
 final class WindowSelectionCoordinator {
-  private var overlayWindow: WindowSelectionOverlay?
+  private var overlayWindows: [WindowSelectionOverlay] = []
   private var highlightWindow: RecordingBorderWindow?
+  private let windowController = WindowController()
+  private var eventMonitor: Any?
+  private var refreshTimer: Timer?
 
   func beginSelection(session: SessionState) {
-    let window = WindowSelectionOverlay(session: session)
-    overlayWindow = window
-    window.makeKeyAndOrderFront(nil)
+    for screen in NSScreen.screens {
+      let window = WindowSelectionOverlay(
+        screen: screen,
+        session: session,
+        windowController: windowController
+      )
+      overlayWindows.append(window)
+      window.orderFrontRegardless()
+    }
+    overlayWindows.first?.makeKeyAndOrderFront(nil)
     NSApp.activate(ignoringOtherApps: true)
+
+    Task { await windowController.updateSCWindows() }
+    startTrackingMouse()
+    startRefreshTimer()
+  }
+
+  private func startTrackingMouse() {
+    eventMonitor = NSEvent.addLocalMonitorForEvents(matching: [.mouseMoved]) { [weak self] event in
+      guard let self else { return event }
+      let mouseLocation = NSEvent.mouseLocation
+      let primaryScreenHeight = NSScreen.screens.first?.frame.height ?? 0
+      let flippedY = primaryScreenHeight - mouseLocation.y
+      let globalLocation = CGPoint(x: mouseLocation.x, y: flippedY)
+      if let found = windowController.findWindow(at: globalLocation) {
+        windowController.currentWindow = found
+      } else {
+        windowController.currentWindow = nil
+      }
+      return event
+    }
+  }
+
+  private func startRefreshTimer() {
+    refreshTimer = Timer.scheduledTimer(withTimeInterval: 2.0, repeats: true) { [weak self] _ in
+      Task { @MainActor in
+        guard let self else { return }
+        await self.windowController.updateSCWindows()
+      }
+    }
   }
 
   func highlight(window: SCWindow?) {
@@ -20,9 +59,6 @@ final class WindowSelectionCoordinator {
       return
     }
 
-    // Convert SCWindow frame (Top-Left global) to Cocoa frame (Bottom-Left global)
-    // Cocoa (0,0) is bottom-left of primary screen.
-    // SCWindow (0,0) is top-left of primary screen.
     let mainScreenHeight = NSScreen.screens.first?.frame.height ?? 0
     let cocoaY = mainScreenHeight - CGFloat(window.frame.origin.y) - CGFloat(window.frame.height)
 
@@ -37,16 +73,25 @@ final class WindowSelectionCoordinator {
       highlightWindow.setFrame(rect.insetBy(dx: -2, dy: -2), display: true)
     } else {
       let hw = RecordingBorderWindow(screenRect: rect)
-      hw.level = .floating  // Ensure it's above the overlay
+      hw.level = .floating
       highlightWindow = hw
       hw.orderFrontRegardless()
     }
   }
 
   func destroyOverlay() {
-    overlayWindow?.orderOut(nil)
-    overlayWindow?.contentView = nil
-    overlayWindow = nil
+    if let monitor = eventMonitor {
+      NSEvent.removeMonitor(monitor)
+      eventMonitor = nil
+    }
+    refreshTimer?.invalidate()
+    refreshTimer = nil
+
+    for window in overlayWindows {
+      window.orderOut(nil)
+      window.contentView = nil
+    }
+    overlayWindows.removeAll()
 
     highlightWindow?.orderOut(nil)
     highlightWindow = nil

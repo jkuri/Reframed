@@ -3,12 +3,9 @@ import SwiftUI
 
 @MainActor
 final class WindowSelectionOverlay: NSWindow {
-  init(session: SessionState) {
-    // Cover all screens
-    let frame = NSScreen.unionFrame
-
+  init(screen: NSScreen, session: SessionState, windowController: WindowController) {
     super.init(
-      contentRect: frame,
+      contentRect: screen.frame,
       styleMask: .borderless,
       backing: .buffered,
       defer: false
@@ -22,12 +19,24 @@ final class WindowSelectionOverlay: NSWindow {
     acceptsMouseMovedEvents = true
     hasShadow = false
 
-    let view = WindowSelectionView(session: session)
+    let view = WindowSelectionView(
+      session: session,
+      screen: screen,
+      windowController: windowController
+    )
     let hostingView = NSHostingView(rootView: view)
-    hostingView.frame = frame
     contentView = hostingView
+
+    setFrame(screen.frame, display: true)
   }
 
   override var canBecomeKey: Bool { true }
   override var canBecomeMain: Bool { true }
+
+  override func sendEvent(_ event: NSEvent) {
+    if event.type == .mouseMoved, !isKeyWindow {
+      makeKey()
+    }
+    super.sendEvent(event)
+  }
 }

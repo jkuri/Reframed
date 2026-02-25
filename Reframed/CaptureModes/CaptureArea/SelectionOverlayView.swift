@@ -147,7 +147,8 @@ final class SelectionOverlayView: NSView {
 
     let windowRect = convert(rect, to: nil)
     let screenRect = window.convertToScreen(windowRect)
-    let displayID = NSScreen.displayID(for: CGPoint(x: screenRect.midX, y: screenRect.midY))
+    let midPoint = CGPoint(x: screenRect.midX, y: screenRect.midY)
+    let displayID = NSScreen.screens.first { $0.frame.contains(midPoint) }?.displayID ?? CGMainDisplayID()
 
     let selection = SelectionRect(rect: screenRect, displayID: displayID)
     session.confirmSelection(selection)
@@ -222,6 +223,7 @@ final class SelectionOverlayView: NSView {
   }
 
   override func mouseDown(with event: NSEvent) {
+    session.overlayView = self
     let point = convert(event.locationInWindow, from: nil)
 
     if let hosting = controlsHost, !hosting.isHidden {
@@ -318,7 +320,7 @@ final class SelectionOverlayView: NSView {
     case 53:
       session.cancelSelection()
     case 36:
-      confirmSelection()
+      (session.overlayView ?? self).confirmSelection()
     default:
       super.keyDown(with: event)
     }

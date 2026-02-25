@@ -39,7 +39,7 @@ final class SessionState {
   private var recordingCoordinator: RecordingCoordinator?
   private var captureTarget: CaptureTarget?
   private var toolbarWindow: CaptureToolbarWindow?
-  private var startRecordingWindow: StartRecordingWindow?
+  private var startRecordingWindows: [StartRecordingWindow] = []
   private var editorWindows: [EditorWindow] = []
   private var webcamPreviewWindow: WebcamPreviewWindow?
   private var persistentWebcam: WebcamCapture?
@@ -144,10 +144,9 @@ final class SessionState {
     ) { [weak self] rect in
       self?.selectionCoordinator?.updateRecordingBorder(screenRect: rect)
       if let recorder = self?.cursorMetadataRecorder {
-        let screenHeight = NSScreen.main?.frame.height ?? 0
         let sckOrigin = CGPoint(
           x: rect.origin.x,
-          y: screenHeight - rect.origin.y - rect.height
+          y: NSScreen.primaryScreenHeight - rect.origin.y - rect.height
         )
         recorder.updateCaptureOrigin(sckOrigin)
       }
@@ -252,7 +251,7 @@ final class SessionState {
       let savedRect = StateService.shared.lastSelectionRect
     {
       let displayID = StateService.shared.lastDisplayID
-      overlayView?.applyExternalRect(savedRect)
+      coordinator.restoreSelection(savedRect, displayID: displayID, session: self)
       captureTarget = .region(SelectionRect(rect: savedRect, displayID: displayID))
     }
   }
@@ -276,18 +275,16 @@ final class SessionState {
     logger.info("Window selection confirmed: \(window.title ?? "Unknown")")
 
     let scFrame = window.frame
-    if let screen = NSScreen.main {
-      let screenHeight = screen.frame.height
-      let appKitRect = CGRect(
-        x: scFrame.origin.x,
-        y: screenHeight - scFrame.origin.y - scFrame.height,
-        width: scFrame.width,
-        height: scFrame.height
-      )
-      let coordinator = SelectionCoordinator()
-      selectionCoordinator = coordinator
-      coordinator.showRecordingBorder(screenRect: appKitRect)
-    }
+    let screenHeight = NSScreen.primaryScreenHeight
+    let appKitRect = CGRect(
+      x: scFrame.origin.x,
+      y: screenHeight - scFrame.origin.y - scFrame.height,
+      width: scFrame.width,
+      height: scFrame.height
+    )
+    let coordinator = SelectionCoordinator()
+    selectionCoordinator = coordinator
+    coordinator.showRecordingBorder(screenRect: appKitRect)
 
     beginRecordingWithCountdown()
   }
@@ -602,19 +599,17 @@ final class SessionState {
         selectionCoordinator = coordinator
         coordinator.showRecordingBorder(screenRect: sel.rect)
       } else if case .window(let win) = savedTarget {
-        if let screen = NSScreen.main {
-          let scFrame = win.frame
-          let screenHeight = screen.frame.height
-          let appKitRect = CGRect(
-            x: scFrame.origin.x,
-            y: screenHeight - scFrame.origin.y - scFrame.height,
-            width: scFrame.width,
-            height: scFrame.height
-          )
-          let coordinator = SelectionCoordinator()
-          selectionCoordinator = coordinator
-          coordinator.showRecordingBorder(screenRect: appKitRect)
-        }
+        let scFrame = win.frame
+        let screenHeight = NSScreen.primaryScreenHeight
+        let appKitRect = CGRect(
+          x: scFrame.origin.x,
+          y: screenHeight - scFrame.origin.y - scFrame.height,
+          width: scFrame.width,
+          height: scFrame.height
+        )
+        let coordinator = SelectionCoordinator()
+        selectionCoordinator = coordinator
+        coordinator.showRecordingBorder(screenRect: appKitRect)
       }
 
       beginRecordingWithCountdown()
@@ -673,35 +668,41 @@ final class SessionState {
   }
 
   private func showStartRecordingOverlay() {
-    guard startRecordingWindow == nil else { return }
+    guard startRecordingWindows.isEmpty else { return }
     guard !NSScreen.screens.isEmpty else { return }
 
-    let window = StartRecordingWindow(
-      delay: options.timerDelay.rawValue,
-      onCountdownStart: { [weak self] _ in
-        MainActor.assumeIsolated {
-          self?.toolbarWindow?.orderOut(nil)
+    for screen in NSScreen.screens {
+      let window = StartRecordingWindow(
+        screen: screen,
+        delay: options.timerDelay.rawValue,
+        onCountdownStart: { [weak self] _ in
+          MainActor.assumeIsolated {
+            self?.toolbarWindow?.orderOut(nil)
+          }
+        },
+        onCancel: { [weak self] in
+          MainActor.assumeIsolated {
+            self?.cancelSelection()
+          }
+        },
+        onStart: { [weak self] screen in
+          MainActor.assumeIsolated {
+            self?.startRecordingFromOverlay(screen: screen)
+          }
         }
-      },
-      onCancel: { [weak self] in
-        MainActor.assumeIsolated {
-          self?.cancelSelection()
-        }
-      },
-      onStart: { [weak self] screen in
-        MainActor.assumeIsolated {
-          self?.startRecordingFromOverlay(screen: screen)
-        }
-      }
-    )
-    startRecordingWindow = window
-    window.makeKeyAndOrderFront(nil)
+      )
+      startRecordingWindows.append(window)
+      window.orderFrontRegardless()
+    }
+    startRecordingWindows.first?.makeKeyAndOrderFront(nil)
   }
 
   private func hideStartRecordingOverlay() {
-    startRecordingWindow?.orderOut(nil)
-    startRecordingWindow?.contentView = nil
-    startRecordingWindow = nil
+    for window in startRecordingWindows {
+      window.orderOut(nil)
+      window.contentView = nil
+    }
+    startRecordingWindows.removeAll()
   }
 
   private func startRecordingFromOverlay(screen: NSScreen) {

@@ -11,7 +11,7 @@ final class WindowPositionObserver {
     self.windowID = windowID
     self.onChange = onChange
 
-    guard let screen = NSScreen.main else { return }
+    guard let screen = NSScreen.screens.first else { return }
     let target = DisplayLinkTarget(observer: self)
     let link = screen.displayLink(target: target, selector: #selector(DisplayLinkTarget.step))
     link.add(to: .main, forMode: .common)
@@ -28,11 +28,10 @@ final class WindowPositionObserver {
       let list = CGWindowListCopyWindowInfo([.optionIncludingWindow], windowID) as? [[String: Any]],
       let info = list.first,
       let boundsDict = info[kCGWindowBounds as String],
-      let bounds = CGRect(dictionaryRepresentation: boundsDict as! CFDictionary),
-      let screen = NSScreen.main
+      let bounds = CGRect(dictionaryRepresentation: boundsDict as! CFDictionary)
     else { return }
 
-    let screenHeight = screen.frame.height
+    let screenHeight = NSScreen.primaryScreenHeight
     let appKitRect = CGRect(
       x: bounds.origin.x,
       y: screenHeight - bounds.origin.y - bounds.height,
