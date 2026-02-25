@@ -11,6 +11,16 @@ struct KeyboardShortcut: Codable, Equatable, Sendable {
     return event.keyCode == keyCode && eventMods == modifierFlags
   }
 
+  func matchesCGEvent(keyCode: Int64, flags: CGEventFlags) -> Bool {
+    let mask: UInt64 =
+      CGEventFlags.maskCommand.rawValue
+      | CGEventFlags.maskShift.rawValue
+      | CGEventFlags.maskAlternate.rawValue
+      | CGEventFlags.maskControl.rawValue
+    let eventMods = flags.rawValue & mask
+    return Int64(self.keyCode) == keyCode && eventMods == UInt64(modifierFlags)
+  }
+
   var displayString: String {
     var parts: [String] = []
     let flags = NSEvent.ModifierFlags(rawValue: modifierFlags)
