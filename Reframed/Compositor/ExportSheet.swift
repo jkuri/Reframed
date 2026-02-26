@@ -122,8 +122,11 @@ struct ExportSheet: View {
       }
       .padding(.horizontal, 28)
       .onChange(of: selectedPreset) { _, newPreset in
-        guard let presetSettings = newPreset.settings else { return }
-        settings = presetSettings
+        if let presetSettings = newPreset.settings {
+          settings = presetSettings
+        } else {
+          settings = ExportSettings()
+        }
       }
       .onChange(of: settings.format) { _, newFormat in
         if newFormat.isGIF {
