@@ -1,5 +1,27 @@
 # Changelog
 
+## [v0.10.2](https://github.com/jkuri/Reframed/compare/v0.10.1...v0.10.2) (2026-02-26)
+
+### Features
+
+- **cursors:** implement SVG based cursors and make them from scratch with adjustable colors now ([2ccee06](https://github.com/jkuri/Reframed/commit/2ccee06df33d5d86614ef953999a12b8f669832c))
+- **export:** add platform presets for quick export configuration ([ddee41c](https://github.com/jkuri/Reframed/commit/ddee41c8f330205c8f9b97e7358bf5411826ee00))
+
+### Bug Fixes
+
+- **export:** reset settings to defaults when switching to Custom preset ([247c25e](https://github.com/jkuri/Reframed/commit/247c25eb789f9179dc15fd9de444aa6ba049ba48))
+- **editor:** improve cursor overlay smoothness in preview playback ([fb5ee2c](https://github.com/jkuri/Reframed/commit/fb5ee2caa4898c049503b76d85612228b7559de3))
+- **shortcuts:** prevent global keyboard shortcuts from propagating to other apps during recording ([cf7a68f](https://github.com/jkuri/Reframed/commit/cf7a68f3e8cfb278e29c57d5e665534e9c664ab9))
+- **permissions:** show permissions window on startup in case they are not granted already ([a9e5e51](https://github.com/jkuri/Reframed/commit/a9e5e516dcdc846e73696bdf61b12de1a7ea159b))
+
+### Refactoring
+
+- split large files into focused extensions and improve error logging ([3f3ad35](https://github.com/jkuri/Reframed/commit/3f3ad35afec2830a761058c9bc840914a3e5f53a))
+
+### Styling
+
+- **colors:** update colors for popovers and editor tracks ([a2f409e](https://github.com/jkuri/Reframed/commit/a2f409e00aadf6ea9c571a9df846c189ef90e800))
+
 ## [v0.10.1](https://github.com/jkuri/Reframed/compare/v0.10.0...v0.10.1) (2026-02-25)
 
 ### Bug Fixes
