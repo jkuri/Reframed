@@ -6,6 +6,10 @@
 
 A powerful macOS screen recorder with built-in video editor. Capture your screen, windows, regions, or iOS devices over USB with webcam overlay — then trim, style, and export.
 
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/390b07d9-ea54-41ff-90dc-f284f6a1f103" />
+</p>
+
 ## Download
 
 Grab the latest `.dmg` from the [Releases](https://github.com/jkuri/reframed/releases) page.
