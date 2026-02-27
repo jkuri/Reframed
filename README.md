@@ -54,6 +54,16 @@ brew install --cask jkuri/reframed/reframed
 - **Auto-detection** — generates zoom keyframes from cursor click clusters based on configurable dwell threshold
 - **Cursor-follow mode** — zoom viewport tracks cursor position in real time
 
+### Captions
+
+- On-device speech-to-text using [WhisperKit](https://github.com/argmaxinc/WhisperKit) (Apple Silicon)
+- Four model sizes: Base, Small, Medium, and Large (v3) — downloaded on first use
+- Word-level timestamps with automatic short-segment merging
+- Transcribe from microphone or system audio
+- Language selection with auto-detect option
+- Caption styling: font size, weight, position (top/center/bottom), text and background colors, background opacity, words per line
+- Burned-in captions on export, or SRT/VTT sidecar files
+
 ### Export
 
 - Export to MP4, MOV or GIF
