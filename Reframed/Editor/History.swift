@@ -215,6 +215,10 @@ final class History {
       }
     }
 
+    if old.cameraBackgroundStyle != new.cameraBackgroundStyle {
+      changes.append("Camera background set to \(describeCameraBackground(new.cameraBackgroundStyle))")
+    }
+
     if old.videoRegions != new.videoRegions {
       let oldCount = old.videoRegions?.count ?? 0
       let newCount = new.videoRegions?.count ?? 0
@@ -255,6 +259,25 @@ final class History {
       return "gradient"
     case .solidColor:
       return "solid color"
+    case .image:
+      return "image"
+    }
+  }
+
+  private static func describeCameraBackground(_ style: CameraBackgroundStyle?) -> String {
+    guard let style else { return "none" }
+    switch style {
+    case .none:
+      return "none"
+    case .blur:
+      return "blur"
+    case .solidColor:
+      return "solid color"
+    case .gradient(let id):
+      if let preset = GradientPresets.preset(for: id) {
+        return "\(preset.name) gradient"
+      }
+      return "gradient"
     case .image:
       return "image"
     }

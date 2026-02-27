@@ -104,6 +104,98 @@ extension PropertiesPanel {
     .opacity(editorState.webcamEnabled ? 1 : 0.5)
   }
 
+  var cameraBackgroundSection: some View {
+    VStack(alignment: .leading, spacing: Layout.itemSpacing) {
+      SectionHeader(icon: "person.and.background.dotted", title: "Background")
+
+      SegmentPicker(
+        items: CameraBackgroundMode.allCases,
+        label: { $0.label },
+        selection: $cameraBackgroundMode
+      )
+
+      switch cameraBackgroundMode {
+      case .none:
+        EmptyView()
+      case .blur:
+        SliderRow(
+          label: "Intensity",
+          value: $cameraBlurIntensity,
+          range: 0.1...1.0,
+          step: 0.05,
+          formattedValue: "\(Int(cameraBlurIntensity * 100))%"
+        )
+      case .color:
+        cameraColorGrid
+      case .gradient:
+        cameraGradientGrid
+      case .image:
+        cameraImageSection
+      }
+    }
+    .disabled(!editorState.webcamEnabled)
+    .opacity(editorState.webcamEnabled ? 1 : 0.5)
+  }
+
+  private var cameraColorGrid: some View {
+    let columns = Array(repeating: GridItem(.flexible(), spacing: 6), count: 8)
+    return LazyVGrid(columns: columns, spacing: 6) {
+      ForEach(TailwindColors.all) { preset in
+        SwatchButton(
+          fill: preset.swiftUIColor,
+          isSelected: selectedCameraColorId == preset.id
+        ) {
+          selectedCameraColorId = preset.id
+        }
+      }
+    }
+  }
+
+  private var cameraGradientGrid: some View {
+    let columns = Array(repeating: GridItem(.flexible(), spacing: 6), count: 8)
+    return LazyVGrid(columns: columns, spacing: 6) {
+      ForEach(GradientPresets.all) { preset in
+        SwatchButton(
+          fill: LinearGradient(
+            colors: preset.colors,
+            startPoint: preset.startPoint,
+            endPoint: preset.endPoint
+          ),
+          isSelected: selectedCameraGradientId == preset.id
+        ) {
+          selectedCameraGradientId = preset.id
+        }
+      }
+    }
+  }
+
+  private var cameraImageSection: some View {
+    VStack(alignment: .leading, spacing: Layout.itemSpacing) {
+      if let image = editorState.cameraBackgroundImage {
+        Image(nsImage: image)
+          .resizable()
+          .aspectRatio(contentMode: .fit)
+          .frame(maxWidth: .infinity, maxHeight: 60)
+          .clipShape(RoundedRectangle(cornerRadius: Radius.lg))
+      }
+      Button {
+        pickCameraBackgroundImage()
+      } label: {
+        HStack {
+          Image(systemName: "photo.on.rectangle")
+          Text(editorState.cameraBackgroundImage != nil ? "Change Image" : "Choose Image")
+        }
+        .font(.system(size: 12))
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 6)
+        .background(ReframedColors.fieldBackground)
+        .clipShape(RoundedRectangle(cornerRadius: Radius.md))
+      }
+      .buttonStyle(.plain)
+      .foregroundStyle(ReframedColors.primaryText)
+    }
+  }
+
   var cameraFullscreenSection: some View {
     VStack(alignment: .leading, spacing: Layout.itemSpacing) {
       SectionHeader(icon: "arrow.up.left.and.arrow.down.right", title: "Fullscreen")

@@ -299,7 +299,9 @@ struct EditorView: View {
               exitDuration: r.exitTransitionDuration ?? 0.3
             )
           },
-          isPreviewMode: editorState.isPreviewMode
+          isPreviewMode: editorState.isPreviewMode,
+          cameraBackgroundStyle: editorState.webcamEnabled ? editorState.cameraBackgroundStyle : .none,
+          cameraBackgroundImage: editorState.cameraBackgroundImage
         )
       }
       .frame(maxWidth: .infinity, maxHeight: .infinity)

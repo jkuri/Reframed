@@ -91,7 +91,8 @@ extension EditorState {
       systemAudioRegions: systemAudioRegions.isEmpty ? nil : systemAudioRegions,
       micAudioRegions: micAudioRegions.isEmpty ? nil : micAudioRegions,
       cameraRegions: cameraRegions.isEmpty ? nil : cameraRegions,
-      videoRegions: videoRegions.isEmpty ? nil : videoRegions
+      videoRegions: videoRegions.isEmpty ? nil : videoRegions,
+      cameraBackgroundStyle: cameraBackgroundStyle == .none ? nil : cameraBackgroundStyle
     )
   }
 
@@ -188,6 +189,14 @@ extension EditorState {
       backgroundImage = NSImage(contentsOf: url)
     }
 
+    cameraBackgroundStyle = data.cameraBackgroundStyle ?? CameraBackgroundStyle.none
+    if case .image(let filename) = data.cameraBackgroundStyle, let bundleURL = project?.bundleURL {
+      let url = bundleURL.appendingPathComponent(filename)
+      cameraBackgroundImage = NSImage(contentsOf: url)
+    } else if data.cameraBackgroundStyle == nil || data.cameraBackgroundStyle == CameraBackgroundStyle.none {
+      cameraBackgroundImage = nil
+    }
+
     let volumeChanged =
       prev.audioSettings?.systemAudioVolume != data.audioSettings?.systemAudioVolume
       || prev.audioSettings?.micAudioVolume != data.audioSettings?.micAudioVolume
@@ -281,6 +290,7 @@ extension EditorState {
       _ = self.cameraFullscreenAspect
       _ = self.cameraLayout
       _ = self.webcamEnabled
+      _ = self.cameraBackgroundStyle
       _ = self.showCursor
       _ = self.cursorStyle
       _ = self.cursorSize

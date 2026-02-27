@@ -154,6 +154,7 @@ struct EditorStateData: Codable, Sendable {
   var cameraRegions: [CameraRegionData]?
   var cameraFullscreenRegions: [AudioRegionData]?
   var videoRegions: [VideoRegionData]?
+  var cameraBackgroundStyle: CameraBackgroundStyle?
 }
 
 struct CodableSize: Codable, Sendable {

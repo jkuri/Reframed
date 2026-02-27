@@ -72,6 +72,8 @@ final class CompositionInstruction: NSObject, AVVideoCompositionInstructionProto
   let cameraAspect: CameraAspect
   let cameraFullscreenFillMode: CameraFullscreenFillMode
   let cameraFullscreenAspect: CameraFullscreenAspect
+  let cameraBackgroundStyle: CameraBackgroundStyle
+  let cameraBackgroundImage: CGImage?
 
   init(
     timeRange: CMTimeRange,
@@ -113,7 +115,9 @@ final class CompositionInstruction: NSObject, AVVideoCompositionInstructionProto
     webcamSize: CGSize? = nil,
     cameraAspect: CameraAspect = .original,
     cameraFullscreenFillMode: CameraFullscreenFillMode = .fit,
-    cameraFullscreenAspect: CameraFullscreenAspect = .original
+    cameraFullscreenAspect: CameraFullscreenAspect = .original,
+    cameraBackgroundStyle: CameraBackgroundStyle = .none,
+    cameraBackgroundImage: CGImage? = nil
   ) {
     self.timeRange = timeRange
     self.screenTrackID = screenTrackID
@@ -155,6 +159,8 @@ final class CompositionInstruction: NSObject, AVVideoCompositionInstructionProto
     self.cameraAspect = cameraAspect
     self.cameraFullscreenFillMode = cameraFullscreenFillMode
     self.cameraFullscreenAspect = cameraFullscreenAspect
+    self.cameraBackgroundStyle = cameraBackgroundStyle
+    self.cameraBackgroundImage = cameraBackgroundImage
 
     var trackIDs: [NSValue] = [NSNumber(value: screenTrackID)]
     if let wid = webcamTrackID {

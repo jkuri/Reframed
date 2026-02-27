@@ -80,6 +80,10 @@ extension VideoCompositor {
     cancelled.initialize(to: false)
     defer { cancelled.deallocate() }
 
+    let gifSegProcessor =
+      instruction.cameraBackgroundStyle != .none
+      ? PersonSegmentationProcessor(quality: .balanced)
+      : nil
     try await withTaskCancellationHandler {
       try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, any Error>) in
         DispatchQueue.global(qos: .userInitiated).async {
@@ -153,6 +157,15 @@ extension VideoCompositor {
 
             let webcamBuffer = latestWebcamSample.flatMap { CMSampleBufferGetImageBuffer($0) }
 
+            var processedWebcam: CGImage?
+            if let wb = webcamBuffer, let proc = gifSegProcessor {
+              processedWebcam = proc.processFrame(
+                webcamBuffer: wb,
+                style: instruction.cameraBackgroundStyle,
+                backgroundCGImage: instruction.cameraBackgroundImage
+              )
+            }
+
             var outBuf: CVPixelBuffer?
             CVPixelBufferPoolCreatePixelBuffer(nil, pool, &outBuf)
             guard let outputBuffer = outBuf else { continue }
@@ -162,7 +175,8 @@ extension VideoCompositor {
               webcamBuffer: webcamBuffer,
               outputBuffer: outputBuffer,
               compositionTime: outputTime,
-              instruction: instruction
+              instruction: instruction,
+              processedWebcamImage: processedWebcam
             )
 
             CVPixelBufferLockBaseAddress(outputBuffer, .readOnly)

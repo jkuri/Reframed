@@ -167,6 +167,7 @@ extension VideoPreviewContainer {
           currentCameraMirrored ? CGAffineTransform(scaleX: -1, y: 1) : .identity
         )
 
+        syncProcessedWebcamLayer()
         webcamWrapper.alphaValue = 1.0
         webcamWrapper.layer?.transform = CATransform3DIdentity
         CATransaction.commit()
@@ -226,6 +227,7 @@ extension VideoPreviewContainer {
       webcamPlayerLayer.setAffineTransform(
         currentCameraMirrored ? CGAffineTransform(scaleX: -1, y: 1) : .identity
       )
+      syncProcessedWebcamLayer()
       applyTransitionEffect()
       CATransaction.commit()
       return
@@ -277,8 +279,20 @@ extension VideoPreviewContainer {
       webcamWrapper.layer?.shadowOpacity = 0
     }
 
+    syncProcessedWebcamLayer()
     applyTransitionEffect()
     CATransaction.commit()
+  }
+
+  func syncProcessedWebcamLayer() {
+    if currentCameraBackgroundStyle != .none {
+      processedWebcamLayer.frame = webcamView.bounds
+      if currentCameraMirrored {
+        processedWebcamLayer.setAffineTransform(CGAffineTransform(scaleX: -1, y: 1))
+      } else {
+        processedWebcamLayer.setAffineTransform(.identity)
+      }
+    }
   }
 
   func applyTransitionEffect() {

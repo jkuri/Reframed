@@ -171,6 +171,8 @@ extension EditorState {
       micAudioVolume: effectiveMicAudioVolume,
       micNoiseReductionEnabled: micNoiseReductionEnabled,
       micNoiseReductionIntensity: micNoiseReductionIntensity,
+      cameraBackgroundStyle: cameraBackgroundStyle,
+      cameraBackgroundImageURL: cameraBackgroundImageURL(),
       processedMicAudioURL: processedMicAudioURL,
       progressHandler: { progress, eta in
         state.exportProgress = progress

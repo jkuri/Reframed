@@ -52,6 +52,8 @@ enum VideoCompositor {
     micAudioVolume: Float = 1.0,
     micNoiseReductionEnabled: Bool = false,
     micNoiseReductionIntensity: Float = 0.5,
+    cameraBackgroundStyle: CameraBackgroundStyle = .none,
+    cameraBackgroundImageURL: URL? = nil,
     processedMicAudioURL: URL? = nil,
     progressHandler: (@MainActor @Sendable (Double, Double?) -> Void)? = nil
   ) async throws -> URL {
@@ -266,6 +268,15 @@ enum VideoCompositor {
         bgImage = CGImageSourceCreateImageAtIndex(source, 0, nil)
       }
 
+      var camBgImage: CGImage?
+      if case .image = cameraBackgroundStyle, let imageURL = cameraBackgroundImageURL,
+        let dataProvider = CGDataProvider(url: imageURL as CFURL),
+        let source = CGImageSourceCreateWithDataProvider(dataProvider, nil),
+        CGImageSourceGetCount(source) > 0
+      {
+        camBgImage = CGImageSourceCreateImageAtIndex(source, 0, nil)
+      }
+
       let scaleX = renderSize.width / canvasSize.width
       let scaleY = renderSize.height / canvasSize.height
       let paddingHPx = padding * screenNaturalSize.width * scaleX
@@ -476,7 +487,9 @@ enum VideoCompositor {
         webcamSize: result.webcamSize,
         cameraAspect: cameraAspect,
         cameraFullscreenFillMode: cameraFullscreenFillMode,
-        cameraFullscreenAspect: cameraFullscreenAspect
+        cameraFullscreenAspect: cameraFullscreenAspect,
+        cameraBackgroundStyle: cameraBackgroundStyle,
+        cameraBackgroundImage: camBgImage
       )
 
       if exportSettings.format.isGIF {

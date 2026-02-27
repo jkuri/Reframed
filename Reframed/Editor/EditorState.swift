@@ -86,6 +86,8 @@ final class EditorState {
   var micNoiseReductionIntensity: Float = 0.5
 
   var webcamEnabled: Bool = true
+  var cameraBackgroundStyle: CameraBackgroundStyle = .none
+  var cameraBackgroundImage: NSImage?
 
   var processedMicAudioURL: URL?
   var isMicProcessing: Bool = false
@@ -170,6 +172,11 @@ final class EditorState {
       if case .image(let filename) = saved.backgroundStyle {
         let url = project.bundleURL.appendingPathComponent(filename)
         self.backgroundImage = NSImage(contentsOf: url)
+      }
+      self.cameraBackgroundStyle = saved.cameraBackgroundStyle ?? .none
+      if case .image(let filename) = saved.cameraBackgroundStyle {
+        let url = project.bundleURL.appendingPathComponent(filename)
+        self.cameraBackgroundImage = NSImage(contentsOf: url)
       }
     }
   }

@@ -58,6 +58,8 @@ struct VideoPreviewView: NSViewRepresentable {
       exitTransition: RegionTransitionType, exitDuration: Double
     )] = []
   var isPreviewMode: Bool = false
+  var cameraBackgroundStyle: CameraBackgroundStyle = .none
+  var cameraBackgroundImage: NSImage?
 
   func makeNSView(context: Context) -> VideoPreviewContainer {
     let container = VideoPreviewContainer()
@@ -67,6 +69,11 @@ struct VideoPreviewView: NSViewRepresentable {
       container.webcamPlayerLayer.isHidden = false
     }
     container.coordinator = context.coordinator
+    if cameraBackgroundStyle != .none, let webcam = webcamPlayer {
+      container.currentCameraBackgroundStyle = cameraBackgroundStyle
+      container.currentCameraBackgroundImage = cameraBackgroundImage
+      container.setupWebcamOutput(for: webcam)
+    }
     return container
   }
 
@@ -192,6 +199,24 @@ struct VideoPreviewView: NSViewRepresentable {
     nsView.screenTransitionType = screenTransitionType
     nsView.isScreenHidden = isPreviewMode && !videoRegions.isEmpty && videoRegion == nil
 
+    let prevStyle = nsView.currentCameraBackgroundStyle
+    let prevImage = nsView.currentCameraBackgroundImage
+    nsView.currentCameraBackgroundStyle = cameraBackgroundStyle
+    nsView.currentCameraBackgroundImage = cameraBackgroundImage
+    let styleChanged = prevStyle != cameraBackgroundStyle || prevImage !== cameraBackgroundImage
+    if styleChanged {
+      nsView.lastProcessedWebcamTime = -1
+    }
+    if cameraBackgroundStyle != .none {
+      if prevStyle == .none, let webcam = webcamPlayer {
+        nsView.setupWebcamOutput(for: webcam)
+      } else {
+        nsView.processCurrentWebcamFrame()
+      }
+    } else if prevStyle != .none {
+      nsView.teardownWebcamOutput()
+    }
+
     let effectiveLayout = customRegion?.layout ?? cameraLayout
 
     nsView.updateCameraLayout(
@@ -314,6 +339,14 @@ final class VideoPreviewContainer: NSView {
   var lastClickHighlightSize: CGFloat = 36
   var lastCursorFillColor: CodableColor = CodableColor(r: 1, g: 1, b: 1)
   var lastCursorStrokeColor: CodableColor = CodableColor(r: 0, g: 0, b: 0)
+  var currentCameraBackgroundStyle: CameraBackgroundStyle = .none
+  var currentCameraBackgroundImage: NSImage?
+  var webcamOutput: AVPlayerItemVideoOutput?
+  let processedWebcamLayer = CALayer()
+  private let segmentationProcessor = PersonSegmentationProcessor(quality: .balanced)
+  private let segmentationQueue = DispatchQueue(label: "eu.jkuri.reframed.segmentation", qos: .userInteractive)
+  private var isProcessingWebcamFrame = false
+  var lastProcessedWebcamTime: Double = -1
 
   override init(frame: NSRect) {
     super.init(frame: frame)
@@ -348,6 +381,10 @@ final class VideoPreviewContainer: NSView {
     webcamView.layer?.addSublayer(webcamPlayerLayer)
     webcamPlayerLayer.isHidden = true
 
+    processedWebcamLayer.contentsGravity = .resizeAspectFill
+    processedWebcamLayer.isHidden = true
+    webcamView.layer?.addSublayer(processedWebcamLayer)
+
     webcamWrapper.addSubview(webcamView)
     addSubview(webcamWrapper)
   }
@@ -359,6 +396,95 @@ final class VideoPreviewContainer: NSView {
     layoutAll()
     if lastCursorVisible {
       applyCursorOverlay()
+    }
+  }
+}
+
+extension VideoPreviewContainer {
+  func setupWebcamOutput(for player: AVPlayer) {
+    guard webcamOutput == nil else { return }
+    let formatKey = kCVPixelBufferPixelFormatTypeKey as String
+    let formatValue = Int(kCVPixelFormatType_32BGRA)
+    let output = AVPlayerItemVideoOutput(pixelBufferAttributes: [formatKey: formatValue])
+    output.setDelegate(self, queue: .main)
+    player.currentItem?.add(output)
+    webcamOutput = output
+    output.requestNotificationOfMediaDataChange(withAdvanceInterval: 0.0)
+  }
+
+  func teardownWebcamOutput() {
+    if let output = webcamOutput, let item = webcamPlayerLayer.player?.currentItem {
+      item.remove(output)
+    }
+    webcamOutput = nil
+    processedWebcamLayer.contents = nil
+    processedWebcamLayer.isHidden = true
+    webcamPlayerLayer.isHidden = false
+    lastProcessedWebcamTime = -1
+  }
+
+  func processCurrentWebcamFrame() {
+    guard currentCameraBackgroundStyle != .none,
+      let output = webcamOutput,
+      let player = webcamPlayerLayer.player
+    else {
+      processedWebcamLayer.isHidden = true
+      webcamPlayerLayer.isHidden = false
+      return
+    }
+
+    guard !isProcessingWebcamFrame else { return }
+
+    let time = player.currentTime()
+    let seconds = CMTimeGetSeconds(time)
+    guard seconds.isFinite else { return }
+
+    let itemTime = output.itemTime(forHostTime: CACurrentMediaTime())
+    guard output.hasNewPixelBuffer(forItemTime: itemTime) || abs(seconds - lastProcessedWebcamTime) > 0.01 else {
+      return
+    }
+
+    var backgroundCGImage: CGImage?
+    if case .image = currentCameraBackgroundStyle, let nsImage = currentCameraBackgroundImage {
+      var rect = CGRect(origin: .zero, size: nsImage.size)
+      backgroundCGImage = nsImage.cgImage(forProposedRect: &rect, context: nil, hints: nil)
+    }
+
+    guard let pixelBuffer = output.copyPixelBuffer(forItemTime: time, itemTimeForDisplay: nil) else { return }
+    lastProcessedWebcamTime = seconds
+    isProcessingWebcamFrame = true
+
+    let style = currentCameraBackgroundStyle
+    let processor = segmentationProcessor
+    let bgImage = backgroundCGImage
+    nonisolated(unsafe) let buffer = pixelBuffer
+
+    segmentationQueue.async { [weak self] in
+      let processed = processor.processFrame(
+        webcamBuffer: buffer,
+        style: style,
+        backgroundCGImage: bgImage
+      )
+      DispatchQueue.main.async {
+        guard let self else { return }
+        self.isProcessingWebcamFrame = false
+        guard let processed else { return }
+        CATransaction.begin()
+        CATransaction.setDisableActions(true)
+        self.processedWebcamLayer.contents = processed
+        self.processedWebcamLayer.isHidden = false
+        self.processedWebcamLayer.frame = self.webcamView.bounds
+        self.webcamPlayerLayer.isHidden = true
+        CATransaction.commit()
+      }
+    }
+  }
+}
+
+extension VideoPreviewContainer: AVPlayerItemOutputPullDelegate {
+  nonisolated func outputMediaDataWillChange(_ sender: AVPlayerItemOutput) {
+    DispatchQueue.main.async { [weak self] in
+      self?.processCurrentWebcamFrame()
     }
   }
 }

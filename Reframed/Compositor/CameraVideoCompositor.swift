@@ -2,6 +2,8 @@ import AVFoundation
 import CoreVideo
 
 final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Sendable {
+  private let segmentationProcessor = PersonSegmentationProcessor(quality: .balanced)
+
   var sourcePixelBufferAttributes: [String: any Sendable]? {
     [kCVPixelBufferPixelFormatTypeKey as String: kCVPixelFormatType_64RGBAHalf]
   }
@@ -33,12 +35,24 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
       webcamBuffer = request.sourceFrame(byTrackID: webcamTrackID)
     }
 
+    var processedWebcamImage: CGImage?
+    if let wb = webcamBuffer, instruction.cameraBackgroundStyle != .none {
+      CVPixelBufferLockBaseAddress(wb, .readOnly)
+      processedWebcamImage = segmentationProcessor.processFrame(
+        webcamBuffer: wb,
+        style: instruction.cameraBackgroundStyle,
+        backgroundCGImage: instruction.cameraBackgroundImage
+      )
+      CVPixelBufferUnlockBaseAddress(wb, .readOnly)
+    }
+
     CameraVideoCompositor.renderFrame(
       screenBuffer: screenBuffer,
       webcamBuffer: webcamBuffer,
       outputBuffer: outputBuffer,
       compositionTime: request.compositionTime,
-      instruction: instruction
+      instruction: instruction,
+      processedWebcamImage: processedWebcamImage
     )
 
     request.finish(withComposedVideoFrame: outputBuffer)
@@ -49,7 +63,8 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
     webcamBuffer: CVPixelBuffer?,
     outputBuffer: CVPixelBuffer,
     compositionTime: CMTime,
-    instruction: CompositionInstruction
+    instruction: CompositionInstruction,
+    processedWebcamImage: CGImage? = nil
   ) {
     let width = CVPixelBufferGetWidth(outputBuffer)
     let height = CVPixelBufferGetHeight(outputBuffer)
@@ -197,7 +212,7 @@ final class CameraVideoCompositor: NSObject, AVVideoCompositing, @unchecked Send
         return nil
       }()
 
-      let webcamImage = createImage(from: webcamBuffer, colorSpace: colorSpace)
+      let webcamImage = processedWebcamImage ?? createImage(from: webcamBuffer, colorSpace: colorSpace)
 
       if let webcamImage {
         drawWebcam(

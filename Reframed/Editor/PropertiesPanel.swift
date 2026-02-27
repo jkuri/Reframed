@@ -19,10 +19,30 @@ struct PropertiesPanel: View {
     }
   }
 
+  enum CameraBackgroundMode: Int, CaseIterable, Identifiable {
+    var id: Int { rawValue }
+    case none, blur, color, gradient, image
+
+    var label: String {
+      switch self {
+      case .none: "None"
+      case .blur: "Blur"
+      case .color: "Color"
+      case .gradient: "Gradient"
+      case .image: "Image"
+      }
+    }
+  }
+
   @State var backgroundMode: BackgroundMode = .color
   @State var selectedGradientId: Int = 0
   @State var selectedColorId: String? = "Black"
   @State var backgroundImageFilename: String?
+  @State var cameraBackgroundMode: CameraBackgroundMode = .none
+  @State var cameraBlurIntensity: CGFloat = 0.5
+  @State var selectedCameraGradientId: Int = 0
+  @State var selectedCameraColorId: String? = "Black"
+  @State var cameraBackgroundImageFilename: String?
   @State private var screenInfo: MediaFileInfo?
   @State private var webcamInfo: MediaFileInfo?
   @State private var systemAudioInfo: MediaFileInfo?
@@ -46,6 +66,7 @@ struct PropertiesPanel: View {
           cameraPositionSection
           cameraAspectRatioSection
           cameraStyleSection
+          cameraBackgroundSection
           cameraFullscreenSection
         case .audio:
           audioSection
@@ -77,8 +98,29 @@ struct PropertiesPanel: View {
         editorState.backgroundStyle = .solidColor(preset.color)
       }
     }
+    .onChange(of: cameraBackgroundMode) { _, newValue in
+      updateCameraBackgroundStyle(mode: newValue)
+    }
+    .onChange(of: cameraBlurIntensity) { _, newValue in
+      if cameraBackgroundMode == .blur {
+        editorState.cameraBackgroundStyle = .blur(newValue)
+      }
+    }
+    .onChange(of: selectedCameraGradientId) { _, newValue in
+      if cameraBackgroundMode == .gradient {
+        editorState.cameraBackgroundStyle = .gradient(newValue)
+      }
+    }
+    .onChange(of: selectedCameraColorId) { _, newValue in
+      if cameraBackgroundMode == .color, let id = newValue,
+        let preset = TailwindColors.all.first(where: { $0.id == id })
+      {
+        editorState.cameraBackgroundStyle = .solidColor(preset.color)
+      }
+    }
     .onAppear {
       syncBackgroundMode()
+      syncCameraBackgroundMode()
     }
   }
 
@@ -323,6 +365,69 @@ struct PropertiesPanel: View {
       }
       if let filename = backgroundImageFilename {
         editorState.backgroundStyle = .image(filename)
+      }
+    }
+  }
+
+  private func syncCameraBackgroundMode() {
+    switch editorState.cameraBackgroundStyle {
+    case .none:
+      cameraBackgroundMode = .none
+    case .blur(let intensity):
+      cameraBackgroundMode = .blur
+      cameraBlurIntensity = intensity
+    case .solidColor(let color):
+      cameraBackgroundMode = .color
+      if let preset = TailwindColors.all.first(where: { $0.color == color }) {
+        selectedCameraColorId = preset.id
+      }
+    case .gradient(let id):
+      cameraBackgroundMode = .gradient
+      selectedCameraGradientId = id
+    case .image(let filename):
+      cameraBackgroundMode = .image
+      cameraBackgroundImageFilename = filename
+    }
+  }
+
+  private func updateCameraBackgroundStyle(mode: CameraBackgroundMode) {
+    switch mode {
+    case .none:
+      editorState.cameraBackgroundStyle = .none
+    case .blur:
+      editorState.cameraBackgroundStyle = .blur(cameraBlurIntensity)
+    case .color:
+      if let id = selectedCameraColorId, let preset = TailwindColors.all.first(where: { $0.id == id }) {
+        editorState.cameraBackgroundStyle = .solidColor(preset.color)
+      } else {
+        let first = TailwindColors.all[0]
+        selectedCameraColorId = first.id
+        editorState.cameraBackgroundStyle = .solidColor(first.color)
+      }
+    case .gradient:
+      editorState.cameraBackgroundStyle = .gradient(selectedCameraGradientId)
+    case .image:
+      if case .image = editorState.cameraBackgroundStyle {
+        return
+      }
+      if let filename = cameraBackgroundImageFilename {
+        editorState.cameraBackgroundStyle = .image(filename)
+      }
+    }
+  }
+
+  func pickCameraBackgroundImage() {
+    let panel = NSOpenPanel()
+    panel.allowedContentTypes = [.png, .jpeg, .heic, .tiff]
+    panel.allowsMultipleSelection = false
+    panel.canChooseDirectories = false
+    panel.begin { response in
+      guard response == .OK, let url = panel.url else { return }
+      DispatchQueue.main.async {
+        self.editorState.setCameraBackgroundImage(from: url)
+        if case .image(let f) = self.editorState.cameraBackgroundStyle {
+          self.cameraBackgroundImageFilename = f
+        }
       }
     }
   }

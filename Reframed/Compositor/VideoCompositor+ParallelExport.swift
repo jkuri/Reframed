@@ -45,6 +45,51 @@ extension VideoCompositor {
     }
   }
 
+  private final class DoneCondition: @unchecked Sendable {
+    private let condition = NSCondition()
+    private var isDone = false
+
+    func wait() {
+      condition.lock()
+      defer { condition.unlock() }
+      while !isDone {
+        condition.wait()
+      }
+    }
+
+    func signal() {
+      condition.lock()
+      isDone = true
+      condition.signal()
+      condition.unlock()
+    }
+  }
+
+  private final class CountingCondition: @unchecked Sendable {
+    private let condition = NSCondition()
+    private var count: Int
+
+    init(value: Int) {
+      self.count = value
+    }
+
+    func wait() {
+      condition.lock()
+      defer { condition.unlock() }
+      while count <= 0 {
+        condition.wait()
+      }
+      count -= 1
+    }
+
+    func signal() {
+      condition.lock()
+      count += 1
+      condition.signal()
+      condition.unlock()
+    }
+  }
+
   private final class OrderedFrameWriter: @unchecked Sendable {
     private let lock = NSLock()
     private var pending: [Int: (CVPixelBuffer, CMTime)] = [:]
@@ -55,19 +100,19 @@ extension VideoCompositor {
     private let input: AVAssetWriterInput
     private var finished = false
     private var hasSignaled = false
-    private let doneSignal = DispatchSemaphore(value: 0)
+    private let doneSignal = DoneCondition()
 
     private let totalFrames: Int
     private let progressHandler: (@MainActor @Sendable (Double, Double?) -> Void)?
     private let startTime: CFAbsoluteTime
-    private let backpressure: DispatchSemaphore
+    private let backpressure: CountingCondition
 
     init(
       adaptor: AVAssetWriterInputPixelBufferAdaptor,
       input: AVAssetWriterInput,
       totalFrames: Int,
       progressHandler: (@MainActor @Sendable (Double, Double?) -> Void)?,
-      backpressure: DispatchSemaphore
+      backpressure: CountingCondition
     ) {
       self.adaptor = adaptor
       self.input = input
@@ -307,10 +352,7 @@ extension VideoCompositor {
     assetWriter.startSession(atSourceTime: .zero)
 
     let coreCount = ProcessInfo.processInfo.activeProcessorCount
-
-    let bytesPerFrame = Int(renderSize.width) * Int(renderSize.height) * 8
-    let maxMemoryBytes = 1_500_000_000
-    let maxInFlight = max(coreCount * 4, min(maxMemoryBytes / max(bytesPerFrame, 1), 120))
+    let maxInFlight = min(coreCount * 4, 40)
 
     var poolRef: CVPixelBufferPool?
     let poolAttrs: NSDictionary = [kCVPixelBufferPoolMinimumBufferCountKey: maxInFlight + 4]
@@ -339,7 +381,7 @@ extension VideoCompositor {
     nonisolated(unsafe) let pipelineAdaptor = adaptor
 
     let cancelToken = CancelToken()
-    let sem = DispatchSemaphore(value: maxInFlight)
+    let sem = CountingCondition(value: maxInFlight)
 
     try await withTaskCancellationHandler {
       try await withCheckedThrowingContinuation { (cont: CheckedContinuation<Void, any Error>) in
@@ -398,11 +440,15 @@ extension VideoCompositor {
           )
           frameWriter.start()
 
+          let hasCameraBg = instruction.cameraBackgroundStyle != .none
+          let segPool = hasCameraBg ? SegmentationProcessorPool(maxCount: coreCount, quality: .balanced) : nil
+
           let renderQueue = DispatchQueue(
             label: "eu.jankuri.reframed.render",
             qos: .userInitiated,
             attributes: .concurrent
           )
+
           let renderGroup = DispatchGroup()
 
           var latestScreenSample: CMSampleBuffer?
@@ -457,20 +503,37 @@ extension VideoCompositor {
             nonisolated(unsafe) let capturedScreen = screenBuffer
             nonisolated(unsafe) let capturedWebcam = webcamBuffer
             nonisolated(unsafe) let capturedOutput = outputBuffer
+            let capturedStyle = instruction.cameraBackgroundStyle
+            let capturedBgImage = instruction.cameraBackgroundImage
 
             renderGroup.enter()
             renderQueue.async {
+              defer { renderGroup.leave() }
               autoreleasepool {
+                var processedWebcam: CGImage?
+                if let wb = capturedWebcam, let pool = segPool, !cancelToken.isCancelled {
+                  processedWebcam = pool.process(
+                    webcamBuffer: wb,
+                    style: capturedStyle,
+                    backgroundCGImage: capturedBgImage
+                  )
+                }
+
+                if cancelToken.isCancelled {
+                  frameWriter.submit(index: frameIndex, buffer: capturedOutput, time: outputTime)
+                  return
+                }
+
                 CameraVideoCompositor.renderFrame(
                   screenBuffer: capturedScreen,
                   webcamBuffer: capturedWebcam,
                   outputBuffer: capturedOutput,
                   compositionTime: outputTime,
-                  instruction: instruction
+                  instruction: instruction,
+                  processedWebcamImage: processedWebcam
                 )
                 frameWriter.submit(index: frameIndex, buffer: capturedOutput, time: outputTime)
               }
-              renderGroup.leave()
             }
           }
 
