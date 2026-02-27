@@ -176,7 +176,6 @@
 		CD88FB9E14F75D2DA0513D3C /* CameraVideoCompositor+Cursor.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDF80A89DF90D50CD417CEE5 /* CameraVideoCompositor+Cursor.swift */; };
 		CAB001000000000000000001 /* CameraBackgroundStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAB002000000000000000001 /* CameraBackgroundStyle.swift */; };
 		CAB001000000000000000002 /* PersonSegmentationProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAB002000000000000000002 /* PersonSegmentationProcessor.swift */; };
-		CAB001000000000000000003 /* CameraVideoCompositor+VirtualBackground.swift in Sources */ = {isa = PBXBuildFile; fileRef = CAB002000000000000000003 /* CameraVideoCompositor+VirtualBackground.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -350,7 +349,6 @@
 		BDF80A89DF90D50CD417CEE5 /* CameraVideoCompositor+Cursor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CameraVideoCompositor+Cursor.swift"; sourceTree = "<group>"; };
 		CAB002000000000000000001 /* CameraBackgroundStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraBackgroundStyle.swift; sourceTree = "<group>"; };
 		CAB002000000000000000002 /* PersonSegmentationProcessor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PersonSegmentationProcessor.swift; sourceTree = "<group>"; };
-		CAB002000000000000000003 /* CameraVideoCompositor+VirtualBackground.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CameraVideoCompositor+VirtualBackground.swift"; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -680,7 +678,6 @@
 				BDF80A89DF90D50CD417CEE5 /* CameraVideoCompositor+Cursor.swift */,
 				CAB002000000000000000001 /* CameraBackgroundStyle.swift */,
 				CAB002000000000000000002 /* PersonSegmentationProcessor.swift */,
-				CAB002000000000000000003 /* CameraVideoCompositor+VirtualBackground.swift */,
 			);
 			path = Compositor;
 			sourceTree = "<group>";
@@ -923,7 +920,6 @@
 				CD88FB9E14F75D2DA0513D3C /* CameraVideoCompositor+Cursor.swift in Sources */,
 				CAB001000000000000000001 /* CameraBackgroundStyle.swift in Sources */,
 				CAB001000000000000000002 /* PersonSegmentationProcessor.swift in Sources */,
-				CAB001000000000000000003 /* CameraVideoCompositor+VirtualBackground.swift in Sources */,
 			);
 		};
 /* End PBXSourcesBuildPhase section */

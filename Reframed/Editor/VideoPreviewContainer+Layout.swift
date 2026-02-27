@@ -140,12 +140,41 @@ extension VideoPreviewContainer {
         let pipY = canvasRect.origin.y + canvasRect.height * currentLayout.relativeY
         let pipFrame = CGRect(x: pipX, y: bounds.height - pipY - pipH, width: pipW, height: pipH)
 
+        let fsTargetRect: CGRect
+        if currentFullscreenAspect == .original {
+          fsTargetRect = canvasRect
+        } else {
+          let targetAspect = currentFullscreenAspect.aspectRatio(webcamSize: ws)
+          let virtualSize = CGSize(width: targetAspect * 1000, height: 1000)
+          let fsContainer = CGRect(origin: .zero, size: canvasRect.size)
+          let innerRect: CGRect
+          if currentFullscreenFillMode == .fill {
+            let rectAspect = fsContainer.width / max(fsContainer.height, 1)
+            let vAspect = virtualSize.width / max(virtualSize.height, 1)
+            if vAspect > rectAspect {
+              let h = fsContainer.width / max(vAspect, 0.001)
+              innerRect = CGRect(x: 0, y: fsContainer.midY - h / 2, width: fsContainer.width, height: h)
+            } else {
+              let w = fsContainer.height * vAspect
+              innerRect = CGRect(x: fsContainer.midX - w / 2, y: 0, width: w, height: fsContainer.height)
+            }
+          } else {
+            innerRect = AVMakeRect(aspectRatio: virtualSize, insideRect: fsContainer)
+          }
+          fsTargetRect = CGRect(
+            x: canvasRect.origin.x + innerRect.origin.x,
+            y: canvasRect.origin.y + innerRect.origin.y,
+            width: innerRect.width,
+            height: innerRect.height
+          )
+        }
+
         let p = cameraTransitionProgress
         let interpFrame = CGRect(
-          x: pipFrame.origin.x + (canvasRect.origin.x - pipFrame.origin.x) * p,
-          y: pipFrame.origin.y + (canvasRect.origin.y - pipFrame.origin.y) * p,
-          width: pipFrame.width + (canvasRect.width - pipFrame.width) * p,
-          height: pipFrame.height + (canvasRect.height - pipFrame.height) * p
+          x: pipFrame.origin.x + (fsTargetRect.origin.x - pipFrame.origin.x) * p,
+          y: pipFrame.origin.y + (fsTargetRect.origin.y - pipFrame.origin.y) * p,
+          width: pipFrame.width + (fsTargetRect.width - pipFrame.width) * p,
+          height: pipFrame.height + (fsTargetRect.height - pipFrame.height) * p
         )
 
         let pipMinDim = min(pipW, pipH)
@@ -286,7 +315,13 @@ extension VideoPreviewContainer {
 
   func syncProcessedWebcamLayer() {
     if currentCameraBackgroundStyle != .none {
-      processedWebcamLayer.frame = webcamView.bounds
+      processedWebcamLayer.frame = webcamPlayerLayer.frame
+      if isCameraFullscreen {
+        processedWebcamLayer.contentsGravity =
+          currentFullscreenFillMode == .fill ? .resizeAspectFill : .resizeAspect
+      } else {
+        processedWebcamLayer.contentsGravity = .resizeAspectFill
+      }
       if currentCameraMirrored {
         processedWebcamLayer.setAffineTransform(CGAffineTransform(scaleX: -1, y: 1))
       } else {

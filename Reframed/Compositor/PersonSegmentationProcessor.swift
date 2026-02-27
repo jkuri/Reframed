@@ -53,7 +53,7 @@ final class PersonSegmentationProcessor: @unchecked Sendable {
     self.quality = quality
     self.ciContext = CIContext(options: [
       .useSoftwareRenderer: false,
-      .cacheIntermediates: false
+      .cacheIntermediates: false,
     ])
   }
 

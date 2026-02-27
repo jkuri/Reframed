@@ -207,7 +207,7 @@ struct VideoPreviewView: NSViewRepresentable {
     if styleChanged {
       nsView.lastProcessedWebcamTime = -1
     }
-    if cameraBackgroundStyle != .none {
+    if cameraBackgroundStyle != .none, webcamPlayer != nil {
       if prevStyle == .none, let webcam = webcamPlayer {
         nsView.setupWebcamOutput(for: webcam)
       } else {
@@ -473,7 +473,7 @@ extension VideoPreviewContainer {
         CATransaction.setDisableActions(true)
         self.processedWebcamLayer.contents = processed
         self.processedWebcamLayer.isHidden = false
-        self.processedWebcamLayer.frame = self.webcamView.bounds
+        self.syncProcessedWebcamLayer()
         self.webcamPlayerLayer.isHidden = true
         CATransaction.commit()
       }

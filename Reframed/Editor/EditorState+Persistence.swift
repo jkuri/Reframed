@@ -192,7 +192,12 @@ extension EditorState {
     cameraBackgroundStyle = data.cameraBackgroundStyle ?? CameraBackgroundStyle.none
     if case .image(let filename) = data.cameraBackgroundStyle, let bundleURL = project?.bundleURL {
       let url = bundleURL.appendingPathComponent(filename)
-      cameraBackgroundImage = NSImage(contentsOf: url)
+      if let image = NSImage(contentsOf: url) {
+        cameraBackgroundImage = image
+      } else {
+        cameraBackgroundStyle = .none
+        cameraBackgroundImage = nil
+      }
     } else if data.cameraBackgroundStyle == nil || data.cameraBackgroundStyle == CameraBackgroundStyle.none {
       cameraBackgroundImage = nil
     }

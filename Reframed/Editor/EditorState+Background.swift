@@ -50,6 +50,8 @@ extension EditorState {
       try fm.copyItem(at: sourceURL, to: destURL)
     } catch {
       logger.error("Failed to copy camera background image: \(error)")
+      cameraBackgroundStyle = .none
+      cameraBackgroundImage = nil
       return
     }
     cameraBackgroundImage = NSImage(contentsOf: destURL)

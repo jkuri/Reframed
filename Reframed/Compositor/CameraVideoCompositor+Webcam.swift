@@ -86,7 +86,34 @@ extension CameraVideoCompositor {
     outputHeight: Int
   ) {
     let p = progress
-    let fullRect = CGRect(x: 0, y: 0, width: outputWidth, height: outputHeight)
+    let canvasRect = CGRect(x: 0, y: 0, width: outputWidth, height: outputHeight)
+    let webcamSize = CGSize(width: webcamImage.width, height: webcamImage.height)
+    let fullRect: CGRect
+    if instruction.cameraFullscreenAspect == .original {
+      fullRect = canvasRect
+    } else {
+      let targetAspect = instruction.cameraFullscreenAspect.aspectRatio(webcamSize: webcamSize)
+      let virtualSize = CGSize(width: targetAspect * 1000, height: 1000)
+      let vAspect = virtualSize.width / max(virtualSize.height, 1)
+      let rectAspect = canvasRect.width / max(canvasRect.height, 1)
+      if vAspect > rectAspect {
+        let h = canvasRect.width / max(vAspect, 0.001)
+        fullRect = CGRect(
+          x: canvasRect.origin.x,
+          y: canvasRect.midY - h / 2,
+          width: canvasRect.width,
+          height: h
+        )
+      } else {
+        let w = canvasRect.height * vAspect
+        fullRect = CGRect(
+          x: canvasRect.midX - w / 2,
+          y: canvasRect.origin.y,
+          width: w,
+          height: canvasRect.height
+        )
+      }
+    }
     let pipFlippedY = CGFloat(outputHeight) - pipCam.rect.origin.y - pipCam.rect.height
     let pipRect = CGRect(x: pipCam.rect.origin.x, y: pipFlippedY, width: pipCam.rect.width, height: pipCam.rect.height)
 
@@ -223,13 +250,7 @@ extension CameraVideoCompositor {
     } else {
       virtualSize = CGSize(width: targetAspect * 1000, height: 1000)
     }
-    let drawRect: CGRect
-    switch instruction.cameraFullscreenFillMode {
-    case .fit:
-      drawRect = AVMakeRect(aspectRatio: virtualSize, insideRect: fullRect)
-    case .fill:
-      drawRect = aspectFillRect(imageSize: virtualSize, in: fullRect)
-    }
+    let drawRect = AVMakeRect(aspectRatio: virtualSize, insideRect: fullRect)
     context.saveGState()
     if regionTransition == nil || regionTransition!.type == .none {
       drawBackground(in: context, rect: fullRect, instruction: instruction, colorSpace: colorSpace)
@@ -240,15 +261,19 @@ extension CameraVideoCompositor {
       context.scaleBy(x: -1, y: 1)
       context.translateBy(x: -drawRect.midX, y: 0)
     }
+    let webcamSize = CGSize(width: webcamImage.width, height: webcamImage.height)
     if instruction.cameraFullscreenAspect == .original {
       context.draw(webcamImage, in: drawRect)
     } else {
-      let imgFill = aspectFillRect(
-        imageSize: CGSize(width: webcamImage.width, height: webcamImage.height),
-        in: drawRect
-      )
       context.clip(to: drawRect)
-      context.draw(webcamImage, in: imgFill)
+      let imgRect: CGRect
+      switch instruction.cameraFullscreenFillMode {
+      case .fit:
+        imgRect = AVMakeRect(aspectRatio: webcamSize, insideRect: drawRect)
+      case .fill:
+        imgRect = aspectFillRect(imageSize: webcamSize, in: drawRect)
+      }
+      context.draw(webcamImage, in: imgRect)
     }
     context.restoreGState()
   }
