@@ -4,7 +4,7 @@
 
 # <p align="center">Reframed</p>
 
-A powerful macOS screen recorder with built-in video editor. Capture your screen, windows, regions, or iOS devices over USB with webcam overlay — then trim, style, and export.
+macOS screen recorder with a built-in editor. Capture your screen, windows, regions, or iOS devices over USB with webcam overlay, then edit and export.
 
 ## Download
 
@@ -36,6 +36,7 @@ brew install --cask jkuri/reframed/reframed
 - Background styles: solid color, gradient presets, or custom image with fill modes
 - Canvas aspect ratios (original, 16:9, 1:1, 4:3, 9:16) with adjustable padding and corner radius
 - Webcam PiP with draggable positioning, corner presets, configurable size/radius/border/shadow/mirror
+- Webcam background replacement (blur, solid color, gradient, or custom image) via person segmentation
 - Camera regions — timeline-based webcam visibility control (fullscreen, hidden, or custom position) with entry/exit transitions (fade, scale, slide)
 - Video regions for cutting segments from the timeline
 - Undo/redo history with snapshot rollback
