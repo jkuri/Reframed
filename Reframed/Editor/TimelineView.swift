@@ -1,6 +1,22 @@
 import AVFoundation
 import SwiftUI
 
+private struct ScaleHeight: ViewModifier {
+  let scale: CGFloat
+  func body(content: Content) -> some View {
+    content.scaleEffect(x: 1.0, y: scale, anchor: .top)
+  }
+}
+
+private extension AnyTransition {
+  nonisolated(unsafe) static let trackTransition: AnyTransition = .opacity.combined(
+    with: .modifier(
+      active: ScaleHeight(scale: 0.01),
+      identity: ScaleHeight(scale: 1.0)
+    )
+  )
+}
+
 struct TimelineView: View {
   @Bindable var editorState: EditorState
   let systemAudioSamples: [Float]
@@ -97,26 +113,31 @@ struct TimelineView: View {
           if editorState.hasWebcam && editorState.webcamEnabled {
             trackSidebar(label: "Camera", icon: "web.camera")
               .frame(height: trackHeight)
+              .transition(.trackTransition)
           }
 
           if showSystemAudioTrack {
             trackSidebar(label: "System", icon: "speaker.wave.2")
               .frame(height: trackHeight)
+              .transition(.trackTransition)
           }
 
           if showMicAudioTrack {
             trackSidebar(label: "Mic", icon: "mic")
               .frame(height: trackHeight)
+              .transition(.trackTransition)
           }
 
           if editorState.zoomEnabled {
             trackSidebar(label: "Zoom", icon: "plus.magnifyingglass")
               .frame(height: trackHeight)
+              .transition(.trackTransition)
           }
 
           if showSpotlightTrack {
             trackSidebar(label: "Spotlight", icon: "light.max")
               .frame(height: trackHeight)
+              .transition(.trackTransition)
           }
         }
       }
@@ -137,45 +158,54 @@ struct TimelineView: View {
 
                 if editorState.hasWebcam && editorState.webcamEnabled {
                   cameraTrackContent(width: cw)
+                    .transition(.trackTransition)
                 }
 
                 if showSystemAudioTrack {
-                  if !systemAudioSamples.isEmpty {
-                    audioTrackContent(
-                      trackType: .system,
-                      samples: systemAudioSamples,
-                      width: cw
-                    )
-                  } else {
-                    audioLoadingContent(
-                      progress: systemAudioProgress ?? 0,
-                      width: cw
-                    )
+                  Group {
+                    if !systemAudioSamples.isEmpty {
+                      audioTrackContent(
+                        trackType: .system,
+                        samples: systemAudioSamples,
+                        width: cw
+                      )
+                    } else {
+                      audioLoadingContent(
+                        progress: systemAudioProgress ?? 0,
+                        width: cw
+                      )
+                    }
                   }
+                  .transition(.trackTransition)
                 }
 
                 if showMicAudioTrack {
-                  if !micAudioSamples.isEmpty && !editorState.isMicProcessing {
-                    audioTrackContent(
-                      trackType: .mic,
-                      samples: micAudioSamples,
-                      width: cw
-                    )
-                  } else {
-                    audioLoadingContent(
-                      progress: micAudioProgress ?? 0,
-                      message: micAudioMessage,
-                      width: cw
-                    )
+                  Group {
+                    if !micAudioSamples.isEmpty && !editorState.isMicProcessing {
+                      audioTrackContent(
+                        trackType: .mic,
+                        samples: micAudioSamples,
+                        width: cw
+                      )
+                    } else {
+                      audioLoadingContent(
+                        progress: micAudioProgress ?? 0,
+                        message: micAudioMessage,
+                        width: cw
+                      )
+                    }
                   }
+                  .transition(.trackTransition)
                 }
 
                 if editorState.zoomEnabled {
                   zoomTrackContent(width: cw, keyframes: editorState.zoomTimeline?.allKeyframes ?? [])
+                    .transition(.trackTransition)
                 }
 
                 if showSpotlightTrack {
                   spotlightTrackContent(width: cw)
+                    .transition(.trackTransition)
                 }
               }
             }
@@ -226,6 +256,7 @@ struct TimelineView: View {
       .padding(.trailing, 8)
     }
     .frame(height: timelineHeight)
+    .animation(.easeInOut(duration: 0.2), value: visibleTrackCount)
     .background(ReframedColors.backgroundCard)
     .padding(.vertical, 8)
   }

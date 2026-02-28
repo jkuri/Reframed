@@ -63,6 +63,16 @@ struct EditorView: View {
 
   let onDelete: () -> Void
 
+  private var timelineTrackSignature: Int {
+    var h = 0
+    if editorState.hasWebcam && editorState.webcamEnabled { h |= 1 }
+    if !editorState.systemAudioMuted { h |= 2 }
+    if !editorState.micAudioMuted { h |= 4 }
+    if editorState.zoomEnabled { h |= 8 }
+    if editorState.spotlightEnabled { h |= 16 }
+    return h
+  }
+
   var body: some View {
     let _ = colorScheme
     VStack(spacing: 0) {
@@ -112,6 +122,7 @@ struct EditorView: View {
           .padding(.bottom, 12)
       }
     }
+    .animation(.easeInOut(duration: 0.2), value: timelineTrackSignature)
     .background {
       Color.clear
         .contentShape(Rectangle())
