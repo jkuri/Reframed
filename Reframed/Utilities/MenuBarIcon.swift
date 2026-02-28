@@ -8,6 +8,7 @@ enum MenuBarIcon {
     case recording
     case paused
     case processing
+    case processingPulse
     case editing
   }
 
@@ -159,31 +160,20 @@ enum MenuBarIcon {
       NSBezierPath(roundedRect: rightBar, xRadius: 0.5, yRadius: 0.5).fill()
 
     case .processing:
-      let r: CGFloat = 3.0
-      let lineWidth: CGFloat = 1.4
-      let path = NSBezierPath()
-      path.lineWidth = lineWidth
-      path.lineCapStyle = .round
-      path.appendArc(
-        withCenter: NSPoint(x: cx, y: cy),
-        radius: r,
-        startAngle: 60,
-        endAngle: -210,
-        clockwise: true
+      break
+
+    case .processingPulse:
+      NSColor.black.setFill()
+      let dotRadius: CGFloat = 2.5
+      let dot = NSBezierPath(
+        ovalIn: NSRect(
+          x: cx - dotRadius,
+          y: cy - dotRadius,
+          width: dotRadius * 2,
+          height: dotRadius * 2
+        )
       )
-      path.stroke()
-      let arrowTip = NSPoint(
-        x: cx + r * cos(60 * .pi / 180),
-        y: cy + r * sin(60 * .pi / 180)
-      )
-      let arrow = NSBezierPath()
-      arrow.lineWidth = lineWidth
-      arrow.lineCapStyle = .round
-      arrow.lineJoinStyle = .round
-      arrow.move(to: NSPoint(x: arrowTip.x - 1.5, y: arrowTip.y + 1.5))
-      arrow.line(to: arrowTip)
-      arrow.line(to: NSPoint(x: arrowTip.x + 1.8, y: arrowTip.y + 0.8))
-      arrow.stroke()
+      dot.fill()
 
     case .editing:
       NSColor.black.setFill()

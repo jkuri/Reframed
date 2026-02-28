@@ -26,6 +26,7 @@ final class SessionState {
   let options = RecordingOptions()
 
   weak var statusItemButton: NSStatusBarButton?
+  var menuBarIconState: MenuBarIcon.State = .idle
 
   init() {
     if ConfigService.shared.isMicrophoneOn, options.selectedMicrophone != nil {
@@ -50,6 +51,8 @@ final class SessionState {
   private var deviceCapture: DeviceCapture?
   private var audioLevelTask: Task<Void, Never>?
   private var windowPositionObserver: WindowPositionObserver?
+  private var processingPulseTimer: Timer?
+  private var processingPulseOn = false
 
   weak var overlayView: SelectionOverlayView?
 
@@ -515,6 +518,11 @@ final class SessionState {
         if let self, let editor { self.removeEditor(editor) }
       }
     }
+    editor.onExportingChanged = { [weak self] exporting in
+      MainActor.assumeIsolated {
+        self?.updateStatusIcon()
+      }
+    }
     if let project {
       editor.show(project: project)
     } else if let result {
@@ -690,6 +698,19 @@ final class SessionState {
   }
 
   private func updateStatusIcon() {
+    let isExporting = editorWindows.contains { $0.isExporting }
+    let needsPulse =
+      isExporting
+      || {
+        if case .processing = state { return true }; return false
+      }()
+
+    if needsPulse {
+      startProcessingPulse()
+      return
+    }
+
+    stopProcessingPulse()
     let iconState: MenuBarIcon.State =
       switch state {
       case .idle: .idle
@@ -700,7 +721,30 @@ final class SessionState {
       case .processing: .processing
       case .editing: .editing
       }
+    menuBarIconState = iconState
     statusItemButton?.image = MenuBarIcon.makeImage(for: iconState)
+  }
+
+  private func startProcessingPulse() {
+    guard processingPulseTimer == nil else { return }
+    processingPulseOn = true
+    menuBarIconState = .processingPulse
+    statusItemButton?.image = MenuBarIcon.makeImage(for: .processingPulse)
+    processingPulseTimer = Timer.scheduledTimer(withTimeInterval: 0.6, repeats: true) { [weak self] _ in
+      MainActor.assumeIsolated {
+        guard let self else { return }
+        self.processingPulseOn.toggle()
+        let pulseState: MenuBarIcon.State = self.processingPulseOn ? .processingPulse : .processing
+        self.menuBarIconState = pulseState
+        self.statusItemButton?.image = MenuBarIcon.makeImage(for: pulseState)
+      }
+    }
+  }
+
+  private func stopProcessingPulse() {
+    processingPulseTimer?.invalidate()
+    processingPulseTimer = nil
+    processingPulseOn = false
   }
 
   private func showStartRecordingOverlay() {

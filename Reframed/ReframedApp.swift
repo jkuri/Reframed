@@ -19,7 +19,7 @@ struct ReframedApp: App {
       )
       .presentationBackground(ReframedColors.backgroundPopover)
     } label: {
-      Image(nsImage: MenuBarIcon.image)
+      Image(nsImage: MenuBarIcon.makeImage(for: appDelegate.session.menuBarIconState))
     }
     .menuBarExtraStyle(.window)
     .menuBarExtraAccess(isPresented: $isMenuPresented) { statusItem in

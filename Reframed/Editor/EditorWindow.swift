@@ -6,9 +6,11 @@ final class EditorWindow: NSObject, NSWindowDelegate {
   private var window: NSWindow?
   private var editorState: EditorState?
   private var keyboardMonitor: Any?
+  private var exportObservation: Task<Void, Never>?
   var onSave: ((URL) -> Void)?
   var onCancel: (() -> Void)?
   var onDelete: (() -> Void)?
+  var onExportingChanged: ((Bool) -> Void)?
 
   func show(project: ReframedProject) {
     let state = EditorState(project: project)
@@ -69,6 +71,28 @@ final class EditorWindow: NSObject, NSWindowDelegate {
 
     self.window = window
     setupKeyboardMonitor()
+    observeExporting(state: state)
+  }
+
+  private func observeExporting(state: EditorState) {
+    exportObservation?.cancel()
+    exportObservation = Task { [weak self] in
+      var lastValue = state.isExporting
+      while !Task.isCancelled {
+        let current = state.isExporting
+        if current != lastValue {
+          lastValue = current
+          self?.onExportingChanged?(current)
+        }
+        await withCheckedContinuation { continuation in
+          withObservationTracking {
+            _ = state.isExporting
+          } onChange: {
+            continuation.resume()
+          }
+        }
+      }
+    }
   }
 
   private func setupKeyboardMonitor() {
@@ -127,12 +151,17 @@ final class EditorWindow: NSObject, NSWindowDelegate {
     }
   }
 
+  var isExporting: Bool {
+    editorState?.isExporting ?? false
+  }
+
   func bringToFront() {
     window?.makeKeyAndOrderFront(nil)
     NSApp.activate(ignoringOtherApps: true)
   }
 
   func close() {
+    exportObservation?.cancel()
     removeKeyboardMonitor()
     editorState?.teardown()
     window?.delegate = nil
@@ -156,6 +185,7 @@ final class EditorWindow: NSObject, NSWindowDelegate {
   }
 
   func windowWillClose(_ notification: Notification) {
+    exportObservation?.cancel()
     removeKeyboardMonitor()
     editorState?.teardown()
     editorState = nil
