@@ -52,7 +52,27 @@ enum ZoomDetector {
 
     let holdDuration = max(config.dwellThresholdSeconds, 0.5)
 
+    var mergedRegions: [ClickRegion] = []
     for region in regions {
+      if var last = mergedRegions.last {
+        let lastHoldEnd = max(last.endTime, last.startTime + holdDuration)
+        let lastZoomOut = min(duration, lastHoldEnd + config.transitionDuration)
+        let thisZoomIn = max(0, region.startTime - config.transitionDuration)
+
+        if lastZoomOut > thisZoomIn {
+          let totalClicks = last.clickCount + region.clickCount
+          last.centerX = (last.centerX * Double(last.clickCount) + region.centerX * Double(region.clickCount)) / Double(totalClicks)
+          last.centerY = (last.centerY * Double(last.clickCount) + region.centerY * Double(region.clickCount)) / Double(totalClicks)
+          last.endTime = region.endTime
+          last.clickCount = totalClicks
+          mergedRegions[mergedRegions.count - 1] = last
+          continue
+        }
+      }
+      mergedRegions.append(region)
+    }
+
+    for region in mergedRegions {
       let holdEnd = max(region.endTime, region.startTime + holdDuration)
       let zoomInTime = max(0, region.startTime - config.transitionDuration)
       let zoomOutTime = min(duration, holdEnd + config.transitionDuration)
