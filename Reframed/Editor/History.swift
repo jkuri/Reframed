@@ -69,195 +69,419 @@ final class History {
     HistoryData(entries: entries, currentIndex: currentIndex)
   }
 
+  private typealias ChangeRule = (EditorStateData, EditorStateData) -> [String]
+
+  private static func prop<V: Equatable>(
+    _ keyPath: KeyPath<EditorStateData, V>,
+    _ describe: @escaping (V) -> String
+  ) -> ChangeRule {
+    { old, new in
+      guard old[keyPath: keyPath] != new[keyPath: keyPath] else { return [] }
+      return [describe(new[keyPath: keyPath])]
+    }
+  }
+
+  private static func toggle(
+    _ keyPath: KeyPath<EditorStateData, Bool?>,
+    default defaultValue: Bool,
+    on: String,
+    off: String
+  ) -> ChangeRule {
+    { old, new in
+      guard old[keyPath: keyPath] != new[keyPath: keyPath] else { return [] }
+      return [(new[keyPath: keyPath] ?? defaultValue) ? on : off]
+    }
+  }
+
+  private static func sub<S, V: Equatable>(
+    _ parentPath: KeyPath<EditorStateData, S?>,
+    _ childPath: KeyPath<S, V>,
+    default defaultValue: V,
+    _ describe: @escaping (V) -> String
+  ) -> ChangeRule {
+    { old, new in
+      let oldVal: V
+      let newVal: V
+      if let parent = old[keyPath: parentPath] {
+        oldVal = parent[keyPath: childPath]
+      } else {
+        oldVal = defaultValue
+      }
+      if let parent = new[keyPath: parentPath] {
+        newVal = parent[keyPath: childPath]
+      } else {
+        newVal = defaultValue
+      }
+      guard oldVal != newVal else { return [] }
+      return [describe(newVal)]
+    }
+  }
+
+  private static func subToggle<S>(
+    _ parentPath: KeyPath<EditorStateData, S?>,
+    _ childPath: KeyPath<S, Bool>,
+    default defaultValue: Bool,
+    on: String,
+    off: String
+  ) -> ChangeRule {
+    { old, new in
+      let oldVal: Bool
+      let newVal: Bool
+      if let parent = old[keyPath: parentPath] {
+        oldVal = parent[keyPath: childPath]
+      } else {
+        oldVal = defaultValue
+      }
+      if let parent = new[keyPath: parentPath] {
+        newVal = parent[keyPath: childPath]
+      } else {
+        newVal = defaultValue
+      }
+      guard oldVal != newVal else { return [] }
+      return [newVal ? on : off]
+    }
+  }
+
+  private static func regions<R: Equatable>(
+    _ keyPath: KeyPath<EditorStateData, [R]?>,
+    added: String,
+    removed: String,
+    adjusted: String
+  ) -> ChangeRule {
+    { old, new in
+      let o = old[keyPath: keyPath]
+      let n = new[keyPath: keyPath]
+      guard o != n else { return [] }
+      let oldCount = o?.count ?? 0
+      let newCount = n?.count ?? 0
+      if newCount > oldCount { return [added] }
+      if newCount < oldCount { return [removed] }
+      return [adjusted]
+    }
+  }
+
+  private static let rules: [ChangeRule] = [
+    { old, new in
+      guard old.trimStartSeconds != new.trimStartSeconds || old.trimEndSeconds != new.trimEndSeconds
+      else { return [] }
+      return [
+        "Trim range \(formatCompactTime(seconds: old.trimStartSeconds))–\(formatCompactTime(seconds: old.trimEndSeconds)) → \(formatCompactTime(seconds: new.trimStartSeconds))–\(formatCompactTime(seconds: new.trimEndSeconds))"
+      ]
+    },
+
+    prop(\.backgroundStyle) { "Background set to \(describeBackground($0))" },
+    prop(\.backgroundImageFillMode) {
+      "Background image fill mode set to \(($0 ?? .fill).label.lowercased())"
+    },
+
+    prop(\.canvasAspect) { "Canvas aspect ratio set to \(($0 ?? .original).label)" },
+    prop(\.padding) { "Padding set to \(Int($0 * 100))%" },
+
+    prop(\.videoCornerRadius) { "Video corner radius set to \(Int($0))px" },
+    prop(\.videoShadow) {
+      let val = Int($0 ?? 0)
+      return val == 0 ? "Video shadow removed" : "Video shadow set to \(val)"
+    },
+
+    prop(\.cameraAspect) { "Camera aspect ratio set to \(($0 ?? .original).label)" },
+    prop(\.cameraCornerRadius) { "Camera corner radius set to \(Int($0))px" },
+    prop(\.cameraBorderWidth) { "Camera border width set to \(String(format: "%.1f", $0))px" },
+    prop(\.cameraBorderColor) { _ in "Camera border color updated" },
+    prop(\.cameraShadow) {
+      let val = Int($0 ?? 0)
+      return val == 0 ? "Camera shadow removed" : "Camera shadow set to \(val)"
+    },
+    toggle(\.cameraMirrored, default: false, on: "Camera mirror enabled", off: "Camera mirror disabled"),
+    prop(\.cameraFullscreenFillMode) {
+      "Camera fullscreen fill mode set to \(($0 ?? .fit).label.lowercased())"
+    },
+    prop(\.cameraFullscreenAspect) {
+      "Camera fullscreen aspect ratio set to \(($0 ?? .original).label)"
+    },
+    prop(\.cameraLayout) { _ in "Camera repositioned" },
+    toggle(\.webcamEnabled, default: true, on: "Webcam enabled", off: "Webcam disabled"),
+    prop(\.cameraBackgroundStyle) { "Camera background set to \(describeCameraBackground($0))" },
+
+    { old, new in
+      guard old.cursorSettings != new.cursorSettings else { return [] }
+      let oldShow = old.cursorSettings?.showCursor ?? true
+      let newShow = new.cursorSettings?.showCursor ?? true
+      if oldShow != newShow {
+        return [newShow ? "Cursor enabled" : "Cursor disabled"]
+      }
+      let subRules: [ChangeRule] = [
+        sub(\.cursorSettings, \.cursorStyleRaw, default: 0) {
+          let style = CursorStyle(rawValue: $0) ?? .centerDefault
+          return "Cursor style set to \(style.label)"
+        },
+        sub(\.cursorSettings, \.cursorSize, default: CGFloat(24)) { "Cursor size set to \(Int($0))px" },
+        subToggle(
+          \.cursorSettings,
+          \.showClickHighlights,
+          default: true,
+          on: "Click highlights enabled",
+          off: "Click highlights disabled"
+        ),
+        { old, new in
+          guard
+            (old.cursorSettings?.showClickHighlights ?? true)
+              == (new.cursorSettings?.showClickHighlights ?? true)
+          else { return [] }
+          var results: [String] = []
+          if old.cursorSettings?.clickHighlightColor != new.cursorSettings?.clickHighlightColor {
+            results.append("Click highlight color updated")
+          }
+          if old.cursorSettings?.clickHighlightSize != new.cursorSettings?.clickHighlightSize {
+            results.append(
+              "Click highlight size set to \(Int(new.cursorSettings?.clickHighlightSize ?? 36))px"
+            )
+          }
+          return results
+        },
+        sub(\.cursorSettings, \.cursorFillColor, default: nil as CodableColor?) { _ in
+          "Cursor fill color updated"
+        },
+        sub(\.cursorSettings, \.cursorStrokeColor, default: nil as CodableColor?) { _ in
+          "Cursor stroke color updated"
+        },
+        subToggle(
+          \.cursorSettings,
+          \.spotlightEnabled,
+          default: false,
+          on: "Spotlight enabled",
+          off: "Spotlight disabled"
+        ),
+        sub(\.cursorSettings, \.spotlightRadius, default: CGFloat(200)) {
+          "Spotlight radius set to \(Int($0))px"
+        },
+        sub(\.cursorSettings, \.spotlightDimOpacity, default: CGFloat(0.6)) {
+          "Spotlight dim opacity set to \(Int($0 * 100))%"
+        },
+        sub(\.cursorSettings, \.spotlightEdgeSoftness, default: CGFloat(50)) {
+          "Spotlight edge softness set to \(Int($0))px"
+        },
+        subToggle(
+          \.cursorSettings,
+          \.clickSoundEnabled,
+          default: false,
+          on: "Click sound enabled",
+          off: "Click sound disabled"
+        ),
+        sub(\.cursorSettings, \.clickSoundVolume, default: Float(0.5)) {
+          "Click sound volume set to \(Int($0 * 100))%"
+        },
+        sub(\.cursorSettings, \.clickSoundStyleRaw, default: 0) {
+          let style = ClickSoundStyle(rawValue: $0) ?? .click
+          return "Click sound style set to \(style.label)"
+        },
+      ]
+      return subRules.flatMap { $0(old, new) }
+    },
+
+    { old, new in
+      guard old.zoomSettings != new.zoomSettings else { return [] }
+      let subRules: [ChangeRule] = [
+        subToggle(\.zoomSettings, \.zoomEnabled, default: false, on: "Zoom enabled", off: "Zoom disabled"),
+        subToggle(
+          \.zoomSettings,
+          \.autoZoomEnabled,
+          default: false,
+          on: "Auto zoom enabled",
+          off: "Auto zoom disabled"
+        ),
+        subToggle(
+          \.zoomSettings,
+          \.zoomFollowCursor,
+          default: true,
+          on: "Zoom follow cursor enabled",
+          off: "Zoom follow cursor disabled"
+        ),
+        sub(\.zoomSettings, \.zoomLevel, default: 2.0) {
+          "Zoom level set to \(String(format: "%.1f", $0))x"
+        },
+        sub(\.zoomSettings, \.transitionDuration, default: 0.3) {
+          "Zoom transition speed set to \(String(format: "%.1f", $0))s"
+        },
+        sub(\.zoomSettings, \.dwellThreshold, default: 0.5) {
+          "Zoom dwell threshold set to \(String(format: "%.1f", $0))s"
+        },
+        { old, new in
+          let o = old.zoomSettings?.keyframes
+          let n = new.zoomSettings?.keyframes
+          guard o != n else { return [] }
+          let oldCount = o?.count ?? 0
+          let newCount = n?.count ?? 0
+          if newCount > oldCount { return ["Zoom keyframe added"] }
+          if newCount < oldCount { return ["Zoom keyframe removed"] }
+          return ["Zoom keyframe adjusted"]
+        },
+      ]
+      return subRules.flatMap { $0(old, new) }
+    },
+
+    { old, new in
+      guard old.animationSettings != new.animationSettings else { return [] }
+      let subRules: [ChangeRule] = [
+        subToggle(
+          \.animationSettings,
+          \.cursorMovementEnabled,
+          default: false,
+          on: "Cursor smoothing enabled",
+          off: "Cursor smoothing disabled"
+        ),
+        sub(\.animationSettings, \.cursorMovementSpeed, default: .medium) {
+          "Cursor smoothing speed set to \($0.label)"
+        },
+      ]
+      return subRules.flatMap { $0(old, new) }
+    },
+
+    { old, new in
+      guard old.audioSettings != new.audioSettings else { return [] }
+      var results: [String] = []
+      let o = old.audioSettings
+      let n = new.audioSettings
+      if o?.systemAudioVolume != n?.systemAudioVolume || o?.systemAudioMuted != n?.systemAudioMuted {
+        if n?.systemAudioMuted == true && o?.systemAudioMuted != true {
+          results.append("System audio muted")
+        } else if n?.systemAudioMuted != true && o?.systemAudioMuted == true {
+          results.append("System audio unmuted")
+        } else {
+          results.append("System audio volume set to \(Int((n?.systemAudioVolume ?? 1.0) * 100))%")
+        }
+      }
+      if o?.micAudioVolume != n?.micAudioVolume || o?.micAudioMuted != n?.micAudioMuted {
+        if n?.micAudioMuted == true && o?.micAudioMuted != true {
+          results.append("Mic audio muted")
+        } else if n?.micAudioMuted != true && o?.micAudioMuted == true {
+          results.append("Mic audio unmuted")
+        } else {
+          results.append("Mic audio volume set to \(Int((n?.micAudioVolume ?? 1.0) * 100))%")
+        }
+      }
+      let noiseRules: [ChangeRule] = [
+        subToggle(
+          \.audioSettings,
+          \.micNoiseReductionEnabled,
+          default: false,
+          on: "Noise reduction enabled",
+          off: "Noise reduction disabled"
+        ),
+        sub(\.audioSettings, \.micNoiseReductionIntensity, default: Float(0.5)) {
+          "Noise reduction intensity set to \(Int($0 * 100))%"
+        },
+      ]
+      results.append(contentsOf: noiseRules.flatMap { $0(old, new) })
+      return results
+    },
+
+    regions(
+      \.systemAudioRegions,
+      added: "System audio region added",
+      removed: "System audio region removed",
+      adjusted: "System audio region adjusted"
+    ),
+    regions(
+      \.micAudioRegions,
+      added: "Mic audio region added",
+      removed: "Mic audio region removed",
+      adjusted: "Mic audio region adjusted"
+    ),
+    regions(
+      \.cameraFullscreenRegions,
+      added: "Camera fullscreen region added",
+      removed: "Camera fullscreen region removed",
+      adjusted: "Camera fullscreen region adjusted"
+    ),
+    regions(
+      \.cameraRegions,
+      added: "Camera region added",
+      removed: "Camera region removed",
+      adjusted: "Camera region adjusted"
+    ),
+    regions(
+      \.videoRegions,
+      added: "Video region added",
+      removed: "Video region removed",
+      adjusted: "Video region adjusted"
+    ),
+
+    { old, new in
+      guard old.captionSettings != new.captionSettings || old.captionSegments != new.captionSegments
+      else { return [] }
+      var results: [String] = []
+      let oldSegs = old.captionSegments ?? []
+      let newSegs = new.captionSegments ?? []
+      if oldSegs.isEmpty && !newSegs.isEmpty {
+        return ["Captions generated (\(newSegs.count) segments)"]
+      }
+      if !oldSegs.isEmpty && newSegs.isEmpty {
+        return ["Captions cleared"]
+      }
+      if oldSegs != newSegs && !oldSegs.isEmpty && !newSegs.isEmpty {
+        if oldSegs.count != newSegs.count {
+          results.append("Caption segments updated (\(newSegs.count) segments)")
+        } else {
+          results.append("Caption segments edited")
+        }
+      }
+      let subRules: [ChangeRule] = [
+        subToggle(
+          \.captionSettings,
+          \.enabled,
+          default: true,
+          on: "Captions enabled",
+          off: "Captions disabled"
+        ),
+        sub(\.captionSettings, \.fontSize, default: CGFloat(48)) {
+          "Caption font size set to \(Int($0))px"
+        },
+        sub(\.captionSettings, \.fontWeight, default: .bold) {
+          "Caption font weight set to \($0.label)"
+        },
+        sub(\.captionSettings, \.position, default: .bottom) {
+          "Caption position set to \($0.label.lowercased())"
+        },
+        sub(\.captionSettings, \.textColor, default: CodableColor(r: 1, g: 1, b: 1)) { _ in
+          "Caption text color updated"
+        },
+        sub(
+          \.captionSettings,
+          \.backgroundColor,
+          default: CodableColor(r: 0, g: 0, b: 0, a: 1.0)
+        ) { _ in "Caption background color updated" },
+        sub(\.captionSettings, \.backgroundOpacity, default: CGFloat(0.6)) {
+          "Caption background opacity set to \(Int($0 * 100))%"
+        },
+        subToggle(
+          \.captionSettings,
+          \.showBackground,
+          default: true,
+          on: "Caption background enabled",
+          off: "Caption background disabled"
+        ),
+        sub(\.captionSettings, \.maxWordsPerLine, default: 6) {
+          "Caption words per line set to \($0)"
+        },
+        sub(\.captionSettings, \.model, default: "openai_whisper-base") {
+          let modelName = WhisperModel(rawValue: $0)?.shortLabel ?? "unknown"
+          return "Caption model set to \(modelName)"
+        },
+        sub(\.captionSettings, \.language, default: .auto) {
+          "Caption language set to \($0.label)"
+        },
+        sub(\.captionSettings, \.audioSource, default: .microphone) {
+          "Caption audio source set to \($0.label)"
+        },
+      ]
+      results.append(contentsOf: subRules.flatMap { $0(old, new) })
+      return results
+    },
+  ]
+
   static func describeChanges(from old: EditorStateData, to new: EditorStateData) -> [String] {
-    var changes: [String] = []
-
-    if old.trimStartSeconds != new.trimStartSeconds || old.trimEndSeconds != new.trimEndSeconds {
-      changes.append(
-        "Trim range \(formatCompactTime(seconds:old.trimStartSeconds))–\(formatCompactTime(seconds:old.trimEndSeconds)) → \(formatCompactTime(seconds:new.trimStartSeconds))–\(formatCompactTime(seconds:new.trimEndSeconds))"
-      )
-    }
-
-    if old.backgroundStyle != new.backgroundStyle {
-      changes.append("Background set to \(describeBackground(new.backgroundStyle))")
-    }
-
-    if old.backgroundImageFillMode != new.backgroundImageFillMode {
-      let newMode = (new.backgroundImageFillMode ?? .fill).label.lowercased()
-      changes.append("Background image fill mode set to \(newMode)")
-    }
-
-    if old.canvasAspect != new.canvasAspect {
-      let newLabel = (new.canvasAspect ?? .original).label
-      changes.append("Canvas aspect ratio set to \(newLabel)")
-    }
-
-    if old.padding != new.padding {
-      changes.append("Padding set to \(Int(new.padding * 100))%")
-    }
-
-    if old.videoCornerRadius != new.videoCornerRadius {
-      changes.append("Video corner radius set to \(Int(new.videoCornerRadius))px")
-    }
-
-    if old.cameraAspect != new.cameraAspect {
-      let newLabel = (new.cameraAspect ?? .original).label
-      changes.append("Camera aspect ratio set to \(newLabel)")
-    }
-
-    if old.cameraCornerRadius != new.cameraCornerRadius {
-      changes.append("Camera corner radius set to \(Int(new.cameraCornerRadius))px")
-    }
-
-    if old.cameraBorderWidth != new.cameraBorderWidth {
-      changes.append("Camera border width set to \(String(format: "%.1f", new.cameraBorderWidth))px")
-    }
-
-    if old.cameraBorderColor != new.cameraBorderColor {
-      changes.append("Camera border color updated")
-    }
-
-    if old.videoShadow != new.videoShadow {
-      let val = Int(new.videoShadow ?? 0)
-      changes.append(val == 0 ? "Video shadow removed" : "Video shadow set to \(val)")
-    }
-
-    if old.cameraShadow != new.cameraShadow {
-      let val = Int(new.cameraShadow ?? 0)
-      changes.append(val == 0 ? "Camera shadow removed" : "Camera shadow set to \(val)")
-    }
-
-    if old.cameraMirrored != new.cameraMirrored {
-      let enabled = (new.cameraMirrored ?? false)
-      changes.append(enabled ? "Camera mirror enabled" : "Camera mirror disabled")
-    }
-
-    if old.cameraFullscreenFillMode != new.cameraFullscreenFillMode {
-      let newMode = (new.cameraFullscreenFillMode ?? .fit).label.lowercased()
-      changes.append("Camera fullscreen fill mode set to \(newMode)")
-    }
-
-    if old.cameraFullscreenAspect != new.cameraFullscreenAspect {
-      let newLabel = (new.cameraFullscreenAspect ?? .original).label
-      changes.append("Camera fullscreen aspect ratio set to \(newLabel)")
-    }
-
-    if old.cameraLayout != new.cameraLayout {
-      changes.append("Camera repositioned")
-    }
-
-    if old.webcamEnabled != new.webcamEnabled {
-      let enabled = (new.webcamEnabled ?? true)
-      changes.append(enabled ? "Webcam enabled" : "Webcam disabled")
-    }
-
-    if old.cursorSettings != new.cursorSettings {
-      describeCursorChanges(from: old.cursorSettings, to: new.cursorSettings, into: &changes)
-    }
-
-    if old.zoomSettings != new.zoomSettings {
-      describeZoomChanges(from: old.zoomSettings, to: new.zoomSettings, into: &changes)
-    }
-
-    if old.animationSettings != new.animationSettings {
-      describeAnimationChanges(from: old.animationSettings, to: new.animationSettings, into: &changes)
-    }
-
-    if old.audioSettings != new.audioSettings {
-      describeAudioChanges(from: old.audioSettings, to: new.audioSettings, into: &changes)
-    }
-
-    if old.systemAudioRegions != new.systemAudioRegions {
-      let oldCount = old.systemAudioRegions?.count ?? 0
-      let newCount = new.systemAudioRegions?.count ?? 0
-      if newCount > oldCount {
-        changes.append("System audio region added")
-      } else if newCount < oldCount {
-        changes.append("System audio region removed")
-      } else {
-        changes.append("System audio region adjusted")
-      }
-    }
-
-    if old.micAudioRegions != new.micAudioRegions {
-      let oldCount = old.micAudioRegions?.count ?? 0
-      let newCount = new.micAudioRegions?.count ?? 0
-      if newCount > oldCount {
-        changes.append("Mic audio region added")
-      } else if newCount < oldCount {
-        changes.append("Mic audio region removed")
-      } else {
-        changes.append("Mic audio region adjusted")
-      }
-    }
-
-    if old.cameraFullscreenRegions != new.cameraFullscreenRegions {
-      let oldCount = old.cameraFullscreenRegions?.count ?? 0
-      let newCount = new.cameraFullscreenRegions?.count ?? 0
-      if newCount > oldCount {
-        changes.append("Camera fullscreen region added")
-      } else if newCount < oldCount {
-        changes.append("Camera fullscreen region removed")
-      } else {
-        changes.append("Camera fullscreen region adjusted")
-      }
-    }
-
-    if old.cameraRegions != new.cameraRegions {
-      let oldCount = old.cameraRegions?.count ?? 0
-      let newCount = new.cameraRegions?.count ?? 0
-      if newCount > oldCount {
-        changes.append("Camera region added")
-      } else if newCount < oldCount {
-        changes.append("Camera region removed")
-      } else {
-        changes.append("Camera region adjusted")
-      }
-    }
-
-    if old.cameraBackgroundStyle != new.cameraBackgroundStyle {
-      changes.append("Camera background set to \(describeCameraBackground(new.cameraBackgroundStyle))")
-    }
-
-    if old.captionSettings != new.captionSettings || old.captionSegments != new.captionSegments {
-      describeCaptionChanges(
-        from: old.captionSettings,
-        to: new.captionSettings,
-        oldSegments: old.captionSegments,
-        newSegments: new.captionSegments,
-        into: &changes
-      )
-    }
-
-    if old.videoRegions != new.videoRegions {
-      let oldCount = old.videoRegions?.count ?? 0
-      let newCount = new.videoRegions?.count ?? 0
-      if newCount > oldCount {
-        changes.append("Video region added")
-      } else if newCount < oldCount {
-        changes.append("Video region removed")
-      } else {
-        changes.append("Video region adjusted")
-      }
-    }
-
-    if changes.isEmpty {
-      if old.audioSettings != new.audioSettings { changes.append("Audio settings updated") }
-      if old.cursorSettings != new.cursorSettings { changes.append("Cursor settings updated") }
-      if old.zoomSettings != new.zoomSettings { changes.append("Zoom settings updated") }
-      if old.animationSettings != new.animationSettings {
-        changes.append("Animation settings updated")
-      }
-      if old.cameraLayout != new.cameraLayout { changes.append("Camera layout updated") }
-      if old.captionSettings != new.captionSettings || old.captionSegments != new.captionSegments {
-        changes.append("Caption settings updated")
-      }
-    }
-
-    if changes.isEmpty {
-      changes.append("Editor settings updated")
-    }
-
+    var changes = rules.flatMap { $0(old, new) }
+    if changes.isEmpty { changes.append("Editor settings updated") }
     return changes
   }
 
@@ -293,213 +517,6 @@ final class History {
       return "gradient"
     case .image:
       return "image"
-    }
-  }
-
-  private static func describeCursorChanges(
-    from old: CursorSettingsData?,
-    to new: CursorSettingsData?,
-    into changes: inout [String]
-  ) {
-    let oldShow = old?.showCursor ?? true
-    let newShow = new?.showCursor ?? true
-    if oldShow != newShow {
-      changes.append(newShow ? "Cursor enabled" : "Cursor disabled")
-      return
-    }
-
-    if old?.cursorStyleRaw != new?.cursorStyleRaw {
-      let style = CursorStyle(rawValue: new?.cursorStyleRaw ?? 0) ?? .centerDefault
-      changes.append("Cursor style set to \(style.label)")
-    }
-    if old?.cursorSize != new?.cursorSize {
-      changes.append("Cursor size set to \(Int(new?.cursorSize ?? 24))px")
-    }
-    if old?.showClickHighlights != new?.showClickHighlights {
-      let enabled = new?.showClickHighlights ?? false
-      changes.append(enabled ? "Click highlights enabled" : "Click highlights disabled")
-    }
-    if old?.clickHighlightColor != new?.clickHighlightColor
-      || old?.clickHighlightSize != new?.clickHighlightSize
-    {
-      if old?.showClickHighlights == new?.showClickHighlights {
-        if old?.clickHighlightColor != new?.clickHighlightColor {
-          changes.append("Click highlight color updated")
-        }
-        if old?.clickHighlightSize != new?.clickHighlightSize {
-          changes.append(
-            "Click highlight size set to \(Int(new?.clickHighlightSize ?? 36))px"
-          )
-        }
-      }
-    }
-  }
-
-  private static func describeZoomChanges(
-    from old: ZoomSettingsData?,
-    to new: ZoomSettingsData?,
-    into changes: inout [String]
-  ) {
-    if old?.zoomEnabled != new?.zoomEnabled {
-      let enabled = new?.zoomEnabled ?? false
-      changes.append(enabled ? "Zoom enabled" : "Zoom disabled")
-    }
-    if old?.autoZoomEnabled != new?.autoZoomEnabled {
-      let enabled = new?.autoZoomEnabled ?? false
-      changes.append(enabled ? "Auto zoom enabled" : "Auto zoom disabled")
-    }
-    if old?.zoomFollowCursor != new?.zoomFollowCursor {
-      let enabled = new?.zoomFollowCursor ?? true
-      changes.append(enabled ? "Zoom follow cursor enabled" : "Zoom follow cursor disabled")
-    }
-    if old?.zoomLevel != new?.zoomLevel {
-      changes.append(
-        "Zoom level set to \(String(format: "%.1f", new?.zoomLevel ?? 2.0))x"
-      )
-    }
-    if old?.transitionDuration != new?.transitionDuration {
-      changes.append(
-        "Zoom transition speed set to \(String(format: "%.1f", new?.transitionDuration ?? 0.3))s"
-      )
-    }
-    if old?.dwellThreshold != new?.dwellThreshold {
-      changes.append(
-        "Zoom dwell threshold set to \(String(format: "%.1f", new?.dwellThreshold ?? 0.5))s"
-      )
-    }
-    if old?.keyframes != new?.keyframes {
-      let oldCount = old?.keyframes.count ?? 0
-      let newCount = new?.keyframes.count ?? 0
-      if newCount > oldCount {
-        changes.append("Zoom keyframe added")
-      } else if newCount < oldCount {
-        changes.append("Zoom keyframe removed")
-      } else {
-        changes.append("Zoom keyframe adjusted")
-      }
-    }
-  }
-
-  private static func describeAnimationChanges(
-    from old: AnimationSettingsData?,
-    to new: AnimationSettingsData?,
-    into changes: inout [String]
-  ) {
-    if old?.cursorMovementEnabled != new?.cursorMovementEnabled {
-      let enabled = new?.cursorMovementEnabled ?? false
-      changes.append(enabled ? "Cursor smoothing enabled" : "Cursor smoothing disabled")
-    }
-    if old?.cursorMovementSpeed != new?.cursorMovementSpeed {
-      let speed = new?.cursorMovementSpeed ?? .medium
-      changes.append("Cursor smoothing speed set to \(speed.label)")
-    }
-  }
-
-  private static func describeCaptionChanges(
-    from old: CaptionSettingsData?,
-    to new: CaptionSettingsData?,
-    oldSegments: [CaptionSegment]?,
-    newSegments: [CaptionSegment]?,
-    into changes: inout [String]
-  ) {
-    let oldSegs = oldSegments ?? []
-    let newSegs = newSegments ?? []
-    if oldSegs.isEmpty && !newSegs.isEmpty {
-      changes.append("Captions generated (\(newSegs.count) segments)")
-      return
-    }
-    if !oldSegs.isEmpty && newSegs.isEmpty {
-      changes.append("Captions cleared")
-      return
-    }
-    if oldSegs != newSegs && !oldSegs.isEmpty && !newSegs.isEmpty {
-      if oldSegs.count != newSegs.count {
-        changes.append("Caption segments updated (\(newSegs.count) segments)")
-      } else {
-        changes.append("Caption segments edited")
-      }
-    }
-
-    if old?.enabled != new?.enabled {
-      let enabled = new?.enabled ?? true
-      changes.append(enabled ? "Captions enabled" : "Captions disabled")
-    }
-    if old?.fontSize != new?.fontSize {
-      changes.append("Caption font size set to \(Int(new?.fontSize ?? 48))px")
-    }
-    if old?.fontWeight != new?.fontWeight {
-      let weight = new?.fontWeight ?? .bold
-      changes.append("Caption font weight set to \(weight.label)")
-    }
-    if old?.position != new?.position {
-      let pos = new?.position ?? .bottom
-      changes.append("Caption position set to \(pos.label.lowercased())")
-    }
-    if old?.textColor != new?.textColor {
-      changes.append("Caption text color updated")
-    }
-    if old?.backgroundColor != new?.backgroundColor {
-      changes.append("Caption background color updated")
-    }
-    if old?.backgroundOpacity != new?.backgroundOpacity {
-      changes.append("Caption background opacity set to \(Int((new?.backgroundOpacity ?? 0.6) * 100))%")
-    }
-    if old?.showBackground != new?.showBackground {
-      let show = new?.showBackground ?? true
-      changes.append(show ? "Caption background enabled" : "Caption background disabled")
-    }
-    if old?.maxWordsPerLine != new?.maxWordsPerLine {
-      changes.append("Caption words per line set to \(new?.maxWordsPerLine ?? 6)")
-    }
-    if old?.model != new?.model {
-      let modelName = WhisperModel(rawValue: new?.model ?? "")?.shortLabel ?? "unknown"
-      changes.append("Caption model set to \(modelName)")
-    }
-    if old?.language != new?.language {
-      let lang = new?.language ?? .auto
-      changes.append("Caption language set to \(lang.label)")
-    }
-    if old?.audioSource != new?.audioSource {
-      let source = new?.audioSource ?? .microphone
-      changes.append("Caption audio source set to \(source.label)")
-    }
-  }
-
-  private static func describeAudioChanges(
-    from old: AudioSettingsData?,
-    to new: AudioSettingsData?,
-    into changes: inout [String]
-  ) {
-    if old?.systemAudioVolume != new?.systemAudioVolume
-      || old?.systemAudioMuted != new?.systemAudioMuted
-    {
-      if new?.systemAudioMuted == true && old?.systemAudioMuted != true {
-        changes.append("System audio muted")
-      } else if new?.systemAudioMuted != true && old?.systemAudioMuted == true {
-        changes.append("System audio unmuted")
-      } else {
-        let newVol = Int((new?.systemAudioVolume ?? 1.0) * 100)
-        changes.append("System audio volume set to \(newVol)%")
-      }
-    }
-    if old?.micAudioVolume != new?.micAudioVolume || old?.micAudioMuted != new?.micAudioMuted {
-      if new?.micAudioMuted == true && old?.micAudioMuted != true {
-        changes.append("Mic audio muted")
-      } else if new?.micAudioMuted != true && old?.micAudioMuted == true {
-        changes.append("Mic audio unmuted")
-      } else {
-        let newVol = Int((new?.micAudioVolume ?? 1.0) * 100)
-        changes.append("Mic audio volume set to \(newVol)%")
-      }
-    }
-    if old?.micNoiseReductionEnabled != new?.micNoiseReductionEnabled {
-      let enabled = new?.micNoiseReductionEnabled ?? false
-      changes.append(enabled ? "Noise reduction enabled" : "Noise reduction disabled")
-    }
-    if old?.micNoiseReductionIntensity != new?.micNoiseReductionIntensity {
-      changes.append(
-        "Noise reduction intensity set to \(Int((new?.micNoiseReductionIntensity ?? 0.5) * 100))%"
-      )
     }
   }
 }
