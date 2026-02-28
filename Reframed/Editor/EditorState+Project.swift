@@ -3,7 +3,10 @@ import Foundation
 
 extension EditorState {
   func deleteRecording() {
+    pendingSaveTask?.cancel()
+    pendingSaveTask = nil
     if let project {
+      self.project = nil
       try? project.delete()
     } else {
       let fm = FileManager.default
