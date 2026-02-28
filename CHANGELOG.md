@@ -1,5 +1,39 @@
 # Changelog
 
+## [v0.11.1](https://github.com/jkuri/Reframed/compare/v0.11.0...v0.11.1) (2026-02-28)
+
+### Features
+
+- **menubar:** show pulsating processing icon during export and fix icon reset ([0553e1e](https://github.com/jkuri/Reframed/commit/0553e1e8c907808440189ec53dbebe72e81fa985))
+- **menubar:** stop recording on menu bar icon click during capture ([9d7e3e8](https://github.com/jkuri/Reframed/commit/9d7e3e808515d1251abf7bb022845fd533bc767e))
+- **menubar:** add custom programmatic menu bar icon with state variations ([d4cd813](https://github.com/jkuri/Reframed/commit/d4cd813158c7fc163b007b2aecebdb453e9e96ae))
+- **captions:** add empty state when no speech is detected after transcription ([4c4a1e6](https://github.com/jkuri/Reframed/commit/4c4a1e6670b199dadeca0e1deb66049194ba935c))
+- **captions:** replace model popover with segment picker and add sizes to descriptions ([ed3cc1e](https://github.com/jkuri/Reframed/commit/ed3cc1eba4d5001d93f0bdbcc5126667091b30a7))
+- **captions:** auto-close model/language pickers and add language search ([43cc373](https://github.com/jkuri/Reframed/commit/43cc373ebcfb9a3a671b90269a133b4d13c63390))
+
+### Bug Fixes
+
+- **captions:** add cancel button for model download and fix download cancellation ([3fafde1](https://github.com/jkuri/Reframed/commit/3fafde14df20724d41fb116c860497b6e80b9e34))
+- **captions:** filter out non-speech segments from transcription results ([7c29360](https://github.com/jkuri/Reframed/commit/7c2936055e6fde061b7cf976abae0e0a0c6a533a))
+- **editor:** cancel in-flight tasks and guard waveform generation on project deletion ([a898c89](https://github.com/jkuri/Reframed/commit/a898c8923277c3d38c318d5beaaddb89c10777c8))
+- **captions:** prefer denoised mic audio for caption transcription ([9c5744e](https://github.com/jkuri/Reframed/commit/9c5744e4f29d1f606fc60f8f13a2e2bf6a5c1a52))
+- replace force unwraps with safe error handling and add resource cleanup deinits ([c21e693](https://github.com/jkuri/Reframed/commit/c21e693b4d17cec829de1b709e24df2c97d6234e))
+- **editor:** cancel pending save task and reset project state when deleting a recording ([dd2ac26](https://github.com/jkuri/Reframed/commit/dd2ac265a953a539ce9a3fd00ff59520e8e1c03f))
+- **capture:** focus captured window on recording start and improve toolbar window ordering. ([bced83b](https://github.com/jkuri/Reframed/commit/bced83b169b6455f557d338e10de1a048d0e8832))
+
+### Refactoring
+
+- **menubar:** make new menubar from scratch ([bd1b904](https://github.com/jkuri/Reframed/commit/bd1b9044c9d16acc589a1abfc27031e3101b654b))
+- **style:** centralize and apply UI dimension constants for various components ([631aac2](https://github.com/jkuri/Reframed/commit/631aac20f20cc544dbaefa5d3363e0ffcca6be50))
+
+### Styling
+
+- **recording:** decrease window selection background opacity ([0f978f5](https://github.com/jkuri/Reframed/commit/0f978f555663f34e159049be4779cd5830f02b21))
+
+### Chores
+
+- **captions:** replace Whisper `small` model with `turbo` and update model size and description details ([9a5cc34](https://github.com/jkuri/Reframed/commit/9a5cc349b625675d2fa7a357e7675cc9d3c7f042))
+
 ## [v0.11.0](https://github.com/jkuri/Reframed/compare/v0.10.2...v0.11.0) (2026-02-28)
 
 ### Features
