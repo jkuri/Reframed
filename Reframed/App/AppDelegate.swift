@@ -14,9 +14,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
     manager.start()
     shortcutManager = manager
 
-    if Permissions.allPermissionsGranted {
-      session.showToolbar()
-    } else {
+    if !Permissions.allPermissionsGranted {
       showPermissionsWindow()
     }
   }

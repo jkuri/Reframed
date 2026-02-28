@@ -11,6 +11,7 @@ struct RecentProject: Identifiable {
   let hasSystemAudio: Bool
   let hasMicrophoneAudio: Bool
   let duration: Int?
+  let fileSize: Int64?
 }
 
 struct MenuBarView: View {
@@ -28,124 +29,126 @@ struct MenuBarView: View {
     return true
   }
 
+  private let gridColumns = Array(
+    repeating: GridItem(.flexible(), spacing: 6),
+    count: 4
+  )
+
   var body: some View {
     let _ = colorScheme
-    HoverEffectScope {
-      VStack(alignment: .leading, spacing: 0) {
-        SectionHeader(title: "Quick Actions")
+    VStack(alignment: .leading, spacing: 0) {
+      SectionHeader(title: "Quick Actions")
 
-        MenuBarActionRow(icon: "record.circle", title: "New Recording", shortcut: "N") {
-          onDismiss()
-          if Permissions.allPermissionsGranted {
-            session.showToolbar()
-          } else {
-            onShowPermissions()
-          }
-        }
-        .hoverEffect(id: "menu.newRecording")
-        .disabled(isBusy)
-        .padding(.horizontal, 12)
-
-        MenuBarActionRow(
-          icon: "rectangle.dashed",
-          title: "Display Mode",
-          shortcut: ConfigService.shared.shortcut(for: .switchToDisplay).displayString
-        ) {
-          onDismiss()
-          guard case .idle = session.state else { return }
-          session.showToolbar()
-          session.selectMode(.entireScreen)
-        }
-        .hoverEffect(id: "menu.displayMode")
-        .disabled(isBusy)
-        .padding(.horizontal, 12)
-
-        MenuBarActionRow(
-          icon: "macwindow",
-          title: "Window Mode",
-          shortcut: ConfigService.shared.shortcut(for: .switchToWindow).displayString
-        ) {
-          onDismiss()
-          guard case .idle = session.state else { return }
-          session.showToolbar()
-          session.selectMode(.selectedWindow)
-        }
-        .hoverEffect(id: "menu.windowMode")
-        .disabled(isBusy)
-        .padding(.horizontal, 12)
-
-        MenuBarActionRow(
-          icon: "rectangle.dashed.badge.record",
-          title: "Area Mode",
-          shortcut: ConfigService.shared.shortcut(for: .switchToArea).displayString
-        ) {
-          onDismiss()
-          guard case .idle = session.state else { return }
-          session.showToolbar()
-          session.selectMode(.selectedArea)
-        }
-        .hoverEffect(id: "menu.areaMode")
-        .disabled(isBusy)
-        .padding(.horizontal, 12)
-
-        MenuBarDivider()
-
-        SectionHeader(title: "Recent Projects")
-
-        if recentProjects.isEmpty {
-          Text("No recent projects")
-            .font(.system(size: 12))
-            .foregroundStyle(ReframedColors.tertiaryText)
-            .frame(maxWidth: .infinity, alignment: .center)
-            .padding(.vertical, 12)
-        } else {
-          ForEach(recentProjects) { project in
-            ProjectRow(project: project) {
-              onDismiss()
-              session.openProject(at: project.url)
-            }
-            .hoverEffect(id: "menu.project.\(project.id)")
-            .disabled(isBusy)
-            .padding(.horizontal, 12)
-          }
-
-          MenuBarDivider()
-
-          MenuBarActionRow(
-            icon: "folder",
-            title: "Open Projects Folder",
-            subtitle: "\(totalProjectCount) project\(totalProjectCount == 1 ? "" : "s")"
+      HoverEffectScope {
+        LazyVGrid(columns: gridColumns, spacing: 6) {
+          ActionGridItem(
+            icon: "record.circle",
+            title: "New",
+            hoverId: "action.new"
           ) {
             onDismiss()
-            let path = (ConfigService.shared.projectFolder as NSString).expandingTildeInPath
-            NSWorkspace.shared.open(URL(fileURLWithPath: path))
+            if Permissions.allPermissionsGranted {
+              session.showToolbar()
+            } else {
+              onShowPermissions()
+            }
           }
-          .hoverEffect(id: "menu.openProjects")
-          .disabled(isBusy)
-          .padding(.horizontal, 12)
-        }
 
-        MenuBarDivider()
+          ActionGridItem(
+            icon: "rectangle.inset.filled",
+            title: "Display",
+            hoverId: "action.display"
+          ) {
+            onDismiss()
+            guard case .idle = session.state else { return }
+            session.showToolbar()
+            session.selectMode(.entireScreen)
+          }
 
-        MenuBarActionRow(icon: "info.circle", title: "About") {
-          onDismiss()
-          NSApp.activate(ignoringOtherApps: true)
-          NSApp.orderFrontStandardAboutPanel(nil)
-        }
-        .hoverEffect(id: "menu.about")
-        .padding(.horizontal, 12)
+          ActionGridItem(
+            icon: "macwindow",
+            title: "Window",
+            hoverId: "action.window"
+          ) {
+            onDismiss()
+            guard case .idle = session.state else { return }
+            session.showToolbar()
+            session.selectMode(.selectedWindow)
+          }
 
-        MenuBarActionRow(icon: "power", title: "Quit", shortcut: "Q") {
-          NSApp.terminate(nil)
+          ActionGridItem(
+            icon: "rectangle.dashed",
+            title: "Area",
+            hoverId: "action.area"
+          ) {
+            onDismiss()
+            guard case .idle = session.state else { return }
+            session.showToolbar()
+            session.selectMode(.selectedArea)
+          }
         }
-        .hoverEffect(id: "menu.quit")
-        .padding(.horizontal, 12)
-        .padding(.bottom, 2)
       }
-      .padding(.vertical, 8)
-      .frame(width: Layout.menuBarWidth)
+      .disabled(isBusy)
+      .padding(.horizontal, 10)
+
+      MenuBarDivider()
+
+      Text(totalProjectCount > 0 ? "Projects (\(totalProjectCount))" : "Projects")
+        .font(.system(size: 11, weight: .medium))
+        .foregroundStyle(ReframedColors.secondaryText)
+        .padding(.horizontal, 12)
+        .padding(.top, 8)
+        .padding(.bottom, 4)
+
+      if recentProjects.isEmpty {
+        Text("No recent projects")
+          .font(.system(size: 12))
+          .foregroundStyle(ReframedColors.secondaryText)
+          .frame(maxWidth: .infinity, alignment: .center)
+          .padding(.vertical, 12)
+      } else {
+        ScrollView {
+          HoverEffectScope {
+            LazyVStack(spacing: 0) {
+              ForEach(recentProjects) { project in
+                ProjectRow(project: project) {
+                  onDismiss()
+                  session.openProject(at: project.url)
+                }
+                .hoverEffect(id: "project.\(project.id)")
+                .disabled(isBusy)
+                .padding(.horizontal, 10)
+              }
+            }
+          }
+        }
+        .frame(height: min(CGFloat(recentProjects.count) * 52, 52 * 6))
+      }
+
+      MenuBarDivider()
+
+      HoverEffectScope {
+        Button {
+          onDismiss()
+          let path = (ConfigService.shared.projectFolder as NSString).expandingTildeInPath
+          NSWorkspace.shared.open(URL(fileURLWithPath: path))
+        } label: {
+          Text("Open Projects Folder")
+            .font(.system(size: 12, weight: .medium))
+            .foregroundStyle(ReframedColors.primaryText)
+            .frame(maxWidth: .infinity, alignment: .center)
+            .frame(height: 42)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .hoverEffect(id: "openFolder")
+        .padding(.horizontal, 10)
+      }
+
     }
-    .background(ReframedColors.background)
+    .padding(.vertical, 8)
+    .frame(width: Layout.menuBarWidth)
+    .background(ReframedColors.backgroundPopover)
     .task {
       await loadRecentProjects()
     }
@@ -183,6 +186,8 @@ struct MenuBarView: View {
       let duration = try? await asset.load(.duration)
       let durationSeconds = duration.map { Int(CMTimeGetSeconds($0)) }
 
+      let bundleSize = Self.directorySize(url: url, fm: fm)
+
       projects.append(
         RecentProject(
           url: url,
@@ -192,14 +197,59 @@ struct MenuBarView: View {
           hasWebcam: metadata.hasWebcam || metadata.webcamSize != nil,
           hasSystemAudio: metadata.hasSystemAudio,
           hasMicrophoneAudio: metadata.hasMicrophoneAudio,
-          duration: durationSeconds.flatMap { $0 > 0 ? $0 : nil }
+          duration: durationSeconds.flatMap { $0 > 0 ? $0 : nil },
+          fileSize: bundleSize
         )
       )
     }
 
     let sorted = projects.sorted { $0.createdAt > $1.createdAt }
     totalProjectCount = sorted.count
-    recentProjects = sorted.prefix(5).map { $0 }
+    recentProjects = sorted
+  }
+
+  private static nonisolated func directorySize(url: URL, fm: FileManager) -> Int64? {
+    guard let enumerator = fm.enumerator(at: url, includingPropertiesForKeys: [.fileSizeKey]) else {
+      return nil
+    }
+    var total: Int64 = 0
+    for case let fileURL as URL in enumerator {
+      if let size = try? fileURL.resourceValues(forKeys: [.fileSizeKey]).fileSize {
+        total += Int64(size)
+      }
+    }
+    return total
+  }
+}
+
+private struct ActionGridItem: View {
+  let icon: String
+  let title: String
+  let hoverId: String
+  let action: () -> Void
+
+  @Environment(\.colorScheme) private var colorScheme
+
+  var body: some View {
+    let _ = colorScheme
+    Button(action: action) {
+      VStack(spacing: 3) {
+        Image(systemName: icon)
+          .font(.system(size: 18))
+          .foregroundStyle(ReframedColors.primaryText)
+          .frame(height: 22)
+
+        Text(title)
+          .font(.system(size: 10))
+          .foregroundStyle(ReframedColors.secondaryText)
+      }
+      .frame(maxWidth: .infinity)
+      .frame(height: 52)
+      .clipShape(RoundedRectangle(cornerRadius: Radius.md))
+      .contentShape(Rectangle())
+    }
+    .buttonStyle(.plain)
+    .hoverEffect(id: hoverId)
   }
 }
 
@@ -209,30 +259,14 @@ private struct ProjectRow: View {
 
   @Environment(\.colorScheme) private var colorScheme
 
-  private static let dateFormatter: DateFormatter = {
-    let f = DateFormatter()
-    f.dateStyle = .medium
-    f.timeStyle = .short
-    return f
-  }()
-
-  private var sourceIcon: String {
-    switch project.captureMode {
-    case .device:
-      return "iphone"
-    default:
-      return "macbook"
-    }
-  }
-
   var body: some View {
     let _ = colorScheme
     Button(action: action) {
       HStack(spacing: 10) {
-        Image(systemName: sourceIcon)
+        Image(systemName: project.captureMode == .device ? "iphone" : "macbook")
           .font(.system(size: 18))
           .foregroundStyle(ReframedColors.secondaryText)
-          .frame(width: 24)
+          .frame(width: 28)
 
         VStack(alignment: .leading, spacing: 2) {
           Text(project.name)
@@ -241,42 +275,52 @@ private struct ProjectRow: View {
             .lineLimit(1)
 
           HStack(spacing: 4) {
-            Text(Self.dateFormatter.string(from: project.createdAt))
-              .font(.system(size: 10))
-              .foregroundStyle(ReframedColors.tertiaryText)
+            Text(formatRelativeTime(project.createdAt))
+              .font(.system(size: 11))
+              .foregroundStyle(ReframedColors.secondaryText)
 
             if let duration = project.duration {
               Text("·")
-                .font(.system(size: 10))
-                .foregroundStyle(ReframedColors.tertiaryText)
+                .font(.system(size: 11))
+                .foregroundStyle(ReframedColors.secondaryText)
 
               Text(formatDuration(seconds: duration))
-                .font(.system(size: 10))
-                .foregroundStyle(ReframedColors.tertiaryText)
+                .font(.system(size: 11))
+                .foregroundStyle(ReframedColors.secondaryText)
             }
 
             if project.hasWebcam || project.hasSystemAudio || project.hasMicrophoneAudio {
               Text("·")
                 .font(.system(size: 10))
-                .foregroundStyle(ReframedColors.tertiaryText)
+                .foregroundStyle(ReframedColors.secondaryText)
             }
 
             if project.hasWebcam {
               Image(systemName: "web.camera")
-                .font(.system(size: 9))
-                .foregroundStyle(ReframedColors.tertiaryText)
+                .font(.system(size: 11))
+                .foregroundStyle(ReframedColors.secondaryText)
             }
 
             if project.hasSystemAudio {
               Image(systemName: "speaker.wave.2")
-                .font(.system(size: 9))
-                .foregroundStyle(ReframedColors.tertiaryText)
+                .font(.system(size: 11))
+                .foregroundStyle(ReframedColors.secondaryText)
             }
 
             if project.hasMicrophoneAudio {
               Image(systemName: "mic")
-                .font(.system(size: 9))
-                .foregroundStyle(ReframedColors.tertiaryText)
+                .font(.system(size: 11))
+                .foregroundStyle(ReframedColors.secondaryText)
+            }
+
+            if let fileSize = project.fileSize {
+              Text("·")
+                .font(.system(size: 11))
+                .foregroundStyle(ReframedColors.secondaryText)
+
+              Text(ByteCountFormatter.string(fromByteCount: fileSize, countStyle: .file))
+                .font(.system(size: 11))
+                .foregroundStyle(ReframedColors.secondaryText)
             }
           }
         }
@@ -284,65 +328,7 @@ private struct ProjectRow: View {
         Spacer()
       }
       .padding(.horizontal, 10)
-      .padding(.vertical, 4)
-      .contentShape(Rectangle())
-    }
-    .buttonStyle(.plain)
-  }
-}
-
-private struct MenuBarActionRow: View {
-  let icon: String
-  let title: String
-  var subtitle: String? = nil
-  var shortcut: String? = nil
-  let action: () -> Void
-
-  @Environment(\.colorScheme) private var colorScheme
-
-  private var shortcutLabel: String? {
-    guard let shortcut else { return nil }
-    if shortcut.count == 1 {
-      return "\u{2318}\(shortcut)"
-    }
-    return shortcut
-  }
-
-  var body: some View {
-    let _ = colorScheme
-    Button(action: action) {
-      HStack(spacing: 10) {
-        Image(systemName: icon)
-          .font(.system(size: 18))
-          .foregroundStyle(ReframedColors.secondaryText)
-          .frame(width: 24)
-
-        if let subtitle {
-          VStack(alignment: .leading, spacing: 2) {
-            Text(title)
-              .font(.system(size: 12, weight: .medium))
-              .foregroundStyle(ReframedColors.primaryText)
-
-            Text(subtitle)
-              .font(.system(size: 10))
-              .foregroundStyle(ReframedColors.tertiaryText)
-          }
-        } else {
-          Text(title)
-            .font(.system(size: 12, weight: .medium))
-            .foregroundStyle(ReframedColors.primaryText)
-        }
-
-        Spacer()
-
-        if let shortcutLabel {
-          Text(shortcutLabel)
-            .font(.system(size: 12))
-            .foregroundStyle(ReframedColors.tertiaryText)
-        }
-      }
-      .padding(.horizontal, 10)
-      .padding(.vertical, 6)
+      .padding(.vertical, 8)
       .contentShape(Rectangle())
     }
     .buttonStyle(.plain)
@@ -357,7 +343,7 @@ private struct MenuBarDivider: View {
     Rectangle()
       .fill(ReframedColors.divider)
       .frame(height: 1)
-      .padding(.horizontal, 12)
-      .padding(.vertical, 4)
+      .padding(.horizontal, 10)
+      .padding(.vertical, 6)
   }
 }

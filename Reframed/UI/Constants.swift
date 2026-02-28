@@ -19,7 +19,7 @@ enum Layout {
 
   static let segmentSpacing: CGFloat = 8
 
-  static let menuBarWidth: CGFloat = 300
+  static let menuBarWidth: CGFloat = 340
   static let propertiesPanelWidth: CGFloat = 390
   static let editorWindowMinWidth: CGFloat = 1300
   static let editorWindowMinHeight: CGFloat = 900

@@ -17,6 +17,7 @@ struct ReframedApp: App {
         onDismiss: { isMenuPresented = false },
         onShowPermissions: { appDelegate.showPermissionsWindow() }
       )
+      .presentationBackground(ReframedColors.backgroundPopover)
     } label: {
       Image(systemName: "rectangle.dashed.badge.record")
     }
