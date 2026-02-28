@@ -23,12 +23,13 @@ extension PropertiesPanel {
           .font(.system(size: 12))
           .foregroundStyle(ReframedColors.secondaryText)
           .frame(width: captionLabelWidth, alignment: .leading)
-        SelectButton(label: selectedModelLabel) {
+        SelectButton(label: selectedModelLabel) { dismiss in
           VStack(spacing: 2) {
             ForEach(WhisperModel.allCases) { model in
               let downloaded = WhisperModelManager.shared.isDownloaded(model)
               Button {
                 editorState.captionModel = model.rawValue
+                dismiss()
               } label: {
                 HStack {
                   Text(model.label)
@@ -66,32 +67,11 @@ extension PropertiesPanel {
           .font(.system(size: 12))
           .foregroundStyle(ReframedColors.secondaryText)
           .frame(width: captionLabelWidth, alignment: .leading)
-        SelectButton(label: editorState.captionLanguage.label) {
-          ScrollView {
-            VStack(spacing: 2) {
-              ForEach(CaptionLanguage.sortedCases) { lang in
-                Button {
-                  editorState.captionLanguage = lang
-                } label: {
-                  HStack {
-                    Text(lang.label)
-                      .font(.system(size: 12))
-                    Spacer()
-                    if editorState.captionLanguage == lang {
-                      Image(systemName: "checkmark")
-                        .font(.system(size: 10, weight: .semibold))
-                    }
-                  }
-                  .padding(.horizontal, 8)
-                  .padding(.vertical, 6)
-                  .contentShape(Rectangle())
-                }
-                .buttonStyle(.plain)
-              }
-            }
-            .padding(4)
-          }
-          .frame(width: 220, height: 300)
+        SelectButton(label: editorState.captionLanguage.label) { dismiss in
+          LanguagePicker(
+            selection: $editorState.captionLanguage,
+            onSelect: dismiss
+          )
         }
       }
 

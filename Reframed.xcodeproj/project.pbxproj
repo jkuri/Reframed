@@ -80,6 +80,7 @@
 		A1000000000000000000004C /* UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000004C /* UpdateChecker.swift */; };
 		A1000000000000000000004D /* PrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000004D /* PrimaryButton.swift */; };
 		A1000000000000000000004E /* SelectButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000004E /* SelectButton.swift */; };
+		A1000000000000000000004F /* LanguagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000004F /* LanguagePicker.swift */; };
 		A1F00000000000000000001 /* WindowPositionObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1F00000000000000000001 /* WindowPositionObserver.swift */; };
 		A20000000000000000000001 /* WebcamCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000001 /* WebcamCapture.swift */; };
 		A20000000000000000000002 /* WebcamPreviewWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000002 /* WebcamPreviewWindow.swift */; };
@@ -262,6 +263,7 @@
 		B1000000000000000000004C /* UpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateChecker.swift; sourceTree = "<group>"; };
 		B1000000000000000000004D /* PrimaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrimaryButton.swift; sourceTree = "<group>"; };
 		B1000000000000000000004E /* SelectButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectButton.swift; sourceTree = "<group>"; };
+		B1000000000000000000004F /* LanguagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguagePicker.swift; sourceTree = "<group>"; };
 		B1F00000000000000000001 /* WindowPositionObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowPositionObserver.swift; sourceTree = "<group>"; };
 		B20000000000000000000001 /* WebcamCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebcamCapture.swift; sourceTree = "<group>"; };
 		B20000000000000000000002 /* WebcamPreviewWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebcamPreviewWindow.swift; sourceTree = "<group>"; };
@@ -553,6 +555,7 @@
 				B1000000000000000000004B /* SettingsAboutTab.swift */,
 				B1000000000000000000004D /* PrimaryButton.swift */,
 				B1000000000000000000004E /* SelectButton.swift */,
+				B1000000000000000000004F /* LanguagePicker.swift */,
 			CA20000000000000000000A6 /* CaptionOverlayView.swift */,
 			CA20000000000000000000A7 /* CaptionSegmentRow.swift */,
 			);
@@ -921,6 +924,7 @@
 				A1000000000000000000004C /* UpdateChecker.swift in Sources */,
 				A1000000000000000000004D /* PrimaryButton.swift in Sources */,
 				A1000000000000000000004E /* SelectButton.swift in Sources */,
+				A1000000000000000000004F /* LanguagePicker.swift in Sources */,
 				A2000000000000000000002A /* EditorView+TransportBar.swift in Sources */,
 				A2000000000000000000002B /* ResizePopover.swift in Sources */,
 				A2000000000000000000002C /* ExportResultSheet.swift in Sources */,

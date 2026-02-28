@@ -4,11 +4,35 @@ struct SelectButton<MenuContent: View>: View {
   let label: String
   var fixedWidth: CGFloat? = nil
   var leadingContent: AnyView? = nil
-  @ViewBuilder let menu: () -> MenuContent
+  private let menuBuilder: (@escaping () -> Void) -> MenuContent
 
   @State private var isPresented = false
   @State private var isHovered = false
   @Environment(\.colorScheme) private var colorScheme
+
+  init(
+    label: String,
+    fixedWidth: CGFloat? = nil,
+    leadingContent: AnyView? = nil,
+    @ViewBuilder menu: @escaping () -> MenuContent
+  ) {
+    self.label = label
+    self.fixedWidth = fixedWidth
+    self.leadingContent = leadingContent
+    self.menuBuilder = { _ in menu() }
+  }
+
+  init(
+    label: String,
+    fixedWidth: CGFloat? = nil,
+    leadingContent: AnyView? = nil,
+    @ViewBuilder content: @escaping (@escaping () -> Void) -> MenuContent
+  ) {
+    self.label = label
+    self.fixedWidth = fixedWidth
+    self.leadingContent = leadingContent
+    self.menuBuilder = content
+  }
 
   var body: some View {
     let _ = colorScheme
@@ -43,7 +67,7 @@ struct SelectButton<MenuContent: View>: View {
     .buttonStyle(.plain)
     .onHover { isHovered = $0 }
     .popover(isPresented: $isPresented, arrowEdge: .bottom) {
-      menu()
+      menuBuilder { isPresented = false }
         .popoverContainerStyle()
     }
   }
