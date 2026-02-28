@@ -23,10 +23,10 @@ enum TranscriptionService {
     let modelsBase = FileManager.default.homeDirectoryForCurrentUser
       .appendingPathComponent(".reframed")
     let computeOptions = ModelComputeOptions(
-      melCompute: .all,
-      audioEncoderCompute: .all,
-      textDecoderCompute: .all,
-      prefillCompute: .all
+      melCompute: .cpuAndGPU,
+      audioEncoderCompute: .cpuAndGPU,
+      textDecoderCompute: .cpuAndGPU,
+      prefillCompute: .cpuAndGPU
     )
     let config = WhisperKitConfig(
       downloadBase: modelsBase,

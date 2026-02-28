@@ -3,16 +3,16 @@ import WhisperKit
 
 enum WhisperModel: String, CaseIterable, Identifiable, Sendable {
   case base = "openai_whisper-base"
-  case small = "openai_whisper-small"
   case medium = "openai_whisper-medium"
+  case turbo = "openai_whisper-large-v3_turbo"
   case large = "openai_whisper-large-v3"
 
   var id: String { rawValue }
 
   var label: String {
     switch self {
-    case .base: "Base (~140 MB)"
-    case .small: "Small (~460 MB)"
+    case .base: "Base (~150 MB)"
+    case .turbo: "Turbo (~3 GB)"
     case .medium: "Medium (~1.5 GB)"
     case .large: "Large (~3 GB)"
     }
@@ -21,7 +21,7 @@ enum WhisperModel: String, CaseIterable, Identifiable, Sendable {
   var shortLabel: String {
     switch self {
     case .base: "Base"
-    case .small: "Small"
+    case .turbo: "Turbo"
     case .medium: "Medium"
     case .large: "Large"
     }
@@ -29,9 +29,9 @@ enum WhisperModel: String, CaseIterable, Identifiable, Sendable {
 
   var description: String {
     switch self {
-    case .base: "~140 MB. Fast, lower accuracy. Good for clear English audio."
-    case .small: "~460 MB. Balanced speed and accuracy. Good for most use cases."
-    case .medium: "~1.5 GB. High accuracy, slower. Recommended for multilingual."
+    case .base: "~150 MB. Fast, lower accuracy. Good for clear English audio."
+    case .turbo: "~3 GB. Fast and accurate. Recommended for most use cases."
+    case .medium: "~1.5 GB. High accuracy, slower. Good for multilingual."
     case .large: "~3 GB. Best accuracy, slowest. Best for difficult audio."
     }
   }
@@ -46,7 +46,6 @@ final class WhisperModelManager {
   var isDownloading = false
   var downloadProgress: Double = 0
   var downloadingModel: WhisperModel?
-
   private var modelPaths: [String: URL] = [:]
   private var downloadTask: Task<URL, Error>?
   private let modelsDirectory: URL
