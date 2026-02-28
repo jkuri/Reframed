@@ -6,8 +6,15 @@ final class WindowSelectionCoordinator {
   private var overlayWindows: [WindowSelectionOverlay] = []
   private var highlightWindow: RecordingBorderWindow?
   private let windowController = WindowController()
-  private var eventMonitor: Any?
-  private var refreshTimer: Timer?
+  nonisolated(unsafe) private var eventMonitor: Any?
+  nonisolated(unsafe) private var refreshTimer: Timer?
+
+  deinit {
+    if let monitor = eventMonitor {
+      NSEvent.removeMonitor(monitor)
+    }
+    refreshTimer?.invalidate()
+  }
 
   func beginSelection(session: SessionState) {
     for screen in NSScreen.screens {

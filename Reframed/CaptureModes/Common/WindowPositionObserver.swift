@@ -2,7 +2,7 @@ import AppKit
 
 @MainActor
 final class WindowPositionObserver {
-  private var displayLink: CADisplayLink?
+  nonisolated(unsafe) private var displayLink: CADisplayLink?
   private let windowID: CGWindowID
   private var lastRect: CGRect = .zero
   private let onChange: (CGRect) -> Void
@@ -16,6 +16,10 @@ final class WindowPositionObserver {
     let link = screen.displayLink(target: target, selector: #selector(DisplayLinkTarget.step))
     link.add(to: .main, forMode: .common)
     self.displayLink = link
+  }
+
+  deinit {
+    displayLink?.invalidate()
   }
 
   func stop() {

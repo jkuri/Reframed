@@ -44,12 +44,16 @@ enum RNNoiseProcessor {
     let sourceFormat = sourceFile.processingFormat
     let totalFrames = AVAudioFrameCount(sourceFile.length)
 
-    let monoFormat = AVAudioFormat(
-      commonFormat: .pcmFormatFloat32,
-      sampleRate: 48000,
-      channels: 1,
-      interleaved: false
-    )!
+    guard
+      let monoFormat = AVAudioFormat(
+        commonFormat: .pcmFormatFloat32,
+        sampleRate: 48000,
+        channels: 1,
+        interleaved: false
+      )
+    else {
+      throw CaptureError.recordingFailed("Failed to create mono audio format")
+    }
 
     let conversionProgress: (@MainActor @Sendable (Double) -> Void)?
     if let onProgress {
@@ -135,28 +139,39 @@ enum RNNoiseProcessor {
       throw CaptureError.recordingFailed("No output from noise reduction")
     }
 
-    let outputBuffer = AVAudioPCMBuffer(
-      pcmFormat: monoFormat,
-      frameCapacity: AVAudioFrameCount(sampleCount)
-    )!
+    guard
+      let outputBuffer = AVAudioPCMBuffer(
+        pcmFormat: monoFormat,
+        frameCapacity: AVAudioFrameCount(sampleCount)
+      ),
+      let outputChannelData = outputBuffer.floatChannelData
+    else {
+      outputSamples.deallocate()
+      throw CaptureError.recordingFailed("Failed to allocate output audio buffer")
+    }
     outputBuffer.frameLength = AVAudioFrameCount(sampleCount)
-    memcpy(outputBuffer.floatChannelData![0], outputSamples, sampleCount * MemoryLayout<Float>.size)
+    memcpy(outputChannelData[0], outputSamples, sampleCount * MemoryLayout<Float>.size)
     outputSamples.deallocate()
 
-    let stereoFormat = AVAudioFormat(
-      commonFormat: .pcmFormatFloat32,
-      sampleRate: 48000,
-      channels: 2,
-      interleaved: false
-    )!
-    let stereoBuffer = AVAudioPCMBuffer(
-      pcmFormat: stereoFormat,
-      frameCapacity: AVAudioFrameCount(sampleCount)
-    )!
+    guard
+      let stereoFormat = AVAudioFormat(
+        commonFormat: .pcmFormatFloat32,
+        sampleRate: 48000,
+        channels: 2,
+        interleaved: false
+      ),
+      let stereoBuffer = AVAudioPCMBuffer(
+        pcmFormat: stereoFormat,
+        frameCapacity: AVAudioFrameCount(sampleCount)
+      ),
+      let stereoChannelData = stereoBuffer.floatChannelData
+    else {
+      throw CaptureError.recordingFailed("Failed to allocate stereo audio buffer")
+    }
     stereoBuffer.frameLength = AVAudioFrameCount(sampleCount)
-    let monoData = outputBuffer.floatChannelData![0]
-    memcpy(stereoBuffer.floatChannelData![0], monoData, sampleCount * MemoryLayout<Float>.size)
-    memcpy(stereoBuffer.floatChannelData![1], monoData, sampleCount * MemoryLayout<Float>.size)
+    let monoData = outputChannelData[0]
+    memcpy(stereoChannelData[0], monoData, sampleCount * MemoryLayout<Float>.size)
+    memcpy(stereoChannelData[1], monoData, sampleCount * MemoryLayout<Float>.size)
 
     let outputSettings: [String: Any] = [
       AVFormatIDKey: kAudioFormatMPEG4AAC,
@@ -174,16 +189,21 @@ enum RNNoiseProcessor {
       let remaining = totalOutputFrames - written
       let count = min(chunkFrames, remaining)
 
-      let chunk = AVAudioPCMBuffer(pcmFormat: stereoFormat, frameCapacity: count)!
+      guard
+        let chunk = AVAudioPCMBuffer(pcmFormat: stereoFormat, frameCapacity: count),
+        let chunkChannelData = chunk.floatChannelData
+      else {
+        throw CaptureError.recordingFailed("Failed to allocate audio write buffer")
+      }
       chunk.frameLength = count
       memcpy(
-        chunk.floatChannelData![0],
-        stereoBuffer.floatChannelData![0].advanced(by: Int(written)),
+        chunkChannelData[0],
+        stereoChannelData[0].advanced(by: Int(written)),
         Int(count) * MemoryLayout<Float>.size
       )
       memcpy(
-        chunk.floatChannelData![1],
-        stereoBuffer.floatChannelData![1].advanced(by: Int(written)),
+        chunkChannelData[1],
+        stereoChannelData[1].advanced(by: Int(written)),
         Int(count) * MemoryLayout<Float>.size
       )
 
@@ -291,13 +311,19 @@ enum RNNoiseProcessor {
     totalFrames: AVAudioFrameCount,
     onProgress: (@MainActor @Sendable (Double) -> Void)?
   ) throws -> AVAudioPCMBuffer {
-    let converter = AVAudioConverter(from: sourceFormat, to: monoFormat)!
-    let readBuffer = AVAudioPCMBuffer(pcmFormat: sourceFormat, frameCapacity: 4096)!
+    guard let converter = AVAudioConverter(from: sourceFormat, to: monoFormat) else {
+      throw CaptureError.recordingFailed("Unsupported audio format for noise reduction")
+    }
+    guard let readBuffer = AVAudioPCMBuffer(pcmFormat: sourceFormat, frameCapacity: 4096) else {
+      throw CaptureError.recordingFailed("Failed to allocate audio read buffer")
+    }
     let capacity =
       AVAudioFrameCount(
         Double(totalFrames) * 48000.0 / sourceFormat.sampleRate
       ) + 4096
-    let convertBuffer = AVAudioPCMBuffer(pcmFormat: monoFormat, frameCapacity: capacity)!
+    guard let convertBuffer = AVAudioPCMBuffer(pcmFormat: monoFormat, frameCapacity: capacity) else {
+      throw CaptureError.recordingFailed("Failed to allocate audio conversion buffer")
+    }
 
     nonisolated(unsafe) let unsafeReadBuffer = readBuffer
     nonisolated(unsafe) var inputDone = false
