@@ -6,6 +6,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
   let session = SessionState()
   private var permissionsWindow: NSWindow?
   private var shortcutManager: KeyboardShortcutManager?
+  private var eventMonitor: Any?
 
   func applicationDidFinishLaunching(_ notification: Notification) {
     ConfigService.shared.applyAppearance()
@@ -16,6 +17,22 @@ final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
 
     if !Permissions.allPermissionsGranted {
       showPermissionsWindow()
+    }
+
+    eventMonitor = NSEvent.addLocalMonitorForEvents(matching: .leftMouseDown) { [weak self] event in
+      guard let self else { return event }
+      guard let button = self.session.statusItemButton,
+        event.window === button.window
+      else { return event }
+      switch self.session.state {
+      case .recording, .paused:
+        Task {
+          try? await self.session.stopRecording()
+        }
+        return nil
+      default:
+        return event
+      }
     }
   }
 
