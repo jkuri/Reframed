@@ -14,7 +14,7 @@ struct CaptureAreaView: View {
         HStack(spacing: 0) {
           Text("Size")
             .font(.system(size: 12))
-            .foregroundStyle(ReframedColors.dimLabel)
+            .foregroundStyle(ReframedColors.secondaryText)
             .frame(width: 56, alignment: .leading)
 
           NumberField(value: $w, onCommit: commitEditing)
@@ -22,21 +22,21 @@ struct CaptureAreaView: View {
             .onChange(of: w) { if isEditing { applyValues() } }
           Text("\u{00D7}")
             .font(.system(size: 12))
-            .foregroundStyle(ReframedColors.dimLabel)
+            .foregroundStyle(ReframedColors.secondaryText)
             .frame(width: 20)
           NumberField(value: $h, onCommit: commitEditing)
             .onTapGesture { isEditing = true }
             .onChange(of: h) { if isEditing { applyValues() } }
           Text("px")
             .font(.system(size: 11))
-            .foregroundStyle(ReframedColors.dimLabel)
+            .foregroundStyle(ReframedColors.secondaryText)
             .frame(width: 24, alignment: .trailing)
         }
 
         HStack(spacing: 0) {
           Text("Position")
             .font(.system(size: 12))
-            .foregroundStyle(ReframedColors.dimLabel)
+            .foregroundStyle(ReframedColors.secondaryText)
             .frame(width: 56, alignment: .leading)
 
           NumberField(value: $x, onCommit: commitEditing)
@@ -48,7 +48,7 @@ struct CaptureAreaView: View {
             .onChange(of: y) { if isEditing { applyValues() } }
           Text("px")
             .font(.system(size: 11))
-            .foregroundStyle(ReframedColors.dimLabel)
+            .foregroundStyle(ReframedColors.secondaryText)
             .frame(width: 24, alignment: .trailing)
         }
       }

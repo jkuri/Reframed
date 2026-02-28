@@ -35,7 +35,7 @@ extension PropertiesPanel {
       if let model = WhisperModel(rawValue: editorState.captionModel) {
         Text(model.description)
           .font(.system(size: 11))
-          .foregroundStyle(ReframedColors.dimLabel)
+          .foregroundStyle(ReframedColors.secondaryText)
           .lineLimit(2)
           .fixedSize(horizontal: false, vertical: true)
           .frame(minHeight: Layout.compactSpacing, alignment: .top)
@@ -81,7 +81,7 @@ extension PropertiesPanel {
           HStack {
             Text("Downloading model…")
               .font(.system(size: 11))
-              .foregroundStyle(ReframedColors.dimLabel)
+              .foregroundStyle(ReframedColors.secondaryText)
             Spacer()
             Button("Cancel") {
               WhisperModelManager.shared.cancelDownload()
@@ -104,7 +104,7 @@ extension PropertiesPanel {
           HStack {
             Text(transcriptionStatusText)
               .font(.system(size: 11))
-              .foregroundStyle(ReframedColors.dimLabel)
+              .foregroundStyle(ReframedColors.secondaryText)
             Spacer()
             Button("Cancel") {
               editorState.cancelTranscription()
@@ -134,10 +134,10 @@ extension PropertiesPanel {
           HStack(spacing: 6) {
             Image(systemName: "text.badge.xmark")
               .font(.system(size: 12))
-              .foregroundStyle(ReframedColors.dimLabel)
+              .foregroundStyle(ReframedColors.secondaryText)
             Text("No speech detected in the audio.")
               .font(.system(size: 11))
-              .foregroundStyle(ReframedColors.dimLabel)
+              .foregroundStyle(ReframedColors.secondaryText)
           }
         }
       }
@@ -181,7 +181,6 @@ extension PropertiesPanel {
         formattedValue: "\(Int(editorState.captionFontSize))px",
         valueWidth: 40
       )
-      .opacity(editorState.captionsEnabled ? 1.0 : 0.4)
       .disabled(!editorState.captionsEnabled)
 
       VStack(alignment: .leading, spacing: Layout.compactSpacing) {
@@ -194,7 +193,6 @@ extension PropertiesPanel {
           selection: $editorState.captionFontWeight
         )
       }
-      .opacity(editorState.captionsEnabled ? 1.0 : 0.4)
       .disabled(!editorState.captionsEnabled)
 
       VStack(alignment: .leading, spacing: Layout.compactSpacing) {
@@ -207,11 +205,9 @@ extension PropertiesPanel {
           selection: $editorState.captionPosition
         )
       }
-      .opacity(editorState.captionsEnabled ? 1.0 : 0.4)
       .disabled(!editorState.captionsEnabled)
 
       ToggleRow(label: "Background", isOn: $editorState.captionShowBackground)
-        .opacity(editorState.captionsEnabled ? 1.0 : 0.4)
         .disabled(!editorState.captionsEnabled)
 
       HStack(spacing: 8) {
@@ -221,7 +217,6 @@ extension PropertiesPanel {
           .frame(width: captionLabelWidth, alignment: .leading)
         captionTextColorPicker
       }
-      .opacity(editorState.captionsEnabled ? 1.0 : 0.4)
       .disabled(!editorState.captionsEnabled)
 
       if editorState.captionShowBackground {
@@ -232,7 +227,6 @@ extension PropertiesPanel {
             .frame(width: captionLabelWidth, alignment: .leading)
           captionBgColorPicker
         }
-        .opacity(editorState.captionsEnabled ? 1.0 : 0.4)
         .disabled(!editorState.captionsEnabled)
 
         SliderRow(
@@ -244,7 +238,6 @@ extension PropertiesPanel {
           formattedValue: "\(Int(editorState.captionBackgroundOpacity * 100))%",
           valueWidth: 40
         )
-        .opacity(editorState.captionsEnabled ? 1.0 : 0.4)
         .disabled(!editorState.captionsEnabled)
       }
 
@@ -260,7 +253,6 @@ extension PropertiesPanel {
         formattedValue: "\(editorState.captionMaxWordsPerLine)",
         valueWidth: 40
       )
-      .opacity(editorState.captionsEnabled ? 1.0 : 0.4)
       .disabled(!editorState.captionsEnabled)
     }
   }
@@ -304,7 +296,7 @@ extension PropertiesPanel {
           Spacer()
           Image(systemName: captionSegmentsExpanded ? "chevron.up" : "chevron.down")
             .font(.system(size: 10, weight: .semibold))
-            .foregroundStyle(ReframedColors.dimLabel)
+            .foregroundStyle(ReframedColors.secondaryText)
         }
         .contentShape(Rectangle())
       }

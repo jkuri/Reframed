@@ -12,7 +12,7 @@ struct ShortcutRecorderButton: View {
         HStack(spacing: 4) {
           Text("Press shortcut...")
             .font(.system(size: 12))
-            .foregroundStyle(ReframedColors.dimLabel)
+            .foregroundStyle(ReframedColors.secondaryText)
           ShortcutCaptureView(
             onCapture: { newShortcut in
               shortcut = newShortcut

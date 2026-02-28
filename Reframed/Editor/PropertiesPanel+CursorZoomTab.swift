@@ -176,7 +176,7 @@ extension PropertiesPanel {
     HStack {
       Text(label)
         .font(.system(size: 11))
-        .foregroundStyle(ReframedColors.dimLabel)
+        .foregroundStyle(ReframedColors.secondaryText)
       Spacer()
       Text(value)
         .font(.system(size: 11, design: .monospaced))

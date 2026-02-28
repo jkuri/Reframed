@@ -327,7 +327,7 @@ struct PropertiesPanel: View {
     HStack {
       Text(label)
         .font(.system(size: 12))
-        .foregroundStyle(ReframedColors.dimLabel)
+        .foregroundStyle(ReframedColors.secondaryText)
       Spacer()
       Text(value)
         .font(.system(size: 12))

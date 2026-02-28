@@ -83,11 +83,11 @@ enum ReframedColors {
   }
 
   static var backgroundContainer: Color {
-    isDark ? Color.hex("#0e0e0e") : Color.hex("#fdfdfd")
+    isDark ? Color.hex("#000000") : Color.hex("#fdfdfd")
   }
 
   static var backgroundCard: Color {
-    isDark ? Color.hex("#171717") : Color.hex("#ffffff")
+    isDark ? Color.hex("#0d0d0d") : Color.hex("#ffffff")
   }
 
   static var backgroundPopover: Color {
@@ -108,10 +108,6 @@ enum ReframedColors {
 
   static var fieldBackground: Color {
     isDark ? Color.white.opacity(0.08) : Color.black.opacity(0.06)
-  }
-
-  static var dimLabel: Color {
-    isDark ? Color.white.opacity(0.6) : Color.black.opacity(0.6)
   }
 
   static var textSelection: Color {
@@ -139,7 +135,7 @@ enum ReframedColors {
   }
 
   static var border: Color {
-    isDark ? Color.white.opacity(0.18) : Color.black.opacity(0.1)
+    isDark ? Color.hex("#313131") : Color.hex("#d9d9d9")
   }
 
   static var hoverBackground: Color {
@@ -199,6 +195,6 @@ enum ReframedColors {
   }
 
   static var trackBorder: Color {
-    isDark ? Color.hex("#000000") : Color.black.opacity(0.1)
+    isDark ? Color.hex("#313131") : Color.hex("#d9d9d9")
   }
 }

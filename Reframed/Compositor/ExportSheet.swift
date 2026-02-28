@@ -51,7 +51,7 @@ struct ExportSheet: View {
 
           Text(settings.gifQuality.description)
             .font(.system(size: 11))
-            .foregroundStyle(ReframedColors.dimLabel)
+            .foregroundStyle(ReframedColors.secondaryText)
             .padding(.top, -10)
         } else {
           settingsRow(label: "Codec") {
@@ -64,7 +64,7 @@ struct ExportSheet: View {
 
           Text(settings.codec.description)
             .font(.system(size: 11))
-            .foregroundStyle(ReframedColors.dimLabel)
+            .foregroundStyle(ReframedColors.secondaryText)
             .padding(.top, -10)
         }
 
@@ -84,7 +84,7 @@ struct ExportSheet: View {
         if sourceFPS < 60 {
           Text("Source recorded at \(sourceFPS) fps. Higher frame rates are not available.")
             .font(.system(size: 11))
-            .foregroundStyle(ReframedColors.dimLabel)
+            .foregroundStyle(ReframedColors.secondaryText)
             .padding(.top, -10)
         }
 
@@ -117,7 +117,7 @@ struct ExportSheet: View {
 
           Text(settings.mode.description)
             .font(.system(size: 11))
-            .foregroundStyle(ReframedColors.dimLabel)
+            .foregroundStyle(ReframedColors.secondaryText)
             .padding(.top, -10)
         }
 
@@ -132,7 +132,7 @@ struct ExportSheet: View {
 
           Text(settings.captionExportMode.description)
             .font(.system(size: 11))
-            .foregroundStyle(ReframedColors.dimLabel)
+            .foregroundStyle(ReframedColors.secondaryText)
             .padding(.top, -10)
         }
       }

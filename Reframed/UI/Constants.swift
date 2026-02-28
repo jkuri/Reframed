@@ -27,8 +27,8 @@ enum Layout {
 
 enum Track {
   static let height: CGFloat = 42
-  static let borderWidth: CGFloat = 2
-  static let borderRadius: CGFloat = Radius.lg
+  static let borderWidth: CGFloat = 1
+  static let borderRadius: CGFloat = Radius.xxl
   static let fontSize: CGFloat = 10
   static let fontWeight: Font.Weight = .medium
   @MainActor static var background: Color { ReframedColors.backgroundContainer }
@@ -41,4 +41,5 @@ enum Radius {
   static let md: CGFloat = 6
   static let lg: CGFloat = 8
   static let xl: CGFloat = 10
+  static let xxl: CGFloat = 12
 }

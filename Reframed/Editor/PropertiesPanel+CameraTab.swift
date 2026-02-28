@@ -101,7 +101,6 @@ extension PropertiesPanel {
       borderColorPickerButton
     }
     .disabled(!editorState.webcamEnabled)
-    .opacity(editorState.webcamEnabled ? 1 : 0.5)
   }
 
   var cameraBackgroundSection: some View {
@@ -134,7 +133,6 @@ extension PropertiesPanel {
       }
     }
     .disabled(!editorState.webcamEnabled)
-    .opacity(editorState.webcamEnabled ? 1 : 0.5)
   }
 
   private var cameraColorGrid: some View {

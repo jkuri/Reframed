@@ -38,7 +38,7 @@ struct InlineEditableText: View {
 
         Image(systemName: "pencil")
           .font(.system(size: 10))
-          .foregroundStyle(ReframedColors.dimLabel)
+          .foregroundStyle(ReframedColors.secondaryText)
       }
       .padding(.horizontal, 8)
       .padding(.vertical, 6)

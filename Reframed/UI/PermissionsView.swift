@@ -68,7 +68,7 @@ private struct PermissionRow: View {
 
         Text(description)
           .font(.system(size: 12))
-          .foregroundStyle(ReframedColors.dimLabel)
+          .foregroundStyle(ReframedColors.secondaryText)
           .lineLimit(3)
           .fixedSize(horizontal: false, vertical: true)
       }

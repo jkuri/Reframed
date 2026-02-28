@@ -12,7 +12,7 @@ struct CaptionSegmentRow: View {
         } label: {
           Text(formatTimeRange(start: segment.startSeconds, end: segment.endSeconds))
             .font(.system(size: 10, design: .monospaced))
-            .foregroundStyle(ReframedColors.dimLabel)
+            .foregroundStyle(ReframedColors.secondaryText)
         }
         .buttonStyle(.plain)
         Spacer()

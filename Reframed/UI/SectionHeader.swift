@@ -12,7 +12,7 @@ struct SectionHeader: View {
       HStack(spacing: 6) {
         Image(systemName: icon)
           .font(.system(size: 11))
-          .foregroundStyle(ReframedColors.dimLabel)
+          .foregroundStyle(ReframedColors.secondaryText)
         Text(title)
           .font(.system(size: 12, weight: .semibold))
           .foregroundStyle(ReframedColors.primaryText)
@@ -20,7 +20,7 @@ struct SectionHeader: View {
     } else {
       Text(title)
         .font(.system(size: 11, weight: .medium))
-        .foregroundStyle(ReframedColors.dimLabel)
+        .foregroundStyle(ReframedColors.secondaryText)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 12)
         .padding(.top, 8)

@@ -104,7 +104,7 @@ extension PropertiesPanel {
             editorState.padding = 0
           }
           .font(.system(size: 11))
-          .foregroundStyle(ReframedColors.dimLabel)
+          .foregroundStyle(ReframedColors.secondaryText)
           .buttonStyle(.plain)
         }
       }
@@ -128,7 +128,7 @@ extension PropertiesPanel {
             editorState.videoCornerRadius = 0
           }
           .font(.system(size: 11))
-          .foregroundStyle(ReframedColors.dimLabel)
+          .foregroundStyle(ReframedColors.secondaryText)
           .buttonStyle(.plain)
         }
       }
@@ -151,7 +151,7 @@ extension PropertiesPanel {
             editorState.videoShadow = 0
           }
           .font(.system(size: 11))
-          .foregroundStyle(ReframedColors.dimLabel)
+          .foregroundStyle(ReframedColors.secondaryText)
           .buttonStyle(.plain)
         }
       }

@@ -39,7 +39,7 @@ struct ShortcutRow: View {
       } label: {
         Image(systemName: "arrow.counterclockwise")
           .font(.system(size: 11))
-          .foregroundStyle(isDefault ? ReframedColors.disabledText : ReframedColors.dimLabel)
+          .foregroundStyle(isDefault ? ReframedColors.disabledText : ReframedColors.secondaryText)
       }
       .buttonStyle(.plain)
       .disabled(isDefault)

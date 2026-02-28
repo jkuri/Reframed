@@ -105,8 +105,8 @@ extension EditorView {
       }
     }
     .background(ReframedColors.backgroundCard)
-    .clipShape(RoundedRectangle(cornerRadius: Radius.xl))
-    .overlay(RoundedRectangle(cornerRadius: Radius.xl).stroke(ReframedColors.divider, lineWidth: 1))
+    .clipShape(RoundedRectangle(cornerRadius: Radius.xxl))
+    .overlay(RoundedRectangle(cornerRadius: Radius.xxl).strokeBorder(ReframedColors.border, lineWidth: 1))
   }
 
   private var previewProgressBar: some View {

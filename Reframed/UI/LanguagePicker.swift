@@ -20,7 +20,7 @@ struct LanguagePicker: View {
       HStack(spacing: 6) {
         Image(systemName: "magnifyingglass")
           .font(.system(size: 11))
-          .foregroundStyle(ReframedColors.dimLabel)
+          .foregroundStyle(ReframedColors.secondaryText)
         TextField("Search…", text: $searchText)
           .textFieldStyle(.plain)
           .font(.system(size: 12))
