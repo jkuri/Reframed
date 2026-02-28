@@ -47,7 +47,7 @@ struct WindowSelectionView: View {
           context.fill(targetPath, with: .color(.black))
           context.blendMode = .normal
 
-          context.fill(targetPath, with: .color(.white.opacity(0.7)))
+          context.fill(targetPath, with: .color(.white.opacity(0.55)))
           context.stroke(targetPath, with: .color(.white), lineWidth: 2)
         }
         .edgesIgnoringSafeArea(.all)
