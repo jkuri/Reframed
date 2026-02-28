@@ -1,5 +1,36 @@
 # Changelog
 
+## [v0.11.0](https://github.com/jkuri/Reframed/compare/v0.10.2...v0.11.0) (2026-02-28)
+
+### Features
+
+- **captions:** add caption history tracking and improve transcription ([b9c60d8](https://github.com/jkuri/Reframed/commit/b9c60d8f3d367024c0e726f059764e88fbafa542))
+- **captions:** add speech-to-text captions using WhisperKit ([a7c6c8e](https://github.com/jkuri/Reframed/commit/a7c6c8e351010c8f3b8873b4391dc3b67ed055bd))
+- **camera:** implement camera backgrounds - blur/color/gradient/image and make sure this also process in parallel when exporting ([d208dc9](https://github.com/jkuri/Reframed/commit/d208dc9c092ce9a8e790b824a8363b6a45084581))
+
+### Bug Fixes
+
+- **captions:** apply audio/video drift correction to caption timestamps ([505fac1](https://github.com/jkuri/Reframed/commit/505fac181ec89309e53234afe3137646f3fd8b2a))
+- **captions:** fix segment grouping, display linger, and export sync ([b78dc2d](https://github.com/jkuri/Reframed/commit/b78dc2d4bb964a7bac3a03f8f3e20e468a18f39c))
+- **sync:** add real-time audio/video drift correction during recording ([d44e7d4](https://github.com/jkuri/Reframed/commit/d44e7d48c24c0a565d9bc87b2934a068c896d16f))
+- **export:** fix audio missing when video has cuts not starting at beginning ([ce8e703](https://github.com/jkuri/Reframed/commit/ce8e70325a0498b5d9449e42f1641a17a1c8ffd7))
+- **camera:** fix fullscreen aspect ratio, fill mode, transitions, and cleanup ([a76543e](https://github.com/jkuri/Reframed/commit/a76543e2ca37432408e9cafc4314184a63194c09))
+- **export:** preserve settings when preset switches to Custom ([6a63cad](https://github.com/jkuri/Reframed/commit/6a63cad40f1db942c8699d718dbb80836d0a1210))
+
+### Performance
+
+- **captions:** tune WhisperKit decoding options for faster transcription ([d5750f4](https://github.com/jkuri/Reframed/commit/d5750f4dcaef09811b398ce367182e9275255a93))
+
+### Documentation
+
+- **readme:** update with latest features and remove obvious entries ([26c1378](https://github.com/jkuri/Reframed/commit/26c13780fb69de9aed5420159a55776830eafc2b))
+- **readme:** add gif presentation to the README.md ([7134173](https://github.com/jkuri/Reframed/commit/7134173ba986a12445de59c9de273232fdd041bd))
+
+### Chores
+
+- **docs:** add captions section to README ([21f2e91](https://github.com/jkuri/Reframed/commit/21f2e9134560f86dd255aa4096727ec1e6c8b9e9))
+- **docs:** update README.md ([23bcc32](https://github.com/jkuri/Reframed/commit/23bcc32d67faac7932681d367aff9e9f6c953210))
+
 ## [v0.10.2](https://github.com/jkuri/Reframed/compare/v0.10.1...v0.10.2) (2026-02-26)
 
 ### Features
