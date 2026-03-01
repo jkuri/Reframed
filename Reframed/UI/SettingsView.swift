@@ -8,15 +8,6 @@ private enum SettingsTab: String, CaseIterable {
   case shortcuts = "Shortcuts"
   case about = "About"
 
-  var icon: String {
-    switch self {
-    case .general: "gearshape"
-    case .recording: "record.circle"
-    case .devices: "mic.and.signal.meter"
-    case .shortcuts: "keyboard"
-    case .about: "info.circle"
-    }
-  }
 }
 
 struct SettingsView: View {
@@ -75,7 +66,7 @@ struct SettingsView: View {
         .padding(Layout.settingsPadding)
       }
     }
-    .frame(width: 700, height: 540)
+    .frame(width: 600, height: 460)
     .background(ReframedColors.backgroundPopover)
   }
 
@@ -86,18 +77,14 @@ struct SettingsView: View {
           Button {
             selectedTab = tab
           } label: {
-            HStack(spacing: 6) {
-              Image(systemName: tab.icon)
-                .font(.system(size: 13))
-              Text(tab.rawValue)
-                .font(.system(size: 13, weight: .medium))
-            }
-            .foregroundStyle(selectedTab == tab ? ReframedColors.primaryText : ReframedColors.secondaryText)
-            .padding(.horizontal, 18)
-            .padding(.vertical, 10)
-            .background(selectedTab == tab ? ReframedColors.muted : Color.clear)
-            .clipShape(RoundedRectangle(cornerRadius: Radius.lg))
-            .contentShape(Rectangle())
+            Text(tab.rawValue)
+              .font(.system(size: FontSize.xs, weight: .medium))
+              .foregroundStyle(selectedTab == tab ? ReframedColors.primaryText : ReframedColors.secondaryText)
+              .frame(maxWidth: .infinity)
+              .padding(.vertical, 10)
+              .background(selectedTab == tab ? ReframedColors.muted : Color.clear)
+              .clipShape(RoundedRectangle(cornerRadius: Radius.lg))
+              .contentShape(Rectangle())
           }
           .buttonStyle(.plain)
           .hoverEffect(id: "settings.tab.\(tab.rawValue)")
@@ -111,7 +98,7 @@ struct SettingsView: View {
   func settingsRow<Content: View>(label: String, @ViewBuilder content: () -> Content) -> some View {
     VStack(alignment: .leading, spacing: 6) {
       Text(label)
-        .font(.system(size: 12, weight: .medium))
+        .font(.system(size: FontSize.xs, weight: .medium))
         .foregroundStyle(ReframedColors.primaryText)
       content()
     }
@@ -120,7 +107,7 @@ struct SettingsView: View {
   func settingsToggle(_ title: String, isOn: Binding<Bool>) -> some View {
     HStack {
       Text(title)
-        .font(.system(size: 12, weight: .medium))
+        .font(.system(size: FontSize.xs, weight: .medium))
         .foregroundStyle(ReframedColors.primaryText)
       Spacer()
       CustomToggle(isOn: isOn)

@@ -18,7 +18,7 @@ extension TimelineView {
         let viewportWidth = width / timelineZoom
         let visibleCenterX = scrollOffset + viewportWidth / 2
         Text("Double-click to add spotlight region")
-          .font(.system(size: 11))
+          .font(.system(size: FontSize.xs))
           .foregroundStyle(ReframedColors.secondaryText)
           .fixedSize()
           .position(x: visibleCenterX, y: h / 2)
@@ -72,7 +72,7 @@ extension TimelineView {
         }
         if hasOverrides && regionWidth > 30 {
           Image(systemName: "slider.horizontal.3")
-            .font(.system(size: 8))
+            .font(.system(size: FontSize.xs))
         }
       }
       .foregroundStyle(Track.regionTextColor)

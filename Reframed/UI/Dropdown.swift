@@ -18,7 +18,7 @@ struct Dropdown<Item: Identifiable & Equatable, MenuContent: View>: View {
           .foregroundStyle(ReframedColors.primaryText)
         Spacer()
         Image(systemName: "chevron.up.chevron.down")
-          .font(.system(size: 9, weight: .semibold))
+          .font(.system(size: FontSize.xs, weight: .semibold))
           .foregroundStyle(ReframedColors.secondaryText)
       }
       .padding(.horizontal, 10)

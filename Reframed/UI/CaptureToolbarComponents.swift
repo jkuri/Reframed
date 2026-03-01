@@ -16,7 +16,7 @@ struct CompactTimerView: View {
 
   private func timerText(for date: Date) -> some View {
     Text(formatDuration(seconds: Int(date.timeIntervalSince(startedAt))))
-      .font(.system(size: 16, design: .monospaced))
+      .font(.system(size: FontSize.sm, design: .monospaced))
       .foregroundStyle(ReframedColors.primaryText)
       .frame(minWidth: 80)
   }
@@ -32,7 +32,7 @@ struct ToolbarActionButton: View {
   var body: some View {
     Button(action: action) {
       Image(systemName: icon)
-        .font(.system(size: 15))
+        .font(.system(size: Layout.toolbarIconSize))
         .foregroundStyle(ReframedColors.primaryText)
         .frame(width: 36, height: 36)
         .background(isHovered ? ReframedColors.muted : Color.clear)
@@ -58,13 +58,13 @@ struct ToolbarToggleButton: View {
     Button(action: action) {
       VStack(spacing: 3) {
         Image(systemName: isOn ? activeIcon : icon)
-          .font(.system(size: 18))
+          .font(.system(size: Layout.toolbarIconSize))
           .foregroundStyle(iconColor)
         Text(label)
-          .font(.system(size: 10))
+          .font(.system(size: FontSize.xxs, weight: .semibold))
           .foregroundStyle(labelColor)
       }
-      .frame(width: 56, height: 52)
+      .frame(width: Layout.toolbarHeight + 4, height: Layout.toolbarHeight)
       .background(background)
       .clipShape(RoundedRectangle(cornerRadius: Radius.md))
       .contentShape(Rectangle())
@@ -81,7 +81,7 @@ struct ToolbarToggleButton: View {
 
   private var labelColor: Color {
     if !isAvailable { return ReframedColors.disabledText }
-    return ReframedColors.secondaryText
+    return ReframedColors.primaryText
   }
 
   private var background: Color {
@@ -101,13 +101,13 @@ struct AudioLevelIcon: View {
   var body: some View {
     VStack(spacing: 4) {
       Image(systemName: icon)
-        .font(.system(size: 15))
-        .foregroundStyle(ReframedColors.tertiaryText)
+        .font(.system(size: Layout.toolbarIconSize))
+        .foregroundStyle(ReframedColors.primaryText)
         .frame(height: 20)
       HStack(spacing: 1.5) {
         ForEach(0..<dotCount, id: \.self) { i in
           Circle()
-            .fill(level > thresholds[i] ? ReframedColors.primaryText : ReframedColors.tertiaryText.opacity(0.2))
+            .fill(level > thresholds[i] ? ReframedColors.primaryText : ReframedColors.primaryText.opacity(0.1))
             .frame(width: 3, height: 3)
         }
       }

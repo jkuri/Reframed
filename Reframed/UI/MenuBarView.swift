@@ -43,9 +43,9 @@ struct MenuBarView: View {
       HoverEffectScope {
         LazyVGrid(columns: gridColumns, spacing: 6) {
           ActionGridItem(
-            icon: "record.circle",
-            title: "New",
-            hoverId: "action.new"
+            icon: "house",
+            title: "Home",
+            hoverId: "action.home"
           ) {
             onDismiss()
             if Permissions.allPermissionsGranted {
@@ -56,7 +56,7 @@ struct MenuBarView: View {
           }
 
           ActionGridItem(
-            icon: "rectangle.inset.filled",
+            icon: "display",
             title: "Display",
             hoverId: "action.display"
           ) {
@@ -95,7 +95,7 @@ struct MenuBarView: View {
       MenuBarDivider()
 
       Text(totalProjectCount > 0 ? "Projects (\(totalProjectCount))" : "Projects")
-        .font(.system(size: 11, weight: .medium))
+        .font(.system(size: FontSize.xxs, weight: .semibold))
         .foregroundStyle(ReframedColors.secondaryText)
         .padding(.horizontal, 12)
         .padding(.top, 8)
@@ -103,7 +103,7 @@ struct MenuBarView: View {
 
       if recentProjects.isEmpty {
         Text("No recent projects")
-          .font(.system(size: 12))
+          .font(.system(size: FontSize.xs))
           .foregroundStyle(ReframedColors.secondaryText)
           .frame(maxWidth: .infinity, alignment: .center)
           .padding(.vertical, 12)
@@ -123,7 +123,7 @@ struct MenuBarView: View {
             }
           }
         }
-        .frame(height: min(CGFloat(recentProjects.count) * 48, 48 * 8))
+        .frame(height: min(CGFloat(recentProjects.count) * 46, 46 * 6))
       }
 
       MenuBarDivider()
@@ -135,7 +135,7 @@ struct MenuBarView: View {
           NSWorkspace.shared.open(URL(fileURLWithPath: path))
         } label: {
           Text("Open Projects Folder")
-            .font(.system(size: 12, weight: .medium))
+            .font(.system(size: FontSize.xxs, weight: .medium))
             .foregroundStyle(ReframedColors.primaryText)
             .frame(maxWidth: .infinity, alignment: .center)
             .frame(height: 42)
@@ -236,16 +236,16 @@ private struct ActionGridItem: View {
     Button(action: action) {
       VStack(spacing: 3) {
         Image(systemName: icon)
-          .font(.system(size: 18))
+          .font(.system(size: FontSize.lg))
           .foregroundStyle(ReframedColors.primaryText)
           .frame(height: 22)
 
         Text(title)
-          .font(.system(size: 10))
-          .foregroundStyle(ReframedColors.secondaryText)
+          .font(.system(size: FontSize.xxs, weight: .semibold))
+          .foregroundStyle(ReframedColors.primaryText)
       }
       .frame(maxWidth: .infinity)
-      .frame(height: 48)
+      .frame(height: 52)
       .clipShape(RoundedRectangle(cornerRadius: Radius.md))
       .contentShape(Rectangle())
     }
@@ -265,62 +265,62 @@ private struct ProjectRow: View {
     Button(action: action) {
       HStack(spacing: 10) {
         Image(systemName: project.captureMode == .device ? "iphone" : "macbook")
-          .font(.system(size: 18))
-          .foregroundStyle(ReframedColors.secondaryText)
+          .font(.system(size: FontSize.lg))
+          .foregroundStyle(ReframedColors.primaryText)
           .frame(width: 28)
 
         VStack(alignment: .leading, spacing: 2) {
           Text(project.name)
-            .font(.system(size: 12, weight: .medium))
+            .font(.system(size: FontSize.xs, weight: .semibold))
             .foregroundStyle(ReframedColors.primaryText)
             .lineLimit(1)
 
           HStack(spacing: 4) {
             Text(formatRelativeTime(project.createdAt))
-              .font(.system(size: 11))
+              .font(.system(size: FontSize.xxs, weight: .medium))
               .foregroundStyle(ReframedColors.secondaryText)
 
             if let duration = project.duration {
               Text("·")
-                .font(.system(size: 11))
+                .font(.system(size: FontSize.xxs, weight: .medium))
                 .foregroundStyle(ReframedColors.secondaryText)
 
               Text(formatDuration(seconds: duration))
-                .font(.system(size: 11))
-                .foregroundStyle(ReframedColors.secondaryText)
-            }
-
-            if project.hasWebcam || project.hasSystemAudio || project.hasMicrophoneAudio {
-              Text("·")
-                .font(.system(size: 10))
-                .foregroundStyle(ReframedColors.secondaryText)
-            }
-
-            if project.hasWebcam {
-              Image(systemName: "web.camera")
-                .font(.system(size: 11))
-                .foregroundStyle(ReframedColors.secondaryText)
-            }
-
-            if project.hasSystemAudio {
-              Image(systemName: "speaker.wave.2")
-                .font(.system(size: 11))
-                .foregroundStyle(ReframedColors.secondaryText)
-            }
-
-            if project.hasMicrophoneAudio {
-              Image(systemName: "mic")
-                .font(.system(size: 11))
+                .font(.system(size: FontSize.xxs, weight: .medium))
                 .foregroundStyle(ReframedColors.secondaryText)
             }
 
             if let fileSize = project.fileSize {
               Text("·")
-                .font(.system(size: 11))
+                .font(.system(size: FontSize.xxs, weight: .medium))
                 .foregroundStyle(ReframedColors.secondaryText)
 
               Text(ByteCountFormatter.string(fromByteCount: fileSize, countStyle: .file))
-                .font(.system(size: 11))
+                .font(.system(size: FontSize.xxs, weight: .medium))
+                .foregroundStyle(ReframedColors.secondaryText)
+            }
+
+            if project.hasWebcam || project.hasSystemAudio || project.hasMicrophoneAudio {
+              Text("·")
+                .font(.system(size: FontSize.xxs, weight: .medium))
+                .foregroundStyle(ReframedColors.secondaryText)
+            }
+
+            if project.hasWebcam {
+              Image(systemName: "web.camera")
+                .font(.system(size: FontSize.xxs, weight: .medium))
+                .foregroundStyle(ReframedColors.secondaryText)
+            }
+
+            if project.hasSystemAudio {
+              Image(systemName: "speaker.wave.2")
+                .font(.system(size: FontSize.xxs, weight: .medium))
+                .foregroundStyle(ReframedColors.secondaryText)
+            }
+
+            if project.hasMicrophoneAudio {
+              Image(systemName: "mic")
+                .font(.system(size: FontSize.xxs, weight: .medium))
                 .foregroundStyle(ReframedColors.secondaryText)
             }
           }

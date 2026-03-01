@@ -32,7 +32,7 @@ private struct ToggleGroupItem: View {
   var body: some View {
     Button(action: action) {
       Text(text)
-        .font(.system(size: 11, weight: .medium))
+        .font(.system(size: FontSize.xs, weight: .medium))
         .foregroundStyle(ReframedColors.primaryText)
         .frame(maxWidth: .infinity)
         .padding(.vertical, 6)

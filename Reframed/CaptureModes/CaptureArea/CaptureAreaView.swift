@@ -13,7 +13,7 @@ struct CaptureAreaView: View {
       VStack(spacing: 10) {
         HStack(spacing: 0) {
           Text("Size")
-            .font(.system(size: 12))
+            .font(.system(size: FontSize.xs))
             .foregroundStyle(ReframedColors.secondaryText)
             .frame(width: 56, alignment: .leading)
 
@@ -21,21 +21,21 @@ struct CaptureAreaView: View {
             .onTapGesture { isEditing = true }
             .onChange(of: w) { if isEditing { applyValues() } }
           Text("\u{00D7}")
-            .font(.system(size: 12))
+            .font(.system(size: FontSize.xs))
             .foregroundStyle(ReframedColors.secondaryText)
             .frame(width: 20)
           NumberField(value: $h, onCommit: commitEditing)
             .onTapGesture { isEditing = true }
             .onChange(of: h) { if isEditing { applyValues() } }
           Text("px")
-            .font(.system(size: 11))
+            .font(.system(size: FontSize.xs))
             .foregroundStyle(ReframedColors.secondaryText)
             .frame(width: 24, alignment: .trailing)
         }
 
         HStack(spacing: 0) {
           Text("Position")
-            .font(.system(size: 12))
+            .font(.system(size: FontSize.xs))
             .foregroundStyle(ReframedColors.secondaryText)
             .frame(width: 56, alignment: .leading)
 
@@ -47,7 +47,7 @@ struct CaptureAreaView: View {
             .onTapGesture { isEditing = true }
             .onChange(of: y) { if isEditing { applyValues() } }
           Text("px")
-            .font(.system(size: 11))
+            .font(.system(size: FontSize.xs))
             .foregroundStyle(ReframedColors.secondaryText)
             .frame(width: 24, alignment: .trailing)
         }

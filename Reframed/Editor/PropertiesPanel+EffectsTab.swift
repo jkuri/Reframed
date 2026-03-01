@@ -8,7 +8,7 @@ extension PropertiesPanel {
 
       if editorState.cursorMetadataProvider == nil {
         Text("Requires cursor data to be recorded.")
-          .font(.system(size: 11))
+          .font(.system(size: FontSize.xs))
           .foregroundStyle(ReframedColors.secondaryText)
           .fixedSize(horizontal: false, vertical: true)
       } else {
@@ -55,7 +55,7 @@ extension PropertiesPanel {
 
       if editorState.cursorMetadataProvider == nil {
         Text("Requires cursor data to be recorded.")
-          .font(.system(size: 11))
+          .font(.system(size: FontSize.xs))
           .foregroundStyle(ReframedColors.secondaryText)
           .fixedSize(horizontal: false, vertical: true)
       } else {
@@ -64,7 +64,7 @@ extension PropertiesPanel {
         if editorState.clickSoundEnabled {
           HStack(spacing: 8) {
             Text("Sound")
-              .font(.system(size: 12))
+              .font(.system(size: FontSize.xs))
               .foregroundStyle(ReframedColors.secondaryText)
               .frame(width: Layout.labelWidth, alignment: .leading)
 
@@ -87,7 +87,7 @@ extension PropertiesPanel {
               previewClickSound()
             } label: {
               Image(systemName: "play.fill")
-                .font(.system(size: 10))
+                .font(.system(size: FontSize.xs))
             }
             .buttonStyle(OutlineButtonStyle(size: .small))
           }

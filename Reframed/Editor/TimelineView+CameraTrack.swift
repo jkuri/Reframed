@@ -18,7 +18,7 @@ extension TimelineView {
         let viewportWidth = width / timelineZoom
         let visibleCenterX = scrollOffset + viewportWidth / 2
         Text("Double-click to add camera region")
-          .font(.system(size: 11))
+          .font(.system(size: FontSize.xs))
           .foregroundStyle(ReframedColors.secondaryText)
           .fixedSize()
           .position(x: visibleCenterX, y: h / 2)

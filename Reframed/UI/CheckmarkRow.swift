@@ -11,11 +11,11 @@ struct CheckmarkRow: View {
     Button(action: action) {
       HStack(spacing: 8) {
         Image(systemName: "checkmark")
-          .font(.system(size: 11, weight: .bold))
+          .font(.system(size: FontSize.xs, weight: .bold))
           .frame(width: 14)
           .opacity(isSelected ? 1 : 0)
         Text(title)
-          .font(.system(size: 13))
+          .font(.system(size: FontSize.xs))
         Spacer()
       }
       .foregroundStyle(ReframedColors.primaryText)

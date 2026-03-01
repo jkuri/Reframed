@@ -30,7 +30,7 @@ extension TimelineView {
         let viewportWidth = width / timelineZoom
         let visibleCenterX = scrollOffset + viewportWidth / 2
         Text("Double-click to add audio region")
-          .font(.system(size: 11))
+          .font(.system(size: FontSize.xs))
           .foregroundStyle(ReframedColors.secondaryText)
           .fixedSize()
           .position(x: visibleCenterX, y: h / 2)
@@ -81,7 +81,7 @@ extension TimelineView {
         .fixedSize()
 
         Text(message ?? "Generating waveform… \(Int(progress * 100))%")
-          .font(.system(size: 10).monospacedDigit())
+          .font(.system(size: FontSize.xs).monospacedDigit())
           .foregroundStyle(ReframedColors.primaryText)
           .frame(width: 160, alignment: .leading)
       }

@@ -13,13 +13,14 @@ struct InlineEditableText: View {
     let _ = colorScheme
     if isEditing {
       TextField("", text: $editText)
-        .font(.system(size: 12))
+        .font(.system(size: FontSize.xs))
         .foregroundStyle(ReframedColors.primaryText)
         .textFieldStyle(.plain)
         .padding(.horizontal, 8)
         .padding(.vertical, 6)
         .background(ReframedColors.fieldBackground)
         .clipShape(RoundedRectangle(cornerRadius: Radius.md))
+        .overlay(RoundedRectangle(cornerRadius: Radius.md).strokeBorder(ReframedColors.border))
         .focused($isFocused)
         .onSubmit { commit() }
         .onChange(of: isFocused) { _, focused in
@@ -30,20 +31,21 @@ struct InlineEditableText: View {
     } else {
       HStack(spacing: 4) {
         Text(text)
-          .font(.system(size: 12))
+          .font(.system(size: FontSize.xs))
           .foregroundStyle(ReframedColors.primaryText)
           .lineLimit(1)
 
         Spacer()
 
         Image(systemName: "pencil")
-          .font(.system(size: 10))
+          .font(.system(size: FontSize.xs))
           .foregroundStyle(ReframedColors.secondaryText)
       }
       .padding(.horizontal, 8)
       .padding(.vertical, 6)
       .background(ReframedColors.fieldBackground.opacity(0.5))
       .clipShape(RoundedRectangle(cornerRadius: Radius.md))
+      .overlay(RoundedRectangle(cornerRadius: Radius.md).strokeBorder(ReframedColors.border))
       .onTapGesture { startEditing() }
     }
   }

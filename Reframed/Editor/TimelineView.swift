@@ -281,7 +281,7 @@ struct TimelineView: View {
 
           let label = formatRulerTime(t)
           let text = Text(label)
-            .font(.system(size: 11, design: .monospaced))
+            .font(.system(size: FontSize.xs, design: .monospaced))
             .foregroundStyle(ReframedColors.primaryText)
           context.draw(context.resolve(text), at: CGPoint(x: x, y: size.height - 16), anchor: .bottom)
         } else {
@@ -337,9 +337,9 @@ struct TimelineView: View {
   func trackSidebar(label: String, icon: String) -> some View {
     VStack(spacing: 4) {
       Image(systemName: icon)
-        .font(.system(size: 12))
+        .font(.system(size: FontSize.sm))
       Text(label)
-        .font(.system(size: 10, weight: .medium))
+        .font(.system(size: FontSize.xxs, weight: .semibold))
     }
     .foregroundStyle(ReframedColors.primaryText)
   }

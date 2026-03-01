@@ -59,7 +59,7 @@ struct ExportSheet: View {
     VStack(spacing: 0) {
       HStack {
         Text("Export Settings")
-          .font(.system(size: 16, weight: .semibold))
+          .font(.system(size: FontSize.sm, weight: .semibold))
           .foregroundStyle(ReframedColors.primaryText)
         Spacer()
       }
@@ -94,7 +94,7 @@ struct ExportSheet: View {
           }
 
           Text(settings.gifQuality.description)
-            .font(.system(size: 11))
+            .font(.system(size: FontSize.xs))
             .foregroundStyle(ReframedColors.secondaryText)
             .padding(.top, -10)
         } else {
@@ -107,7 +107,7 @@ struct ExportSheet: View {
           }
 
           Text(settings.codec.description)
-            .font(.system(size: 11))
+            .font(.system(size: FontSize.xs))
             .foregroundStyle(ReframedColors.secondaryText)
             .padding(.top, -10)
         }
@@ -127,7 +127,7 @@ struct ExportSheet: View {
 
         if sourceFPS < 60 {
           Text("Source recorded at \(sourceFPS) fps. Higher frame rates are not available.")
-            .font(.system(size: 11))
+            .font(.system(size: FontSize.xs))
             .foregroundStyle(ReframedColors.secondaryText)
             .padding(.top, -10)
         }
@@ -160,7 +160,7 @@ struct ExportSheet: View {
           }
 
           Text(settings.mode.description)
-            .font(.system(size: 11))
+            .font(.system(size: FontSize.xs))
             .foregroundStyle(ReframedColors.secondaryText)
             .padding(.top, -10)
         }
@@ -175,7 +175,7 @@ struct ExportSheet: View {
           }
 
           Text(settings.captionExportMode.description)
-            .font(.system(size: 11))
+            .font(.system(size: FontSize.xs))
             .foregroundStyle(ReframedColors.secondaryText)
             .padding(.top, -10)
         }
@@ -226,13 +226,13 @@ struct ExportSheet: View {
     VStack(spacing: 0) {
       if let statusMessage = editorState.exportStatusMessage {
         Text(statusMessage)
-          .font(.system(size: 13, weight: .medium).monospacedDigit())
+          .font(.system(size: FontSize.xs, weight: .medium).monospacedDigit())
           .foregroundStyle(ReframedColors.secondaryText)
           .padding(.top, 32)
           .padding(.bottom, 24)
       } else {
         Text("Exporting…")
-          .font(.system(size: 16, weight: .semibold))
+          .font(.system(size: FontSize.sm, weight: .semibold))
           .foregroundStyle(ReframedColors.primaryText)
           .padding(.top, 32)
           .padding(.bottom, 24)
@@ -244,12 +244,12 @@ struct ExportSheet: View {
 
           HStack(spacing: 12) {
             Text("\(Int(editorState.exportProgress * 100))%")
-              .font(.system(size: 12).monospacedDigit())
+              .font(.system(size: FontSize.xs).monospacedDigit())
               .foregroundStyle(ReframedColors.secondaryText)
 
             if let eta = editorState.exportETA, eta > 0 {
               Text("ETA \(formatDuration(seconds: Int(ceil(eta))))")
-                .font(.system(size: 12).monospacedDigit())
+                .font(.system(size: FontSize.xs).monospacedDigit())
                 .foregroundStyle(ReframedColors.secondaryText)
             }
           }
@@ -269,26 +269,26 @@ struct ExportSheet: View {
   private var completedContent: some View {
     VStack(spacing: 0) {
       Image(systemName: "checkmark.circle.fill")
-        .font(.system(size: 40))
+        .font(.system(size: FontSize.display))
         .foregroundStyle(ReframedColors.primaryText)
         .padding(.top, 28)
         .padding(.bottom, 12)
 
       Text("Export Successful")
-        .font(.system(size: 16, weight: .semibold))
+        .font(.system(size: FontSize.sm, weight: .semibold))
         .foregroundStyle(ReframedColors.primaryText)
         .padding(.bottom, 16)
 
       if let url = editorState.lastExportedURL {
         VStack(spacing: 6) {
           Text(url.lastPathComponent)
-            .font(.system(size: 13, weight: .medium))
+            .font(.system(size: FontSize.xs, weight: .medium))
             .foregroundStyle(ReframedColors.primaryText)
             .lineLimit(1)
             .truncationMode(.middle)
 
           Text(MediaFileInfo.formattedFileSize(url: url))
-            .font(.system(size: 12))
+            .font(.system(size: FontSize.xs))
             .foregroundStyle(ReframedColors.secondaryText)
         }
         .padding(.bottom, 24)
@@ -318,18 +318,18 @@ struct ExportSheet: View {
   private var failedContent: some View {
     VStack(spacing: 0) {
       Image(systemName: "xmark.circle.fill")
-        .font(.system(size: 40))
+        .font(.system(size: FontSize.display))
         .foregroundStyle(ReframedColors.primaryText)
         .padding(.top, 28)
         .padding(.bottom, 12)
 
       Text("Export Failed")
-        .font(.system(size: 16, weight: .semibold))
+        .font(.system(size: FontSize.sm, weight: .semibold))
         .foregroundStyle(ReframedColors.primaryText)
         .padding(.bottom, 12)
 
       Text(errorMessage)
-        .font(.system(size: 13))
+        .font(.system(size: FontSize.xs))
         .foregroundStyle(ReframedColors.secondaryText)
         .multilineTextAlignment(.center)
         .padding(.horizontal, 28)
@@ -397,7 +397,7 @@ struct ExportSheet: View {
   private func settingsRow<Content: View>(label: String, @ViewBuilder content: () -> Content) -> some View {
     VStack(alignment: .leading, spacing: 6) {
       Text(label)
-        .font(.system(size: 12, weight: .medium))
+        .font(.system(size: FontSize.xs, weight: .medium))
         .foregroundStyle(ReframedColors.secondaryText)
       content()
     }

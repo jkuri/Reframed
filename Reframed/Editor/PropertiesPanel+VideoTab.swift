@@ -59,11 +59,12 @@ extension PropertiesPanel {
           Image(systemName: "photo.on.rectangle")
           Text(editorState.backgroundImage != nil ? "Change Image" : "Choose Image")
         }
-        .font(.system(size: 12))
+        .font(.system(size: FontSize.xs))
         .frame(maxWidth: .infinity)
         .padding(.vertical, 6)
         .background(ReframedColors.fieldBackground)
         .clipShape(RoundedRectangle(cornerRadius: Radius.md))
+        .overlay(RoundedRectangle(cornerRadius: Radius.md).strokeBorder(ReframedColors.border))
       }
       .buttonStyle(.plain)
       .foregroundStyle(ReframedColors.primaryText)
@@ -103,7 +104,7 @@ extension PropertiesPanel {
           Button("Reset") {
             editorState.padding = 0
           }
-          .font(.system(size: 11))
+          .font(.system(size: FontSize.xs))
           .foregroundStyle(ReframedColors.secondaryText)
           .buttonStyle(.plain)
         }
@@ -127,7 +128,7 @@ extension PropertiesPanel {
           Button("Reset") {
             editorState.videoCornerRadius = 0
           }
-          .font(.system(size: 11))
+          .font(.system(size: FontSize.xs))
           .foregroundStyle(ReframedColors.secondaryText)
           .buttonStyle(.plain)
         }
@@ -150,7 +151,7 @@ extension PropertiesPanel {
           Button("Reset") {
             editorState.videoShadow = 0
           }
-          .font(.system(size: 11))
+          .font(.system(size: FontSize.xs))
           .foregroundStyle(ReframedColors.secondaryText)
           .buttonStyle(.plain)
         }

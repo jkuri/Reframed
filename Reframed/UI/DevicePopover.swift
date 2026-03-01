@@ -21,7 +21,7 @@ struct DevicePopover: View {
       }
 
       Text("Make sure your device is unlocked before recording")
-        .font(.system(size: 11))
+        .font(.system(size: FontSize.xs))
         .foregroundStyle(ReframedColors.tertiaryText)
         .padding(.horizontal, 12)
         .padding(.top, 8)
@@ -39,7 +39,7 @@ struct DevicePopover: View {
       .padding(.vertical, 8)
     }
     .padding(.vertical, 8)
-    .frame(width: 300)
+    .frame(width: 320)
     .popoverContainerStyle()
     .onChange(of: devices) {
       if devices.count == 1 {
@@ -59,13 +59,13 @@ struct DevicePopover: View {
   private var emptyState: some View {
     VStack(spacing: 6) {
       Image(systemName: "iphone")
-        .font(.system(size: 28))
+        .font(.system(size: FontSize.xxl))
         .foregroundStyle(ReframedColors.tertiaryText)
       Text("No devices found")
-        .font(.system(size: 13, weight: .medium))
+        .font(.system(size: FontSize.xs, weight: .medium))
         .foregroundStyle(ReframedColors.primaryText)
       Text("Connect via USB and unlock")
-        .font(.system(size: 11))
+        .font(.system(size: FontSize.xxs))
         .foregroundStyle(ReframedColors.tertiaryText)
     }
     .frame(maxWidth: .infinity)
@@ -104,18 +104,18 @@ private struct DeviceRow: View {
     Button(action: action) {
       HStack(spacing: 10) {
         Image(systemName: isIPad ? "ipad" : "iphone")
-          .font(.system(size: 20))
+          .font(.system(size: FontSize.xxxl))
           .foregroundStyle(isSelected ? ReframedColors.primaryText : ReframedColors.secondaryText)
           .frame(width: 28)
 
         VStack(alignment: .leading, spacing: 1) {
           Text(device.name)
-            .font(.system(size: 13, weight: .medium))
+            .font(.system(size: FontSize.xs, weight: .medium))
             .foregroundStyle(ReframedColors.primaryText)
             .lineLimit(1)
 
           Text(isIPad ? "iPad" : "iPhone")
-            .font(.system(size: 11))
+            .font(.system(size: FontSize.xs))
             .foregroundStyle(ReframedColors.tertiaryText)
         }
 
@@ -123,7 +123,7 @@ private struct DeviceRow: View {
 
         if isSelected {
           Image(systemName: "checkmark")
-            .font(.system(size: 12, weight: .semibold))
+            .font(.system(size: FontSize.xs, weight: .semibold))
             .foregroundStyle(ReframedColors.primaryText)
         }
       }

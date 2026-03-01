@@ -19,11 +19,11 @@ struct LanguagePicker: View {
     VStack(spacing: 0) {
       HStack(spacing: 6) {
         Image(systemName: "magnifyingglass")
-          .font(.system(size: 11))
+          .font(.system(size: FontSize.xs))
           .foregroundStyle(ReframedColors.secondaryText)
         TextField("Search…", text: $searchText)
           .textFieldStyle(.plain)
-          .font(.system(size: 12))
+          .font(.system(size: FontSize.xs))
           .focused($isSearchFocused)
       }
       .padding(.horizontal, 10)
@@ -42,11 +42,11 @@ struct LanguagePicker: View {
               } label: {
                 HStack {
                   Text(lang.label)
-                    .font(.system(size: 12))
+                    .font(.system(size: FontSize.xs))
                   Spacer()
                   if selection == lang {
                     Image(systemName: "checkmark")
-                      .font(.system(size: 10, weight: .semibold))
+                      .font(.system(size: FontSize.xs, weight: .semibold))
                   }
                 }
                 .padding(.horizontal, 8)

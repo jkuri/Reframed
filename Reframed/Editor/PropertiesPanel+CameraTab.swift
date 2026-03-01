@@ -31,10 +31,11 @@ extension PropertiesPanel {
             editorState.setCameraCorner(corner)
           } label: {
             Image(systemName: icon)
-              .font(.system(size: 11))
+              .font(.system(size: FontSize.xs))
               .frame(width: 28, height: 28)
               .background(ReframedColors.fieldBackground)
               .clipShape(RoundedRectangle(cornerRadius: Radius.sm))
+              .overlay(RoundedRectangle(cornerRadius: Radius.sm).strokeBorder(ReframedColors.border))
           }
           .buttonStyle(.plain)
           .foregroundStyle(ReframedColors.primaryText)
@@ -183,11 +184,12 @@ extension PropertiesPanel {
           Image(systemName: "photo.on.rectangle")
           Text(editorState.cameraBackgroundImage != nil ? "Change Image" : "Choose Image")
         }
-        .font(.system(size: 12))
+        .font(.system(size: FontSize.xs))
         .frame(maxWidth: .infinity)
         .padding(.vertical, 6)
         .background(ReframedColors.fieldBackground)
         .clipShape(RoundedRectangle(cornerRadius: Radius.md))
+        .overlay(RoundedRectangle(cornerRadius: Radius.md).strokeBorder(ReframedColors.border))
       }
       .buttonStyle(.plain)
       .foregroundStyle(ReframedColors.primaryText)
@@ -200,7 +202,7 @@ extension PropertiesPanel {
 
       VStack(alignment: .leading, spacing: 4) {
         Text("Aspect Ratio")
-          .font(.system(size: 12))
+          .font(.system(size: FontSize.xs))
           .foregroundStyle(ReframedColors.secondaryText)
         SegmentPicker(
           items: CameraFullscreenAspect.allCases,
@@ -211,7 +213,7 @@ extension PropertiesPanel {
 
       VStack(alignment: .leading, spacing: 4) {
         Text("Fill Mode")
-          .font(.system(size: 12))
+          .font(.system(size: FontSize.xs))
           .foregroundStyle(ReframedColors.secondaryText)
         SegmentPicker(
           items: CameraFullscreenFillMode.allCases,

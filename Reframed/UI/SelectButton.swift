@@ -44,14 +44,14 @@ struct SelectButton<MenuContent: View>: View {
           leadingContent
         }
         Text(label)
-          .font(.system(size: 12, weight: .medium))
+          .font(.system(size: FontSize.xs, weight: .medium))
           .foregroundStyle(ReframedColors.primaryText)
           .lineLimit(1)
         if fixedWidth == nil {
           Spacer()
         }
         Image(systemName: "chevron.up.chevron.down")
-          .font(.system(size: 9, weight: .semibold))
+          .font(.system(size: FontSize.xs, weight: .semibold))
           .foregroundStyle(ReframedColors.primaryText)
       }
       .padding(.horizontal, 10)

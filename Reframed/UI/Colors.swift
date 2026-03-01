@@ -107,7 +107,7 @@ enum ReframedColors {
   }
 
   static var fieldBackground: Color {
-    isDark ? Color.white.opacity(0.08) : Color.black.opacity(0.06)
+    isDark ? Color.hex("#000000") : Color.hex("#ffffff")
   }
 
   static var textSelection: Color {

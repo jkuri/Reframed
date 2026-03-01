@@ -21,16 +21,16 @@ extension SettingsView {
       }
 
       Text("Reframed")
-        .font(.system(size: 20, weight: .semibold))
+        .font(.system(size: FontSize.xxxl, weight: .semibold))
         .foregroundStyle(ReframedColors.primaryText)
 
       VStack(spacing: 4) {
         Text("Version \(UpdateChecker.currentVersion)")
-          .font(.system(size: 12))
+          .font(.system(size: FontSize.xs))
           .foregroundStyle(ReframedColors.secondaryText)
 
         Text("Screen recording & editing for macOS")
-          .font(.system(size: 12))
+          .font(.system(size: FontSize.xs))
           .foregroundStyle(ReframedColors.tertiaryText)
       }
     }
@@ -68,9 +68,9 @@ extension SettingsView {
       HStack(spacing: 6) {
         Image(systemName: "checkmark.circle.fill")
           .foregroundStyle(ReframedColors.primaryText)
-          .font(.system(size: 13))
+          .font(.system(size: FontSize.xs))
         Text("You're up to date!")
-          .font(.system(size: 12))
+          .font(.system(size: FontSize.xs))
           .foregroundStyle(ReframedColors.secondaryText)
       }
 
@@ -79,9 +79,9 @@ extension SettingsView {
         HStack(spacing: 6) {
           Image(systemName: "arrow.up.circle.fill")
             .foregroundStyle(ReframedColors.primaryText)
-            .font(.system(size: 13))
+            .font(.system(size: FontSize.xs))
           Text("Version \(version) is available")
-            .font(.system(size: 12, weight: .medium))
+            .font(.system(size: FontSize.xs, weight: .medium))
             .foregroundStyle(ReframedColors.primaryText)
         }
 
@@ -97,9 +97,9 @@ extension SettingsView {
       HStack(spacing: 6) {
         Image(systemName: "exclamationmark.triangle.fill")
           .foregroundStyle(.orange)
-          .font(.system(size: 13))
+          .font(.system(size: FontSize.xs))
         Text(message)
-          .font(.system(size: 12))
+          .font(.system(size: FontSize.xs))
           .foregroundStyle(ReframedColors.secondaryText)
       }
     }
@@ -116,11 +116,6 @@ extension SettingsView {
         linkButton("Releases", icon: "shippingbox", url: "https://github.com/jkuri/Reframed/releases")
       }
       .padding(.top, 4)
-
-      Text("Jan Kuri")
-        .font(.system(size: 11))
-        .foregroundStyle(ReframedColors.tertiaryText)
-        .padding(.top, 4)
     }
   }
 
@@ -132,9 +127,9 @@ extension SettingsView {
     } label: {
       HStack(spacing: 4) {
         Image(systemName: icon)
-          .font(.system(size: 11))
+          .font(.system(size: FontSize.xs))
         Text(title)
-          .font(.system(size: 12))
+          .font(.system(size: FontSize.xs))
       }
       .foregroundStyle(ReframedColors.secondaryText)
     }

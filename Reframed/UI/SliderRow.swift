@@ -16,19 +16,19 @@ struct SliderRow<V: BinaryFloatingPoint>: View where V.Stride: BinaryFloatingPoi
       if let label {
         if let labelWidth {
           Text(label)
-            .font(.system(size: 12))
+            .font(.system(size: FontSize.xs))
             .foregroundStyle(ReframedColors.secondaryText)
             .frame(width: labelWidth, alignment: .leading)
         } else {
           Text(label)
-            .font(.system(size: 12))
+            .font(.system(size: FontSize.xs))
             .foregroundStyle(ReframedColors.secondaryText)
         }
       }
       MonoSlider(value: $value, range: range, step: step)
       if let formattedValue {
         Text(formattedValue)
-          .font(.system(size: 12, design: .monospaced))
+          .font(.system(size: FontSize.xs, design: .monospaced))
           .foregroundStyle(ReframedColors.secondaryText)
           .frame(width: valueWidth, alignment: .trailing)
       }

@@ -11,7 +11,7 @@ struct ShortcutRecorderButton: View {
       if isRecording {
         HStack(spacing: 4) {
           Text("Press shortcut...")
-            .font(.system(size: 12))
+            .font(.system(size: FontSize.xs))
             .foregroundStyle(ReframedColors.secondaryText)
           ShortcutCaptureView(
             onCapture: { newShortcut in
@@ -29,6 +29,7 @@ struct ShortcutRecorderButton: View {
         .frame(minWidth: 120)
         .background(ReframedColors.fieldBackground.opacity(0.8))
         .clipShape(RoundedRectangle(cornerRadius: Radius.md))
+        .overlay(RoundedRectangle(cornerRadius: Radius.md).strokeBorder(ReframedColors.border))
         .overlay(
           RoundedRectangle(cornerRadius: Radius.md)
             .stroke(ReframedColors.ring, lineWidth: 1.5)
@@ -38,7 +39,7 @@ struct ShortcutRecorderButton: View {
           isRecording = true
         } label: {
           Text(shortcut.displayString)
-            .font(.system(size: 13, weight: .medium, design: .monospaced))
+            .font(.system(size: FontSize.xs, weight: .medium, design: .monospaced))
             .tracking(3)
             .frame(width: 80)
         }

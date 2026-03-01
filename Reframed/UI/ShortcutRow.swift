@@ -19,7 +19,7 @@ struct ShortcutRow: View {
     let _ = colorScheme
     HStack {
       Text(action.label)
-        .font(.system(size: 13))
+        .font(.system(size: FontSize.xs))
         .foregroundStyle(ReframedColors.primaryText)
       Spacer()
       ShortcutRecorderButton(
@@ -38,7 +38,7 @@ struct ShortcutRow: View {
         NotificationCenter.default.post(name: .shortcutsDidChange, object: nil)
       } label: {
         Image(systemName: "arrow.counterclockwise")
-          .font(.system(size: 11))
+          .font(.system(size: FontSize.xs))
           .foregroundStyle(isDefault ? ReframedColors.disabledText : ReframedColors.secondaryText)
       }
       .buttonStyle(.plain)

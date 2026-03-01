@@ -73,7 +73,7 @@ struct WindowSelectionView: View {
 
             HStack(spacing: 8) {
               Text("\(Int(current.frame.width)) \u{00d7} \(Int(current.frame.height))")
-                .font(.system(size: 15))
+                .font(.system(size: FontSize.sm))
                 .foregroundStyle(Color.black)
                 .shadow(color: .white.opacity(0.3), radius: 4)
 

@@ -331,11 +331,11 @@ struct PropertiesPanel: View {
   private func infoRow(_ label: String, value: String) -> some View {
     HStack {
       Text(label)
-        .font(.system(size: 12))
+        .font(.system(size: FontSize.xs))
         .foregroundStyle(ReframedColors.secondaryText)
       Spacer()
       Text(value)
-        .font(.system(size: 12))
+        .font(.system(size: FontSize.xs))
         .foregroundStyle(ReframedColors.secondaryText)
     }
   }

@@ -17,21 +17,21 @@ extension EditorView {
         HStack(spacing: 4) {
           if isPreview && editorState.hasVideoRegionCuts {
             Text(formatPreciseDuration(seconds: editorState.previewElapsedTime))
-              .font(.system(size: 12, design: .monospaced))
+              .font(.system(size: FontSize.xs, design: .monospaced))
               .foregroundStyle(ReframedColors.primaryText)
             Text("/ \(formatPreciseDuration(seconds: editorState.videoRegionsTotalDuration))")
-              .font(.system(size: 12, design: .monospaced))
+              .font(.system(size: FontSize.xs, design: .monospaced))
               .foregroundStyle(ReframedColors.secondaryText)
           } else {
             Text(
               "\(formatPreciseDuration(editorState.currentTime)) / \(formatPreciseDuration(editorState.duration))"
             )
-            .font(.system(size: 12, design: .monospaced))
+            .font(.system(size: FontSize.xs, design: .monospaced))
             .foregroundStyle(ReframedColors.primaryText)
 
             if editorState.hasVideoRegionCuts {
               Text("(\(formatPreciseDuration(seconds: editorState.videoRegionsTotalDuration)))")
-                .font(.system(size: 11, design: .monospaced))
+                .font(.system(size: FontSize.xs, design: .monospaced))
                 .foregroundStyle(ReframedColors.secondaryText)
             }
           }

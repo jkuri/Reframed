@@ -15,7 +15,7 @@ extension SettingsView {
       }
 
       Text(captureQualityDescription)
-        .font(.system(size: 11))
+        .font(.system(size: FontSize.xs))
         .foregroundStyle(ReframedColors.secondaryText)
         .padding(.top, -10)
 
@@ -30,7 +30,7 @@ extension SettingsView {
       Text(
         "Doubles capture resolution for better zoom quality. Only enable this on retina displays, otherwise it will result in blurry video."
       )
-      .font(.system(size: 11))
+      .font(.system(size: FontSize.xs))
       .foregroundStyle(ReframedColors.secondaryText)
       .padding(.top, -10)
 

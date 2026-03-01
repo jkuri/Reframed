@@ -11,7 +11,7 @@ struct CaptionSegmentRow: View {
           onSeek()
         } label: {
           Text(formatTimeRange(start: segment.startSeconds, end: segment.endSeconds))
-            .font(.system(size: 10, design: .monospaced))
+            .font(.system(size: FontSize.xs, design: .monospaced))
             .foregroundStyle(ReframedColors.secondaryText)
         }
         .buttonStyle(.plain)
@@ -19,7 +19,7 @@ struct CaptionSegmentRow: View {
       }
 
       Text(segment.text)
-        .font(.system(size: 12))
+        .font(.system(size: FontSize.xs))
         .foregroundStyle(ReframedColors.primaryText)
         .lineLimit(3)
         .frame(maxWidth: .infinity, alignment: .leading)

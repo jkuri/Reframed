@@ -21,7 +21,7 @@ extension SettingsView {
       settingsRow(label: "Project Folder") {
         HStack(spacing: 8) {
           Text(projectFolder)
-            .font(.system(size: 12))
+            .font(.system(size: FontSize.xs))
             .foregroundStyle(ReframedColors.primaryText)
             .lineLimit(1)
             .truncationMode(.middle)
@@ -30,6 +30,7 @@ extension SettingsView {
             .padding(.vertical, 7)
             .background(ReframedColors.fieldBackground)
             .clipShape(RoundedRectangle(cornerRadius: Radius.md))
+            .overlay(RoundedRectangle(cornerRadius: Radius.md).strokeBorder(ReframedColors.border))
 
           Button("Browse") {
             chooseProjectFolder()
@@ -41,7 +42,7 @@ extension SettingsView {
       settingsRow(label: "Output Folder") {
         HStack(spacing: 8) {
           Text(outputFolder)
-            .font(.system(size: 12))
+            .font(.system(size: FontSize.xs))
             .foregroundStyle(ReframedColors.primaryText)
             .lineLimit(1)
             .truncationMode(.middle)
@@ -50,6 +51,7 @@ extension SettingsView {
             .padding(.vertical, 7)
             .background(ReframedColors.fieldBackground)
             .clipShape(RoundedRectangle(cornerRadius: Radius.md))
+            .overlay(RoundedRectangle(cornerRadius: Radius.md).strokeBorder(ReframedColors.border))
 
           Button("Browse") {
             chooseOutputFolder()

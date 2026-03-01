@@ -12,7 +12,7 @@ struct HistoryPopover: View {
 
       if editorState.history.entries.isEmpty {
         Text("No history")
-          .font(.system(size: 12))
+          .font(.system(size: FontSize.xs))
           .foregroundStyle(ReframedColors.tertiaryText)
           .frame(maxWidth: .infinity, alignment: .center)
           .padding(.vertical, 16)
@@ -68,7 +68,7 @@ struct HistoryPopover: View {
         VStack(alignment: .leading, spacing: 2) {
           if index == 0 {
             Text("Initial state")
-              .font(.system(size: 12, weight: isCurrent ? .semibold : .regular))
+              .font(.system(size: FontSize.xs, weight: isCurrent ? .semibold : .regular))
               .foregroundStyle(
                 isFuture
                   ? ReframedColors.tertiaryText
@@ -76,7 +76,7 @@ struct HistoryPopover: View {
               )
           } else {
             Text(diffs.first ?? "Editor settings updated")
-              .font(.system(size: 12, weight: isCurrent ? .semibold : .regular))
+              .font(.system(size: FontSize.xs, weight: isCurrent ? .semibold : .regular))
               .foregroundStyle(
                 isFuture
                   ? ReframedColors.tertiaryText
@@ -87,7 +87,7 @@ struct HistoryPopover: View {
 
           if diffs.count > 1 {
             Text(diffs.dropFirst().prefix(3).joined(separator: ", "))
-              .font(.system(size: 10))
+              .font(.system(size: FontSize.xs))
               .foregroundStyle(ReframedColors.tertiaryText)
               .lineLimit(1)
           }
@@ -96,7 +96,7 @@ struct HistoryPopover: View {
         Spacer()
 
         Text(formatRelativeTime(entry.timestamp))
-          .font(.system(size: 10))
+          .font(.system(size: FontSize.xs))
           .foregroundStyle(ReframedColors.tertiaryText)
       }
       .padding(.horizontal, 8)

@@ -9,7 +9,7 @@ struct ToggleRow: View {
     let _ = colorScheme
     HStack {
       Text(label)
-        .font(.system(size: 12))
+        .font(.system(size: FontSize.xs))
         .foregroundStyle(ReframedColors.primaryText)
       Spacer()
       CustomToggle(isOn: $isOn)

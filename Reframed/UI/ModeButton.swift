@@ -12,13 +12,13 @@ struct ModeButton: View {
     Button(action: action) {
       VStack(spacing: 3) {
         Image(systemName: icon)
-          .font(.system(size: 18))
+          .font(.system(size: Layout.toolbarIconSize))
           .foregroundStyle(ReframedColors.primaryText)
         Text(label)
-          .font(.system(size: 10))
-          .foregroundStyle(isSelected ? ReframedColors.primaryText : ReframedColors.secondaryText)
+          .font(.system(size: FontSize.xxs, weight: .semibold))
+          .foregroundStyle(ReframedColors.primaryText)
       }
-      .frame(width: 56, height: 52)
+      .frame(width: Layout.toolbarHeight + 4, height: Layout.toolbarHeight)
       .background(isSelected ? ReframedColors.muted : Color.clear)
       .clipShape(RoundedRectangle(cornerRadius: Radius.md))
       .contentShape(Rectangle())

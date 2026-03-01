@@ -139,10 +139,11 @@ struct CameraRegionEditPopover: View {
             onSetCorner(corner)
           } label: {
             Image(systemName: icon)
-              .font(.system(size: 11))
+              .font(.system(size: FontSize.xs))
               .frame(width: 28, height: 28)
               .background(ReframedColors.fieldBackground)
               .clipShape(RoundedRectangle(cornerRadius: Radius.sm))
+              .overlay(RoundedRectangle(cornerRadius: Radius.sm).strokeBorder(ReframedColors.border))
           }
           .buttonStyle(.plain)
           .foregroundStyle(ReframedColors.primaryText)

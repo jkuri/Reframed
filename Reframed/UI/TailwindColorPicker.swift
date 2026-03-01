@@ -48,12 +48,12 @@ private struct ColorPickerRow: View {
           .overlay(Circle().stroke(ReframedColors.border, lineWidth: 1))
           .frame(width: 18, height: 18)
         Text(preset.name)
-          .font(.system(size: 13))
+          .font(.system(size: FontSize.xs))
           .foregroundStyle(ReframedColors.primaryText)
         Spacer()
         if isSelected {
           Image(systemName: "checkmark")
-            .font(.system(size: 11, weight: .bold))
+            .font(.system(size: FontSize.xs, weight: .bold))
             .foregroundStyle(ReframedColors.primaryText)
         }
       }

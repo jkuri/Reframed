@@ -21,11 +21,11 @@ struct StartRecordingOverlayView: View {
 
       VStack(spacing: 12) {
         Text(screen.localizedName)
-          .font(.system(size: 14, weight: .medium))
+          .font(.system(size: FontSize.xs, weight: .medium))
           .foregroundStyle(Color.black)
 
         Text(resolution(for: screen))
-          .font(.system(size: 12))
+          .font(.system(size: FontSize.xs))
           .foregroundStyle(Color.black.opacity(0.6))
 
         StartRecordingButton(

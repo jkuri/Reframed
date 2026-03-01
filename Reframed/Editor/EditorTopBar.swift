@@ -10,7 +10,7 @@ struct EditorTopBar: View {
     let _ = colorScheme
     ZStack {
       Text(editorState.projectName)
-        .font(.system(size: 13, weight: .semibold))
+        .font(.system(size: FontSize.xs, weight: .semibold))
         .foregroundStyle(ReframedColors.primaryText)
 
       HStack(spacing: 8) {

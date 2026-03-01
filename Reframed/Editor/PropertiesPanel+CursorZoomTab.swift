@@ -25,7 +25,7 @@ extension PropertiesPanel {
                 .stroke(isSelected ? ReframedColors.ring : Color.clear, lineWidth: 2)
             )
             Text(style.label)
-              .font(.system(size: 8, weight: isSelected ? .semibold : .regular))
+              .font(.system(size: FontSize.xs, weight: isSelected ? .semibold : .regular))
               .foregroundStyle(isSelected ? ReframedColors.primaryText : ReframedColors.secondaryText)
               .lineLimit(1)
           }
@@ -56,7 +56,7 @@ extension PropertiesPanel {
 
         HStack(spacing: 8) {
           Text("Fill")
-            .font(.system(size: 12))
+            .font(.system(size: FontSize.xs))
             .foregroundStyle(ReframedColors.secondaryText)
             .frame(width: Layout.labelWidth, alignment: .leading)
           cursorFillColorPicker
@@ -64,7 +64,7 @@ extension PropertiesPanel {
 
         HStack(spacing: 8) {
           Text("Stroke")
-            .font(.system(size: 12))
+            .font(.system(size: FontSize.xs))
             .foregroundStyle(ReframedColors.secondaryText)
             .frame(width: Layout.labelWidth, alignment: .leading)
           cursorStrokeColorPicker
@@ -104,7 +104,7 @@ extension PropertiesPanel {
       if editorState.showClickHighlights {
         HStack(spacing: 8) {
           Text("Color")
-            .font(.system(size: 12))
+            .font(.system(size: FontSize.xs))
             .foregroundStyle(ReframedColors.secondaryText)
             .frame(width: Layout.labelWidth, alignment: .leading)
           clickColorPickerButton
@@ -144,7 +144,7 @@ extension PropertiesPanel {
       if editorState.cursorMovementEnabled {
         VStack(alignment: .leading, spacing: Layout.compactSpacing) {
           Text("Speed")
-            .font(.system(size: 12))
+            .font(.system(size: FontSize.xs))
             .foregroundStyle(ReframedColors.secondaryText)
 
           SegmentPicker(
@@ -175,11 +175,11 @@ extension PropertiesPanel {
   private func infoParam(_ label: String, value: String) -> some View {
     HStack {
       Text(label)
-        .font(.system(size: 11))
+        .font(.system(size: FontSize.xs))
         .foregroundStyle(ReframedColors.secondaryText)
       Spacer()
       Text(value)
-        .font(.system(size: 11, design: .monospaced))
+        .font(.system(size: FontSize.xs, design: .monospaced))
         .foregroundStyle(ReframedColors.secondaryText)
     }
   }

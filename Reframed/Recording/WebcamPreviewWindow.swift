@@ -41,7 +41,7 @@ final class WebcamPreviewWindow {
     container.addSubview(spinner)
 
     let label = NSTextField(labelWithString: "Camera is starting...")
-    label.font = NSFont.systemFont(ofSize: 11, weight: .medium)
+    label.font = NSFont.systemFont(ofSize: FontSize.xs, weight: .medium)
     label.textColor = ReframedColors.secondaryTextNS
     label.alignment = .center
     label.frame = NSRect(x: 0, y: (videoHeight - 24) / 2 - 18, width: videoWidth, height: 16)
@@ -109,7 +109,7 @@ final class WebcamPreviewWindow {
     container.addSubview(icon)
 
     let label = NSTextField(labelWithString: message)
-    label.font = NSFont.systemFont(ofSize: 11, weight: .medium)
+    label.font = NSFont.systemFont(ofSize: FontSize.xs, weight: .medium)
     label.textColor = ReframedColors.secondaryTextNS
     label.alignment = .center
     label.lineBreakMode = .byTruncatingTail

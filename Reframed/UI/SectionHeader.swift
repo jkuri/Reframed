@@ -11,15 +11,15 @@ struct SectionHeader: View {
     if let icon {
       HStack(spacing: 6) {
         Image(systemName: icon)
-          .font(.system(size: 11))
+          .font(.system(size: FontSize.sm))
           .foregroundStyle(ReframedColors.secondaryText)
         Text(title)
-          .font(.system(size: 12, weight: .semibold))
+          .font(.system(size: FontSize.xs, weight: .semibold))
           .foregroundStyle(ReframedColors.primaryText)
       }
     } else {
       Text(title)
-        .font(.system(size: 11, weight: .medium))
+        .font(.system(size: FontSize.xxs, weight: .semibold))
         .foregroundStyle(ReframedColors.secondaryText)
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, 12)

@@ -78,7 +78,7 @@ struct ResizePopover: View {
 
   private func resizeSectionHeader(_ title: String) -> some View {
     Text(title)
-      .font(.system(size: 11, weight: .medium))
+      .font(.system(size: FontSize.xs, weight: .medium))
       .foregroundStyle(Color.white.opacity(0.6))
       .frame(maxWidth: .infinity, alignment: .leading)
       .padding(.horizontal, 12)
@@ -96,7 +96,7 @@ private struct ResizePopoverRow: View {
     Button(action: action) {
       HStack {
         Text(label)
-          .font(.system(size: 13))
+          .font(.system(size: FontSize.xs))
         Spacer()
       }
       .foregroundStyle(Color.white)

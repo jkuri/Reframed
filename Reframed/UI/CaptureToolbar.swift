@@ -50,13 +50,13 @@ struct CaptureToolbar: View {
         } label: {
           VStack(spacing: 3) {
             Image(systemName: "xmark.circle.fill")
-              .font(.system(size: 18))
+              .font(.system(size: Layout.toolbarIconSize))
               .foregroundStyle(ReframedColors.primaryText)
             Text("Close")
-              .font(.system(size: 10))
-              .foregroundStyle(ReframedColors.secondaryText)
+              .font(.system(size: FontSize.xxs, weight: .semibold))
+              .foregroundStyle(ReframedColors.primaryText)
           }
-          .frame(width: 56, height: 52)
+          .frame(width: Layout.toolbarHeight + 4, height: Layout.toolbarHeight)
           .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -66,7 +66,7 @@ struct CaptureToolbar: View {
 
         HStack(spacing: 2) {
           ModeButton(
-            icon: "rectangle.inset.filled",
+            icon: "display",
             label: "Display",
             isSelected: session.captureMode == .entireScreen
           ) {
@@ -152,15 +152,15 @@ struct CaptureToolbar: View {
         Button {
           showOptions.toggle()
         } label: {
-          HStack(spacing: 4) {
+          VStack(spacing: 3) {
+            Image(systemName: "list.bullet")
+              .font(.system(size: Layout.toolbarIconSize))
+              .foregroundStyle(ReframedColors.primaryText)
             Text("Options")
-              .font(.system(size: 12))
-            Image(systemName: "chevron.down")
-              .font(.system(size: 9, weight: .semibold))
+              .font(.system(size: FontSize.xxs, weight: .semibold))
+              .foregroundStyle(ReframedColors.primaryText)
           }
-          .foregroundStyle(ReframedColors.primaryText)
-          .padding(.horizontal, 14)
-          .frame(height: 52)
+          .frame(width: Layout.toolbarHeight + 4, height: Layout.toolbarHeight)
           .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -177,13 +177,13 @@ struct CaptureToolbar: View {
         } label: {
           VStack(spacing: 3) {
             Image(systemName: "gearshape")
-              .font(.system(size: 18))
+              .font(.system(size: Layout.toolbarIconSize))
               .foregroundStyle(ReframedColors.primaryText)
             Text("Settings")
-              .font(.system(size: 10))
-              .foregroundStyle(ReframedColors.secondaryText)
+              .font(.system(size: FontSize.xxs, weight: .semibold))
+              .foregroundStyle(ReframedColors.primaryText)
           }
-          .frame(width: 56, height: 52)
+          .frame(width: Layout.toolbarHeight + 4, height: Layout.toolbarHeight)
           .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
@@ -217,7 +217,7 @@ struct CaptureToolbar: View {
           if session.isCameraOn {
             VStack(spacing: 2) {
               Image(systemName: "web.camera.fill")
-                .font(.system(size: 15))
+                .font(.system(size: FontSize.xs))
                 .foregroundStyle(ReframedColors.tertiaryText)
                 .frame(height: 20)
               Color.clear.frame(height: 3)
@@ -251,7 +251,7 @@ struct CaptureToolbar: View {
         showRestartAlert = true
       }
     }
-    .frame(height: 52)
+    .frame(height: Layout.toolbarHeight)
   }
 
   private var processingContent: some View {
@@ -261,11 +261,11 @@ struct CaptureToolbar: View {
         .scaleEffect(0.8)
         .tint(ReframedColors.primaryText)
       Text("Processing...")
-        .font(.system(size: 12, weight: .medium))
+        .font(.system(size: FontSize.xs, weight: .medium))
         .foregroundStyle(ReframedColors.primaryText)
     }
     .frame(minWidth: 150, alignment: .center)
-    .frame(height: 52)
+    .frame(height: Layout.toolbarHeight)
     .padding(.horizontal, 8)
   }
 }

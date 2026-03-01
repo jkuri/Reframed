@@ -20,7 +20,7 @@ extension PropertiesPanel {
 
       VStack(alignment: .leading, spacing: Layout.compactSpacing) {
         Text("Model")
-          .font(.system(size: 12))
+          .font(.system(size: FontSize.xs))
           .foregroundStyle(ReframedColors.secondaryText)
         SegmentPicker(
           items: WhisperModel.allCases,
@@ -34,7 +34,7 @@ extension PropertiesPanel {
 
       if let model = WhisperModel(rawValue: editorState.captionModel) {
         Text(model.description)
-          .font(.system(size: 11))
+          .font(.system(size: FontSize.xs))
           .foregroundStyle(ReframedColors.secondaryText)
           .lineLimit(2)
           .fixedSize(horizontal: false, vertical: true)
@@ -43,7 +43,7 @@ extension PropertiesPanel {
 
       HStack(spacing: 8) {
         Text("Language")
-          .font(.system(size: 12))
+          .font(.system(size: FontSize.xs))
           .foregroundStyle(ReframedColors.secondaryText)
           .frame(width: captionLabelWidth, alignment: .leading)
         SelectButton(label: editorState.captionLanguage.label) { dismiss in
@@ -57,7 +57,7 @@ extension PropertiesPanel {
       if editorState.hasMicAudio && editorState.hasSystemAudio {
         HStack(spacing: 8) {
           Text("Source")
-            .font(.system(size: 12))
+            .font(.system(size: FontSize.xs))
             .foregroundStyle(ReframedColors.secondaryText)
             .frame(width: captionLabelWidth, alignment: .leading)
           SegmentPicker(
@@ -74,13 +74,13 @@ extension PropertiesPanel {
             ProgressView(value: WhisperModelManager.shared.downloadProgress)
               .tint(ReframedColors.primaryText)
             Text("\(Int(WhisperModelManager.shared.downloadProgress * 100))%")
-              .font(.system(size: 11).monospacedDigit())
+              .font(.system(size: FontSize.xs).monospacedDigit())
               .foregroundStyle(ReframedColors.secondaryText)
               .frame(width: 32, alignment: .trailing)
           }
           HStack {
             Text("Downloading model…")
-              .font(.system(size: 11))
+              .font(.system(size: FontSize.xs))
               .foregroundStyle(ReframedColors.secondaryText)
             Spacer()
             Button("Cancel") {
@@ -97,13 +97,13 @@ extension PropertiesPanel {
             ProgressView(value: editorState.transcriptionProgress)
               .tint(ReframedColors.primaryText)
             Text("\(Int(editorState.transcriptionProgress * 100))%")
-              .font(.system(size: 11).monospacedDigit())
+              .font(.system(size: FontSize.xs).monospacedDigit())
               .foregroundStyle(ReframedColors.secondaryText)
               .frame(width: 32, alignment: .trailing)
           }
           HStack {
             Text(transcriptionStatusText)
-              .font(.system(size: 11))
+              .font(.system(size: FontSize.xs))
               .foregroundStyle(ReframedColors.secondaryText)
             Spacer()
             Button("Cancel") {
@@ -133,10 +133,10 @@ extension PropertiesPanel {
         if editorState.transcriptionDidFinishEmpty {
           HStack(spacing: 6) {
             Image(systemName: "text.badge.xmark")
-              .font(.system(size: 12))
+              .font(.system(size: FontSize.xs))
               .foregroundStyle(ReframedColors.secondaryText)
             Text("No speech detected in the audio.")
-              .font(.system(size: 11))
+              .font(.system(size: FontSize.xs))
               .foregroundStyle(ReframedColors.secondaryText)
           }
         }
@@ -185,7 +185,7 @@ extension PropertiesPanel {
 
       VStack(alignment: .leading, spacing: Layout.compactSpacing) {
         Text("Weight")
-          .font(.system(size: 12))
+          .font(.system(size: FontSize.xs))
           .foregroundStyle(ReframedColors.secondaryText)
         SegmentPicker(
           items: CaptionFontWeight.allCases,
@@ -197,7 +197,7 @@ extension PropertiesPanel {
 
       VStack(alignment: .leading, spacing: Layout.compactSpacing) {
         Text("Position")
-          .font(.system(size: 12))
+          .font(.system(size: FontSize.xs))
           .foregroundStyle(ReframedColors.secondaryText)
         SegmentPicker(
           items: CaptionPosition.allCases,
@@ -212,7 +212,7 @@ extension PropertiesPanel {
 
       HStack(spacing: 8) {
         Text("Text")
-          .font(.system(size: 12))
+          .font(.system(size: FontSize.xs))
           .foregroundStyle(ReframedColors.secondaryText)
           .frame(width: captionLabelWidth, alignment: .leading)
         captionTextColorPicker
@@ -222,7 +222,7 @@ extension PropertiesPanel {
       if editorState.captionShowBackground {
         HStack(spacing: 8) {
           Text("Background")
-            .font(.system(size: 12))
+            .font(.system(size: FontSize.xs))
             .foregroundStyle(ReframedColors.secondaryText)
             .frame(width: captionLabelWidth, alignment: .leading)
           captionBgColorPicker
@@ -288,14 +288,14 @@ extension PropertiesPanel {
       } label: {
         HStack(spacing: 6) {
           Image(systemName: "list.bullet")
-            .font(.system(size: 12, weight: .semibold))
+            .font(.system(size: FontSize.xs, weight: .semibold))
             .foregroundStyle(ReframedColors.accent)
           Text("Segments (\(editorState.captionSegments.count))")
-            .font(.system(size: 13, weight: .semibold))
+            .font(.system(size: FontSize.xs, weight: .semibold))
             .foregroundStyle(ReframedColors.primaryText)
           Spacer()
           Image(systemName: captionSegmentsExpanded ? "chevron.up" : "chevron.down")
-            .font(.system(size: 10, weight: .semibold))
+            .font(.system(size: FontSize.xs, weight: .semibold))
             .foregroundStyle(ReframedColors.secondaryText)
         }
         .contentShape(Rectangle())

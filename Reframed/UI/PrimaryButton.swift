@@ -31,9 +31,9 @@ enum ButtonSize {
 
   var fontSize: CGFloat {
     switch self {
-    case .small: 13
-    case .medium: 13
-    case .large: 15
+    case .small: FontSize.xs
+    case .medium: FontSize.xs
+    case .large: FontSize.sm
     }
   }
 

@@ -63,11 +63,11 @@ private struct PermissionRow: View {
     HStack(alignment: .center, spacing: 16) {
       VStack(alignment: .leading, spacing: 4) {
         Text(title)
-          .font(.system(size: 14, weight: .medium))
+          .font(.system(size: FontSize.xs, weight: .medium))
           .foregroundStyle(ReframedColors.primaryText)
 
         Text(description)
-          .font(.system(size: 12))
+          .font(.system(size: FontSize.xs))
           .foregroundStyle(ReframedColors.secondaryText)
           .lineLimit(3)
           .fixedSize(horizontal: false, vertical: true)
@@ -84,10 +84,10 @@ private struct PermissionRow: View {
         HStack(spacing: 6) {
           if granted {
             Image(systemName: "checkmark")
-              .font(.system(size: 11, weight: .semibold))
+              .font(.system(size: FontSize.xs, weight: .semibold))
           }
           Text(granted ? grantedLabel : requestLabel)
-            .font(.system(size: 12, weight: .medium))
+            .font(.system(size: FontSize.xs, weight: .medium))
         }
         .frame(width: 260)
         .padding(.vertical, 8)
