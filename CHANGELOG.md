@@ -1,5 +1,28 @@
 # Changelog
 
+## [v0.12.0](https://github.com/jkuri/Reframed/compare/v0.11.1...v0.12.0) (2026-03-01)
+
+### Features
+
+- **editor:** animate timeline track show/hide with smooth layout transitions ([587eda8](https://github.com/jkuri/Reframed/commit/587eda865422e4fa76abca09d33fdb4711cfe9bc))
+- **effects:** add spotlight regions timeline track with per-region overrides and fade transitions ([30a9848](https://github.com/jkuri/Reframed/commit/30a98483ada3934ba84e09d667a5ad42821cb5ec))
+- **effects:** add spotlight effect with compositor support and lenient codable decoders ([5cd894c](https://github.com/jkuri/Reframed/commit/5cd894cc712d2c3aee342baabce2e1299c364df5))
+- **editor:** replace synthesized click sounds with 30 MP3 samples and add reusable Dropdown component ([0f759fa](https://github.com/jkuri/Reframed/commit/0f759fa925f1cf018249bfd96cada75d3d2e6983))
+
+### Bug Fixes
+
+- **editor:** hide muted audio and disabled camera tracks from timeline ([6bf1f37](https://github.com/jkuri/Reframed/commit/6bf1f377b4fd44c156c93ead399bdc62b4754a4a))
+- **zoom:** merge overlapping auto-zoom regions before generating keyframes ([4071967](https://github.com/jkuri/Reframed/commit/407196720939184d151582fbfbd94dfcee8bab83))
+- **editor:** hide screen shadow during transitions and disable cursor/zoom tabs without cursor data ([cf9cf56](https://github.com/jkuri/Reframed/commit/cf9cf56305c0b3b85269d7a83fa7b57769f7c261))
+
+### Refactoring
+
+- **editor:** replace History change descriptions with data-driven rules array ([b9e415e](https://github.com/jkuri/Reframed/commit/b9e415eac9eba59753f3ac3f74d0c9d7d320287b))
+
+### Styling
+
+- **editor:** update UI color palette, standardize corner radius, and refine borders across various components follow shadcn stuff ([92ceab4](https://github.com/jkuri/Reframed/commit/92ceab4651f59689f1a1a50f2bffe863fa0db8a4))
+
 ## [v0.11.1](https://github.com/jkuri/Reframed/compare/v0.11.0...v0.11.1) (2026-02-28)
 
 ### Features
