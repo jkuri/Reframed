@@ -1,5 +1,30 @@
 # Changelog
 
+## [v0.13.0](https://github.com/jkuri/Reframed/compare/v0.12.1...v0.13.0) (2026-03-04)
+
+### Features
+
+- add Sparkle auto-updates with appcast generation and publish workflow ([4b2fdd4](https://github.com/jkuri/Reframed/commit/4b2fdd4a107ab20f33063dac968a51974763c666))
+- **editor:** add drag-and-drop for background image sections ([a9dc970](https://github.com/jkuri/Reframed/commit/a9dc970234afa636c2ecfbdea08e04301140fc8c))
+
+### Bug Fixes
+
+- **editor:** disable spotlight when no regions are added ([8589d9e](https://github.com/jkuri/Reframed/commit/8589d9ebd9c226fc24ae294b0988a267f787c873))
+- **ui:** auto-close TailwindColorPicker popover on selection ([990a236](https://github.com/jkuri/Reframed/commit/990a236d0fe0b40cd7b06b85c4e7885e37f7dc57))
+- **editor:** sync webcam player layer when camera is re-enabled ([521db16](https://github.com/jkuri/Reframed/commit/521db16b9408d5053e3f3e71ab84d60ec4ab1c09))
+
+### Refactoring
+
+- deduplicate transition controls, color picker, cleanup, and timestamp code ([f9f12e5](https://github.com/jkuri/Reframed/commit/f9f12e5e478a77e5d92947254f5ee218161da379))
+
+### Styling
+
+- **editor:** increase width of custom region popovers ([978f783](https://github.com/jkuri/Reframed/commit/978f78396553ae138f345433ef0fded2f15691b7))
+
+### Chores
+
+- **ui:** update permissions view texts with explanations ([9862a95](https://github.com/jkuri/Reframed/commit/9862a95d33faddaf87f74141a8d1f432a60fb317))
+
 ## [v0.12.1](https://github.com/jkuri/Reframed/compare/v0.12.0...v0.12.1) (2026-03-01)
 
 ### Styling
@@ -84,11 +109,6 @@
 ### Performance
 
 - **captions:** tune WhisperKit decoding options for faster transcription ([d5750f4](https://github.com/jkuri/Reframed/commit/d5750f4dcaef09811b398ce367182e9275255a93))
-
-### Documentation
-
-- **readme:** update with latest features and remove obvious entries ([26c1378](https://github.com/jkuri/Reframed/commit/26c13780fb69de9aed5420159a55776830eafc2b))
-- **readme:** add gif presentation to the README.md ([7134173](https://github.com/jkuri/Reframed/commit/7134173ba986a12445de59c9de273232fdd041bd))
 
 ### Chores
 
@@ -241,10 +261,6 @@
 - **menubar:** improve the style ef menubar items ([2a79a25](https://github.com/jkuri/Reframed/commit/2a79a254820cff4af1dc4d644b20e43d4138703b))
 - **properties-panel:** improve readability and display project size in general info ([64372a0](https://github.com/jkuri/Reframed/commit/64372a0cdafe6288da354fe0afed3dd867661941))
 
-### Documentation
-
-- **readme:** add new icon to the readme section ([4532b67](https://github.com/jkuri/Reframed/commit/4532b67b6976b3fea6508234957c4c0eb27caf00))
-
 ### Chores
 
 - **settings:** update text for supersample description ([a11b5e8](https://github.com/jkuri/Reframed/commit/a11b5e8782f306ec29901e4617df49a35e60f31e))
@@ -280,10 +296,6 @@
 
 ### Documentation
 
-- **readme:** add Homebrew install command to download section ([d31a031](https://github.com/jkuri/Reframed/commit/d31a0314cf481cea6c362ed573669e6fe7f10feb))
-- **readme:** add editor screencast gif ([20c1f46](https://github.com/jkuri/Reframed/commit/20c1f4603e9a21a234cc4451af5ed3aca0652fa4))
-- **readme:** add cursor metadata, zoom & pan, and GIF export sections ([9302678](https://github.com/jkuri/Reframed/commit/9302678173ad40da98d60aae11bb3ca053726531))
-- **readme:** add ProRes 422 and ProRes 4444 to export codec list ([93bc8e8](https://github.com/jkuri/Reframed/commit/93bc8e861bdc571acfb646a646ec793b7936baa8))
 - **claude:** update CLAUDE.md specs ([d6cf4d9](https://github.com/jkuri/Reframed/commit/d6cf4d9187d5b6fed2120bc5b28ec48b270e88ca))
 
 ## [v0.9.0](https://github.com/jkuri/Reframed/compare/v0.8.2...v0.9.0) (2026-02-18)
@@ -324,10 +336,6 @@
 ### Refactoring
 
 - **audio:** remove AudioNoiseReducer file, was just a trivial passthrough to RNNoiseProcessor ([178daf7](https://github.com/jkuri/Reframed/commit/178daf73ec5aac19847fe712480dba1a0dda0522))
-
-### Documentation
-
-- **readme:** update README.md with mic noise reducer description ([4ef3fb1](https://github.com/jkuri/Reframed/commit/4ef3fb1b45df21d14d3cdd8c461e6b038fd02e83))
 
 ## [v0.8.1](https://github.com/jkuri/Reframed/compare/v0.8.0...v0.8.1) (2026-02-17)
 
@@ -453,10 +461,6 @@
 - **format:** add swift format command to the Makefile and run it ([c1085ff](https://github.com/jkuri/Reframed/commit/c1085ff2aacfd19f75fd2f3a111a72eba161c883))
 - **format:** add swift format command to the Makefile and run it ([f3387aa](https://github.com/jkuri/Reframed/commit/f3387aa9e2b94c9f0e7bdde7af7d3552e25153fc))
 
-### Documentation
-
-- **readme:** update README.md with latest features ([b1b7ef2](https://github.com/jkuri/Reframed/commit/b1b7ef20159153378318a8275b67006670abdece))
-
 ### Chores
 
 - styles and fixed on the timeline ([7f4a4ef](https://github.com/jkuri/Reframed/commit/7f4a4ef0669ab1aaddfbe432d0ae6d452d92aafd))
@@ -480,11 +484,6 @@
 ### Refactoring
 
 - **rename:** rename project to Reframed ([1a3b5f7](https://github.com/jkuri/Reframed/commit/1a3b5f755013e4ca382137ab0daf238a3dd4eb23))
-
-### Documentation
-
-- **readme:** remove icon from the readme ([3ef0dbc](https://github.com/jkuri/Reframed/commit/3ef0dbc88b40b93ed8b47b9f92afb1e3ad957282))
-- **readme:** update readme ([ffc6eae](https://github.com/jkuri/Reframed/commit/ffc6eaececb637e5054ac3defff9327355abf0a5))
 
 ## [v0.4.0](https://github.com/jkuri/Reframed/compare/v0.3.0...v0.4.0) (2026-02-12)
 
@@ -521,11 +520,6 @@
 ### Bug Fixes
 
 - multiple bug fixes and improvements, especially with device detection ([4b83886](https://github.com/jkuri/Reframed/commit/4b838868ce80e7bc4757769e197833fe2a3dfb43))
-
-### Documentation
-
-- **readme:** update readme ([533951a](https://github.com/jkuri/Reframed/commit/533951abf38da18a87d6665317a5c9eff7091c6b))
-- **readme:** update README.md and add logo ([7c27130](https://github.com/jkuri/Reframed/commit/7c271307f49dcb7279d9a35e380022f112550e24))
 
 ### Chores
 
@@ -586,10 +580,6 @@
 
 - brutal refactor - many stuff ([3cb7c6e](https://github.com/jkuri/Reframed/commit/3cb7c6e15a770d9eb633876df3b6ffed7acd48ca))
 - Introduce `SessionState` to centralize application state and actions, replacing `CaptureCoordinator`, and add a new `SelectionControlsPanel` with updated resize handle sizing. ([d388f86](https://github.com/jkuri/Reframed/commit/d388f861220a30c8f6957840c7b3ed14f9fdb3c6))
-
-### Documentation
-
-- **readme:** add README.md ([4148e6f](https://github.com/jkuri/Reframed/commit/4148e6f80334112a84dbc72db0012d53c81ba0fe))
 
 ### Chores
 
