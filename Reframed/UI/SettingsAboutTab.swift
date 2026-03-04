@@ -5,6 +5,7 @@ extension SettingsView {
     VStack(spacing: Layout.sectionSpacing) {
       appInfoSection
       updateSection
+      changelogSection
       Spacer(minLength: 0)
       linksSection
     }
@@ -39,70 +40,24 @@ extension SettingsView {
   }
 
   private var updateSection: some View {
-    VStack(spacing: 12) {
-      Button {
-        Task { await checkForUpdates() }
-      } label: {
-        HStack(spacing: 6) {
-          if updateCheckInProgress {
-            ProgressView()
-              .controlSize(.mini)
-              .tint(ReframedColors.primaryText)
-          }
-          Text(updateCheckInProgress ? "Checking..." : "Check for Updates")
-        }
+    Button {
+      if let delegate = NSApp.delegate as? AppDelegate {
+        delegate.sparkleUpdater.checkForUpdates()
       }
-      .buttonStyle(OutlineButtonStyle(size: .small))
-      .disabled(updateCheckInProgress)
-
-      if let status = updateStatus {
-        updateStatusView(status)
-      }
+    } label: {
+      Text("Check for Updates")
     }
+    .buttonStyle(OutlineButtonStyle(size: .small))
+    .disabled(
+      {
+        guard let delegate = NSApp.delegate as? AppDelegate else { return true }
+        return !delegate.sparkleUpdater.canCheckForUpdates
+      }()
+    )
   }
 
-  @ViewBuilder
-  private func updateStatusView(_ status: UpdateStatus) -> some View {
-    switch status {
-    case .upToDate:
-      HStack(spacing: 6) {
-        Image(systemName: "checkmark.circle.fill")
-          .foregroundStyle(ReframedColors.primaryText)
-          .font(.system(size: FontSize.xs))
-        Text("You're up to date!")
-          .font(.system(size: FontSize.xs))
-          .foregroundStyle(ReframedColors.secondaryText)
-      }
-
-    case .available(let version, let url):
-      VStack(spacing: 8) {
-        HStack(spacing: 6) {
-          Image(systemName: "arrow.up.circle.fill")
-            .foregroundStyle(ReframedColors.primaryText)
-            .font(.system(size: FontSize.xs))
-          Text("Version \(version) is available")
-            .font(.system(size: FontSize.xs, weight: .medium))
-            .foregroundStyle(ReframedColors.primaryText)
-        }
-
-        Button("Download Update") {
-          if let downloadURL = URL(string: url) {
-            NSWorkspace.shared.open(downloadURL)
-          }
-        }
-        .buttonStyle(OutlineButtonStyle(size: .small))
-      }
-
-    case .error(let message):
-      HStack(spacing: 6) {
-        Image(systemName: "exclamationmark.triangle.fill")
-          .foregroundStyle(.orange)
-          .font(.system(size: FontSize.xs))
-        Text(message)
-          .font(.system(size: FontSize.xs))
-          .foregroundStyle(ReframedColors.secondaryText)
-      }
-    }
+  private var changelogSection: some View {
+    ChangelogView()
   }
 
   private var linksSection: some View {
@@ -139,6 +94,41 @@ extension SettingsView {
         NSCursor.pointingHand.push()
       } else {
         NSCursor.pop()
+      }
+    }
+  }
+}
+
+private struct ChangelogView: View {
+  @State private var changelog: String?
+  @State private var version: String?
+
+  var body: some View {
+    Group {
+      if let version, let changelog, !changelog.isEmpty {
+        VStack(alignment: .leading, spacing: 8) {
+          Text("Latest Release — v\(version)")
+            .font(.system(size: FontSize.xs, weight: .medium))
+            .foregroundStyle(ReframedColors.primaryText)
+
+          ScrollView {
+            Text(changelog)
+              .font(.system(size: FontSize.xxs))
+              .foregroundStyle(ReframedColors.secondaryText)
+              .frame(maxWidth: .infinity, alignment: .leading)
+              .textSelection(.enabled)
+          }
+          .frame(maxHeight: 120)
+        }
+        .padding(10)
+        .background(ReframedColors.muted)
+        .clipShape(RoundedRectangle(cornerRadius: Radius.md))
+      }
+    }
+    .task {
+      if let result = await UpdateChecker.fetchLatestChangelog() {
+        version = result.version
+        changelog = result.changelog
       }
     }
   }

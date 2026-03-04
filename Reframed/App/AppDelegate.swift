@@ -4,6 +4,7 @@ import SwiftUI
 @MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate, NSWindowDelegate {
   let session = SessionState()
+  let sparkleUpdater = SparkleUpdater()
   private var permissionsWindow: NSWindow?
   private var shortcutManager: KeyboardShortcutManager?
   private var eventMonitor: Any?

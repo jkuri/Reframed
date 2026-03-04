@@ -8,10 +8,18 @@
 	<string>$(PRODUCT_BUNDLE_IDENTIFIER)</string>
 	<key>CFBundleShortVersionString</key>
 	<string>$(MARKETING_VERSION)</string>
-<key>NSHumanReadableCopyright</key>
+	<key>CFBundleVersion</key>
+	<string>$(CURRENT_PROJECT_VERSION)</string>
+	<key>NSHumanReadableCopyright</key>
 	<string>Jan Kuri &lt;jkuri88@gmail.com&gt;</string>
 	<key>LSUIElement</key>
 	<false/>
+	<key>SUFeedURL</key>
+	<string>https://github.com/jkuri/Reframed/releases/download/appcast/appcast.xml</string>
+	<key>SUPublicEDKey</key>
+	<string>fbTkPksA1K4eUhGRCvIscQ7QGdUy3tstkNtWy/NstdY=</string>
+	<key>SUEnableAutomaticChecks</key>
+	<true/>
 	<key>NSScreenCaptureUsageDescription</key>
 	<string>Reframed needs screen recording access to capture your screen.</string>
 	<key>NSMicrophoneUsageDescription</key>

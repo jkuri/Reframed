@@ -33,6 +33,7 @@
 		A10000000000000000000018 /* AVFoundation.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = B10000000000000000000018 /* AVFoundation.framework */; };
 		A10000000000000000000019 /* Logging in Frameworks */ = {isa = PBXBuildFile; productRef = E10000000000000000000001 /* Logging */; };
 		A1000000000000000000001A /* MenuBarExtraAccess in Frameworks */ = {isa = PBXBuildFile; productRef = E10000000000000000000002 /* MenuBarExtraAccess */; };
+		E1000000000000000000000C /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E1000000000000000000000B /* Sparkle */; };
 		A1000000000000000000001C /* VideoTranscoder.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001C /* VideoTranscoder.swift */; };
 		A1000000000000000000001D /* RecordingBorderWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001D /* RecordingBorderWindow.swift */; };
 		A1000000000000000000001E /* CaptureAreaView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000001E /* CaptureAreaView.swift */; };
@@ -80,6 +81,7 @@
 		A1000000000000000000004A /* InlineEditableText.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000004A /* InlineEditableText.swift */; };
 		A1000000000000000000004B /* SettingsAboutTab.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000004B /* SettingsAboutTab.swift */; };
 		A1000000000000000000004C /* UpdateChecker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000004C /* UpdateChecker.swift */; };
+		E1000000000000000000000D /* SparkleUpdater.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1000000000000000000000E /* SparkleUpdater.swift */; };
 		A1000000000000000000004D /* PrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000004D /* PrimaryButton.swift */; };
 		A1000000000000000000004E /* SelectButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000004E /* SelectButton.swift */; };
 		A1000000000000000000004F /* LanguagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000004F /* LanguagePicker.swift */; };
@@ -277,6 +279,7 @@
 		B1000000000000000000004A /* InlineEditableText.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = InlineEditableText.swift; sourceTree = "<group>"; };
 		B1000000000000000000004B /* SettingsAboutTab.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SettingsAboutTab.swift; sourceTree = "<group>"; };
 		B1000000000000000000004C /* UpdateChecker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = UpdateChecker.swift; sourceTree = "<group>"; };
+		E1000000000000000000000E /* SparkleUpdater.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SparkleUpdater.swift; sourceTree = "<group>"; };
 		B1000000000000000000004D /* PrimaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrimaryButton.swift; sourceTree = "<group>"; };
 		B1000000000000000000004E /* SelectButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectButton.swift; sourceTree = "<group>"; };
 		B1000000000000000000004F /* LanguagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguagePicker.swift; sourceTree = "<group>"; };
@@ -408,6 +411,7 @@
 				A10000000000000000000018 /* AVFoundation.framework in Frameworks */,
 				A10000000000000000000019 /* Logging in Frameworks */,
 				A1000000000000000000001A /* MenuBarExtraAccess in Frameworks */,
+				E1000000000000000000000C /* Sparkle in Frameworks */,
 			);
 		};
 /* End PBXFrameworksBuildPhase section */
@@ -521,6 +525,7 @@
 				B60000000000000000000001 /* CodableColor.swift */,
 				DA000000000000000000001D /* RNNoiseProcessor.swift */,
 				B1000000000000000000003E /* KeyboardShortcut.swift */,
+				E1000000000000000000000E /* SparkleUpdater.swift */,
 				B1000000000000000000004C /* UpdateChecker.swift */,
 			CA20000000000000000000A1 /* WhisperModelManager.swift */,
 			CA20000000000000000000A2 /* TranscriptionService.swift */,
@@ -771,6 +776,7 @@
 				E10000000000000000000002 /* MenuBarExtraAccess */,
 				E10000000000000000000006 /* RNNoise */,
 				E10000000000000000000008 /* WhisperKit */,
+				E1000000000000000000000B /* Sparkle */,
 			);
 			productName = Reframed;
 			productReference = B1000000000000000000001B /* Reframed.app */;
@@ -804,6 +810,7 @@
 				E10000000000000000000004 /* XCRemoteSwiftPackageReference "MenuBarExtraAccess" */,
 				E10000000000000000000005 /* XCRemoteSwiftPackageReference "rnnoise-spm" */,
 				E10000000000000000000007 /* XCRemoteSwiftPackageReference "WhisperKit" */,
+				E1000000000000000000000A /* XCRemoteSwiftPackageReference "Sparkle" */,
 			);
 			preferredProjectObjectVersion = 90;
 			productRefGroup = D1000000000000000000000B /* Products */;
@@ -967,6 +974,7 @@
 				A10000000000000000000049 /* IconButton.swift in Sources */,
 				A1000000000000000000004A /* InlineEditableText.swift in Sources */,
 				A1000000000000000000004B /* SettingsAboutTab.swift in Sources */,
+				E1000000000000000000000D /* SparkleUpdater.swift in Sources */,
 				A1000000000000000000004C /* UpdateChecker.swift in Sources */,
 				A1000000000000000000004D /* PrimaryButton.swift in Sources */,
 				A1000000000000000000004E /* SelectButton.swift in Sources */,
@@ -1285,6 +1293,14 @@
 				minimumVersion = 0.15.0;
 			};
 		};
+		E1000000000000000000000A /* XCRemoteSwiftPackageReference "Sparkle" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/sparkle-project/Sparkle";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 2.0.0;
+			};
+		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1307,6 +1323,11 @@
 			isa = XCSwiftPackageProductDependency;
 			package = E10000000000000000000007 /* XCRemoteSwiftPackageReference "WhisperKit" */;
 			productName = WhisperKit;
+		};
+		E1000000000000000000000B /* Sparkle */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = E1000000000000000000000A /* XCRemoteSwiftPackageReference "Sparkle" */;
+			productName = Sparkle;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

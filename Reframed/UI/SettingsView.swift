@@ -18,8 +18,6 @@ struct SettingsView: View {
   @State var cameraMaximumResolution: String = ConfigService.shared.cameraMaximumResolution
   @State var projectFolder: String = ConfigService.shared.projectFolder
   @State var appearance: String = ConfigService.shared.appearance
-  @State var updateCheckInProgress = false
-  @State var updateStatus: UpdateStatus? = nil
   @Environment(\.colorScheme) private var colorScheme
 
   let fpsOptions = [24, 30, 40, 50, 60]
@@ -139,13 +137,6 @@ struct SettingsView: View {
       projectFolder = path
       ConfigService.shared.projectFolder = path
     }
-  }
-
-  func checkForUpdates() async {
-    updateCheckInProgress = true
-    updateStatus = nil
-    updateStatus = await UpdateChecker.checkForUpdates()
-    updateCheckInProgress = false
   }
 
   func chooseOutputFolder() {

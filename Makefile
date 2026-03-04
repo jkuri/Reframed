@@ -7,7 +7,7 @@ VERSION = $(shell grep MARKETING_VERSION Config.xcconfig | cut -d'=' -f2 | tr -d
 RELEASE_DIR = $(BUILD_DIR)/Build/Products/Release
 DEBUG_DIR = $(BUILD_DIR)/Build/Products/Debug
 
-.PHONY: build release run dev dmg dmg-release format clean help install uninstall changelog tag
+.PHONY: build release run dev dmg dmg-release format clean help install uninstall changelog tag appcast publish
 
 all: help
 
@@ -39,12 +39,18 @@ tag:
 	@if git rev-parse "v$(VERSION)" >/dev/null 2>&1; then \
 		echo "Tag v$(VERSION) already exists"; exit 1; \
 	fi
-	@git tag "v$(VERSION)"
+	@git tag -a "v$(VERSION)" -m "v$(VERSION)"
 	@echo "Created tag v$(VERSION)"
 	@$(MAKE) changelog
 
 changelog:
 	@./scripts/changelog.sh --unreleased
+
+appcast:
+	@./scripts/generate-appcast.sh
+
+publish: tag dmg-release appcast
+	@./scripts/publish-release.sh
 
 format:
 	@swift format -i -r Reframed/
@@ -70,4 +76,6 @@ help:
 	@echo "  clean     - Clean build artifacts"
 	@echo "  tag       - Create git tag from Config.xcconfig version and generate changelog"
 	@echo "  changelog - Generate CHANGELOG.md"
+	@echo "  appcast   - Generate appcast.xml for Sparkle updates"
+	@echo "  publish   - Full release: tag + dmg-release + appcast"
 	@echo "  help      - Show this help"
