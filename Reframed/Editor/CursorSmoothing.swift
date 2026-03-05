@@ -59,7 +59,9 @@ enum CursorSmoothing {
   static func smooth(
     samples: [CursorSample],
     speed: CursorMovementSpeed,
-    clicks: [CursorClickEvent] = []
+    clicks: [CursorClickEvent] = [],
+    zoomTimeline: ZoomTimeline? = nil,
+    keystrokes: [KeystrokeEvent] = []
   ) -> [CursorSample] {
     guard samples.count >= 2 else { return samples }
 
@@ -69,6 +71,8 @@ enum CursorSmoothing {
     let convergence = speed.convergenceDuration
     let sortedClicks = clicks.sorted { $0.t < $1.t }
     var clickIdx = 0
+
+    let typingIntervals = buildTypingIntervals(from: keystrokes)
 
     var result: [CursorSample] = []
     result.reserveCapacity(samples.count)
@@ -96,12 +100,31 @@ enum CursorSmoothing {
         continue
       }
 
+      let zoomScale = zoomScaleFactor(at: target.t, timeline: zoomTimeline)
+      let isTyping = isInTypingInterval(target.t, intervals: typingIntervals)
+
+      var effectiveTension = tension
+      var effectiveFriction = friction
+      var effectiveMass = mass
+
+      if zoomScale > 1.05 {
+        let boost = min(zoomScale, 4.0)
+        effectiveTension *= boost
+        effectiveFriction *= boost * 0.8
+        effectiveMass *= 0.7
+      }
+
+      if isTyping {
+        effectiveTension *= 2.0
+        effectiveFriction *= 1.5
+      }
+
       let steps = max(1, Int(ceil(dt / 0.001)))
       let stepDt = dt / Double(steps)
 
       for _ in 0..<steps {
-        let accelX = (tension * (target.x - posX) - friction * velX) / mass
-        let accelY = (tension * (target.y - posY) - friction * velY) / mass
+        let accelX = (effectiveTension * (target.x - posX) - effectiveFriction * velX) / effectiveMass
+        let accelY = (effectiveTension * (target.y - posY) - effectiveFriction * velY) / effectiveMass
         velX += accelX * stepDt
         velY += accelY * stepDt
         posX += velX * stepDt
@@ -131,8 +154,9 @@ enum CursorSmoothing {
       if clickIdx < sortedClicks.count {
         let click = sortedClicks[clickIdx]
         let timeToClick = click.t - target.t
-        if timeToClick > 0 && timeToClick <= convergence {
-          let raw = 1.0 - timeToClick / convergence
+        let effectiveConvergence = zoomScale > 1.05 ? convergence * 1.5 : convergence
+        if timeToClick > 0 && timeToClick <= effectiveConvergence {
+          let raw = 1.0 - timeToClick / effectiveConvergence
           let blend = raw * raw * (3.0 - 2.0 * raw)
           outX = posX + (click.x - posX) * blend
           outY = posY + (click.y - posY) * blend
@@ -143,5 +167,59 @@ enum CursorSmoothing {
     }
 
     return result
+  }
+
+  private static func zoomScaleFactor(at time: Double, timeline: ZoomTimeline?) -> Double {
+    guard let timeline else { return 1.0 }
+    let rect = timeline.zoomRect(at: time)
+    guard rect.width > 0 && rect.width < 1.0 else { return 1.0 }
+    return 1.0 / rect.width
+  }
+
+  private struct TimeInterval {
+    let start: Double
+    let end: Double
+  }
+
+  private static func buildTypingIntervals(from keystrokes: [KeystrokeEvent]) -> [TimeInterval] {
+    let keyDowns = keystrokes.filter { $0.isDown }
+    guard keyDowns.count >= 3 else { return [] }
+
+    let modifierMask: UInt = 0xFF0000
+    let typingKeys = keyDowns.filter { event in
+      let hasModifier = (event.modifiers & modifierMask) != 0
+      let isModifierOnly = [55, 54, 56, 60, 58, 61, 59, 62].contains(event.keyCode)
+      return !isModifierOnly && !hasModifier
+    }
+    guard typingKeys.count >= 3 else { return [] }
+
+    var intervals: [TimeInterval] = []
+    let burstGap = 0.5
+    var burstStart = typingKeys[0].t
+    var burstEnd = typingKeys[0].t
+    var count = 1
+
+    for i in 1..<typingKeys.count {
+      if typingKeys[i].t - burstEnd < burstGap {
+        burstEnd = typingKeys[i].t
+        count += 1
+      } else {
+        if count >= 3 {
+          intervals.append(TimeInterval(start: burstStart, end: burstEnd))
+        }
+        burstStart = typingKeys[i].t
+        burstEnd = typingKeys[i].t
+        count = 1
+      }
+    }
+    if count >= 3 {
+      intervals.append(TimeInterval(start: burstStart, end: burstEnd))
+    }
+
+    return intervals
+  }
+
+  private static func isInTypingInterval(_ time: Double, intervals: [TimeInterval]) -> Bool {
+    intervals.contains { time >= $0.start && time <= $0.end }
   }
 }

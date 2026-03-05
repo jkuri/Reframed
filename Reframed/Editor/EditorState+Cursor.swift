@@ -17,7 +17,9 @@ extension EditorState {
     let smoothedSamples = CursorSmoothing.smooth(
       samples: provider.metadata.samples,
       speed: cursorMovementSpeed,
-      clicks: provider.metadata.clicks
+      clicks: provider.metadata.clicks,
+      zoomTimeline: zoomTimeline,
+      keystrokes: provider.metadata.keystrokes
     )
     var smoothedMetadata = provider.metadata
     smoothedMetadata.samples = smoothedSamples
