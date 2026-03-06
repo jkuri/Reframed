@@ -15,6 +15,7 @@ final class ScreenCaptureSession: NSObject, SCStreamDelegate, SCStreamOutput, @u
   private var isPaused = false
   private var lastPixelBuffer: CVPixelBuffer?
   private let captureQuality: CaptureQuality
+  var onStreamError: (@Sendable (any Error) -> Void)?
 
   init(videoWriter: VideoTrackWriter, captureQuality: CaptureQuality = .standard) {
     self.videoWriter = videoWriter
@@ -101,8 +102,12 @@ final class ScreenCaptureSession: NSObject, SCStreamDelegate, SCStreamOutput, @u
     }
   }
 
-  func stop() async throws {
-    try await stream?.stopCapture()
+  func stop() async {
+    do {
+      try await stream?.stopCapture()
+    } catch {
+      logger.warning("Stream stop error (may already be stopped): \(error.localizedDescription)")
+    }
     stream = nil
     lastPixelBuffer = nil
     logger.info("Capture stopped")
@@ -184,5 +189,6 @@ final class ScreenCaptureSession: NSObject, SCStreamDelegate, SCStreamOutput, @u
 
   func stream(_ stream: SCStream, didStopWithError error: any Error) {
     logger.error("Stream error: \(error.localizedDescription)")
+    onStreamError?(error)
   }
 }

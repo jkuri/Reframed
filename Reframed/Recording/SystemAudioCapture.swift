@@ -51,8 +51,12 @@ final class SystemAudioCapture: NSObject, SCStreamDelegate, SCStreamOutput, @unc
     }
   }
 
-  func stop() async throws {
-    try await stream?.stopCapture()
+  func stop() async {
+    do {
+      try await stream?.stopCapture()
+    } catch {
+      logger.warning("System audio stop error (may already be stopped): \(error.localizedDescription)")
+    }
     stream = nil
     logger.info("System audio capture stopped")
   }

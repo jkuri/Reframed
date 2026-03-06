@@ -151,7 +151,11 @@ final class SessionState {
 
   private func startWindowTracking(windowID: CGWindowID) {
     windowPositionObserver = WindowPositionObserver(
-      windowID: windowID
+      windowID: windowID,
+      onDisappeared: { [weak self] in
+        guard let self else { return }
+        Task { @MainActor in await self.handleStreamError() }
+      }
     ) { [weak self] rect in
       self?.selectionCoordinator?.updateRecordingBorder(screenRect: rect)
       if let recorder = self?.cursorMetadataRecorder {
@@ -357,6 +361,10 @@ final class SessionState {
 
     if captureMode == .device, let capture = deviceCapture {
       let coordinator = RecordingCoordinator()
+      await coordinator.setStreamErrorHandler { [weak self] _ in
+        guard let self else { return }
+        Task { @MainActor in await self.handleStreamError() }
+      }
       self.recordingCoordinator = coordinator
       overlayView = nil
 
@@ -401,6 +409,10 @@ final class SessionState {
     }
 
     let coordinator = RecordingCoordinator()
+    await coordinator.setStreamErrorHandler { [weak self] _ in
+      guard let self else { return }
+      Task { @MainActor in await self.handleStreamError() }
+    }
     self.recordingCoordinator = coordinator
     overlayView = nil
 
@@ -502,6 +514,28 @@ final class SessionState {
     } catch {
       logger.error("Failed to create project bundle: \(error)")
       openEditor(project: nil, result: result)
+    }
+  }
+
+  private func handleStreamError() async {
+    switch state {
+    case .recording, .paused:
+      logger.warning("Stream stopped unexpectedly, stopping recording")
+      await recordingCoordinator?.pause()
+      do {
+        try await stopRecording()
+      } catch {
+        logger.error("Failed to stop recording after stream error: \(error)")
+        recordingCoordinator = nil
+        captureTarget = nil
+        captureMode = .none
+        stopCameraPreview()
+        isCameraOn = false
+        transition(to: .idle)
+        showToolbar()
+      }
+    default:
+      break
     }
   }
 

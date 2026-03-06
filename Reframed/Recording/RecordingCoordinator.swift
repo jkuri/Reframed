@@ -19,6 +19,7 @@ actor RecordingCoordinator {
   private var recordingClock: SharedRecordingClock?
   private var cursorMetadataRecorder: CursorMetadataRecorder?
   private let logger = Logger(label: "eu.jankuri.reframed.recording-coordinator")
+  private var onStreamError: (@Sendable (any Error) -> Void)?
   private var pauseStartTime: CMTime = .invalid
   private var totalPauseOffset: CMTime = .zero
   private var pixelW: Int = 0
@@ -142,6 +143,10 @@ actor RecordingCoordinator {
     }
 
     let session = ScreenCaptureSession(videoWriter: vidWriter, captureQuality: captureQuality)
+    session.onStreamError = { [weak self] error in
+      guard let self else { return }
+      Task { await self.handleStreamError(error) }
+    }
     do {
       try await session.start(
         target: target,
@@ -431,10 +436,10 @@ actor RecordingCoordinator {
     deviceCapture?.stop()
     deviceCapture = nil
 
-    try await systemAudioCapture?.stop()
+    await systemAudioCapture?.stop()
     systemAudioCapture = nil
 
-    try await captureSession?.stop()
+    await captureSession?.stop()
     captureSession = nil
 
     async let videoResult = videoWriter?.finish()
@@ -516,10 +521,10 @@ actor RecordingCoordinator {
     deviceCapture?.stop()
     deviceCapture = nil
 
-    try await systemAudioCapture?.stop()
+    await systemAudioCapture?.stop()
     systemAudioCapture = nil
 
-    try await captureSession?.stop()
+    await captureSession?.stop()
     captureSession = nil
 
     async let videoResult = videoWriter?.finish()
@@ -569,6 +574,15 @@ actor RecordingCoordinator {
 
     logger.info("Recording saved", metadata: ["path": "\(destination.path)"])
     return destination
+  }
+
+  func setStreamErrorHandler(_ handler: @escaping @Sendable (any Error) -> Void) {
+    onStreamError = handler
+  }
+
+  private func handleStreamError(_ error: any Error) {
+    logger.error("Stream error received: \(error.localizedDescription)")
+    onStreamError?(error)
   }
 
   func getAudioLevels() -> (mic: Float, system: Float) {

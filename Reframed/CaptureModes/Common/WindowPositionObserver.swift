@@ -6,9 +6,12 @@ final class WindowPositionObserver {
   private let windowID: CGWindowID
   private var lastRect: CGRect = .zero
   private let onChange: (CGRect) -> Void
+  private let onDisappeared: (() -> Void)?
+  private var disappeared = false
 
-  init(windowID: CGWindowID, onChange: @escaping @MainActor (CGRect) -> Void) {
+  init(windowID: CGWindowID, onDisappeared: (@MainActor () -> Void)? = nil, onChange: @escaping @MainActor (CGRect) -> Void) {
     self.windowID = windowID
+    self.onDisappeared = onDisappeared
     self.onChange = onChange
 
     guard let screen = NSScreen.screens.first else { return }
@@ -33,7 +36,13 @@ final class WindowPositionObserver {
       let info = list.first,
       let boundsDict = info[kCGWindowBounds as String],
       let bounds = CGRect(dictionaryRepresentation: boundsDict as! CFDictionary)
-    else { return }
+    else {
+      if !disappeared {
+        disappeared = true
+        onDisappeared?()
+      }
+      return
+    }
 
     let screenHeight = NSScreen.primaryScreenHeight
     let appKitRect = CGRect(
