@@ -5,25 +5,14 @@ struct StartRecordingButton: View {
   var onCountdownStart: (() -> Void)?
   var onCancel: (() -> Void)?
   let action: () -> Void
+  var trigger: Binding<Bool>?
 
   @State private var remaining: Int?
   @State private var countdownTask: Task<Void, Never>?
 
   var body: some View {
     Button {
-      if remaining != nil {
-        countdownTask?.cancel()
-        countdownTask = nil
-        remaining = nil
-        onCancel?()
-        return
-      }
-      onCountdownStart?()
-      guard delay > 0 else {
-        action()
-        return
-      }
-      startCountdown()
+      activate()
     } label: {
       HStack(spacing: 6) {
         if let remaining {
@@ -42,6 +31,28 @@ struct StartRecordingButton: View {
       countdownTask?.cancel()
       countdownTask = nil
     }
+    .onChange(of: trigger?.wrappedValue) { _, newValue in
+      if newValue == true {
+        trigger?.wrappedValue = false
+        activate()
+      }
+    }
+  }
+
+  private func activate() {
+    if remaining != nil {
+      countdownTask?.cancel()
+      countdownTask = nil
+      remaining = nil
+      onCancel?()
+      return
+    }
+    onCountdownStart?()
+    guard delay > 0 else {
+      action()
+      return
+    }
+    startCountdown()
   }
 
   private func startCountdown() {

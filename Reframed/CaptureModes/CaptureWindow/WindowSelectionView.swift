@@ -7,6 +7,7 @@ struct WindowSelectionView: View {
   let screen: NSScreen
   @ObservedObject var windowController: WindowController
   @State private var showingResize = false
+  @State private var triggerStart = false
 
   private func toLocal(_ rect: CGRect) -> CGRect {
     let screenBounds = CGDisplayBounds(screen.displayID)
@@ -91,17 +92,19 @@ struct WindowSelectionView: View {
             StartRecordingButton(
               delay: session.options.timerDelay.rawValue,
               onCountdownStart: { session.hideToolbar() },
-              onCancel: { session.cancelSelection() }
-            ) {
-              Task {
-                await windowController.updateSCWindows()
-                if let scWindow = windowController.scWindows.first(where: {
-                  $0.windowID == CGWindowID(current.id)
-                }) {
-                  session.confirmWindowSelection(scWindow)
+              onCancel: { session.cancelSelection() },
+              action: {
+                Task {
+                  await windowController.updateSCWindows()
+                  if let scWindow = windowController.scWindows.first(where: {
+                    $0.windowID == CGWindowID(current.id)
+                  }) {
+                    session.confirmWindowSelection(scWindow)
+                  }
                 }
-              }
-            }
+              },
+              trigger: $triggerStart
+            )
 
             Text("Tab to cycle windows · Esc to cancel · Enter to start")
               .font(.system(size: FontSize.xxs))
@@ -148,6 +151,11 @@ struct WindowSelectionView: View {
         .keyboardShortcut(.tab, modifiers: .shift)
         .opacity(0)
         .frame(width: 0, height: 0)
+
+        Button("") { triggerStart = true }
+          .keyboardShortcut(.return, modifiers: [])
+          .opacity(0)
+          .frame(width: 0, height: 0)
       }
     }
   }

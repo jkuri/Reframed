@@ -9,6 +9,7 @@ struct StartRecordingOverlayView: View {
   var onCountdownStart: ((NSScreen) -> Void)?
   let onCancel: () -> Void
   let onStart: (NSScreen) -> Void
+  @State private var triggerStart = false
 
   private func resolution(for screen: NSScreen) -> String {
     let width = Int(screen.frame.width * screen.backingScaleFactor)
@@ -75,7 +76,8 @@ struct StartRecordingOverlayView: View {
           delay: delay,
           onCountdownStart: { onCountdownStart?(screen) },
           onCancel: { onCancel() },
-          action: { onStart(screen) }
+          action: { onStart(screen) },
+          trigger: $triggerStart
         )
 
         Text("Press Esc to cancel · Enter to start")
@@ -89,6 +91,11 @@ struct StartRecordingOverlayView: View {
 
       Button("") { onCancel() }
         .keyboardShortcut(.escape, modifiers: [])
+        .opacity(0)
+        .frame(width: 0, height: 0)
+
+      Button("") { triggerStart = true }
+        .keyboardShortcut(.return, modifiers: [])
         .opacity(0)
         .frame(width: 0, height: 0)
     }

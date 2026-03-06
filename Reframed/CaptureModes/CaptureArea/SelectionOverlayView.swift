@@ -430,7 +430,7 @@ final class SelectionOverlayView: NSView {
     case 53:
       session.cancelSelection()
     case 36:
-      (session.overlayView ?? self).confirmSelection()
+      NotificationCenter.default.post(name: .areaSelectionConfirmRequested, object: nil)
     default:
       super.keyDown(with: event)
     }

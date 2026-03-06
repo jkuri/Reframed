@@ -8,6 +8,7 @@ struct CaptureAreaView: View {
   @State private var h: Int = 0
   @State private var isEditing = false
   @State private var showPresets = false
+  @State private var triggerStart = false
 
   private let textColor = Color.black
   private let secondaryTextColor = Color.black.opacity(0.6)
@@ -77,7 +78,8 @@ struct CaptureAreaView: View {
         delay: session.options.timerDelay.rawValue,
         onCountdownStart: { session.hideToolbar() },
         onCancel: { session.cancelSelection() },
-        action: { session.overlayView?.confirmSelection() }
+        action: { session.overlayView?.confirmSelection() },
+        trigger: $triggerStart
       )
 
       Text("Shift to lock aspect ratio \u{00b7} Esc to cancel \u{00b7} Enter to start")
@@ -95,6 +97,9 @@ struct CaptureAreaView: View {
       y = Int(r.origin.y)
       w = Int(r.width)
       h = Int(r.height)
+    }
+    .onReceive(NotificationCenter.default.publisher(for: .areaSelectionConfirmRequested)) { _ in
+      triggerStart = true
     }
   }
 
@@ -146,4 +151,5 @@ struct CaptureAreaView: View {
 
 extension Notification.Name {
   static let selectionRectChanged = Notification.Name("selectionRectChanged")
+  static let areaSelectionConfirmRequested = Notification.Name("areaSelectionConfirmRequested")
 }
