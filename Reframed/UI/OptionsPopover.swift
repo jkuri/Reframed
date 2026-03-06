@@ -103,7 +103,7 @@ struct OptionsPopover: View {
       }
     }
     .padding(.vertical, 8)
-    .frame(width: 280)
+    .frame(minWidth: 280)
     .popoverContainerStyle()
   }
 }

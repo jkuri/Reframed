@@ -135,6 +135,7 @@
 		A70000000000000000000002 /* DeviceCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70000000000000000000002 /* DeviceCapture.swift */; };
 		A70000000000000000000003 /* DevicePreviewWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70000000000000000000003 /* DevicePreviewWindow.swift */; };
 		A70000000000000000000004 /* DevicePopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70000000000000000000004 /* DevicePopover.swift */; };
+		A70000000000000000000005 /* DevicePickerPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = B70000000000000000000005 /* DevicePickerPopover.swift */; };
 		A80000000000000000000001 /* MenuBarView.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80000000000000000000001 /* MenuBarView.swift */; };
 		A80000000000000000000002 /* HoverEffect.swift in Sources */ = {isa = PBXBuildFile; fileRef = B80000000000000000000002 /* HoverEffect.swift */; };
 		A90000000000000000000001 /* CursorMetadata.swift in Sources */ = {isa = PBXBuildFile; fileRef = B90000000000000000000001 /* CursorMetadata.swift */; };
@@ -334,6 +335,7 @@
 		B70000000000000000000002 /* DeviceCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DeviceCapture.swift; sourceTree = "<group>"; };
 		B70000000000000000000003 /* DevicePreviewWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevicePreviewWindow.swift; sourceTree = "<group>"; };
 		B70000000000000000000004 /* DevicePopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevicePopover.swift; sourceTree = "<group>"; };
+		B70000000000000000000005 /* DevicePickerPopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = DevicePickerPopover.swift; sourceTree = "<group>"; };
 		B80000000000000000000001 /* MenuBarView.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MenuBarView.swift; sourceTree = "<group>"; };
 		B80000000000000000000002 /* HoverEffect.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = HoverEffect.swift; sourceTree = "<group>"; };
 		B90000000000000000000001 /* CursorMetadata.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CursorMetadata.swift; sourceTree = "<group>"; };
@@ -572,6 +574,7 @@
 				B1000000000000000000002C /* StartRecordingButton.swift */,
 				B1000000000000000000002D /* SettingsView.swift */,
 				B70000000000000000000004 /* DevicePopover.swift */,
+				B70000000000000000000005 /* DevicePickerPopover.swift */,
 				B80000000000000000000001 /* MenuBarView.swift */,
 				B80000000000000000000002 /* HoverEffect.swift */,
 				B10000000000000000000036 /* SettingsGeneralTab.swift */,
@@ -936,6 +939,7 @@
 				A70000000000000000000002 /* DeviceCapture.swift in Sources */,
 				A70000000000000000000003 /* DevicePreviewWindow.swift in Sources */,
 				A70000000000000000000004 /* DevicePopover.swift in Sources */,
+				A70000000000000000000005 /* DevicePickerPopover.swift in Sources */,
 				A80000000000000000000001 /* MenuBarView.swift in Sources */,
 				A80000000000000000000002 /* HoverEffect.swift in Sources */,
 				A2000000000000000000001B /* TimelineView+AudioTrack.swift in Sources */,

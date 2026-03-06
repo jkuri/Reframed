@@ -6,6 +6,8 @@ struct CaptureToolbar: View {
   @State private var showSettings = false
   @State private var showRestartAlert = false
   @State private var showDevicePopover = false
+  @State private var showCameraPicker = false
+  @State private var showMicPicker = false
 
   @Environment(\.colorScheme) private var colorScheme
 
@@ -118,22 +120,66 @@ struct CaptureToolbar: View {
             activeIcon: "web.camera.fill",
             label: "Camera",
             isOn: session.isCameraOn,
-            isAvailable: session.options.selectedCamera != nil,
-            tooltip: session.options.selectedCamera != nil ? "Camera" : "Select a camera in Options",
-            action: { session.toggleCamera() }
+            isAvailable: true,
+            tooltip: "Camera",
+            action: {
+              if session.options.selectedCamera != nil {
+                session.toggleCamera()
+              } else {
+                showCameraPicker.toggle()
+              }
+            }
           )
           .hoverEffect(id: "toggle.camera")
+          .popover(isPresented: $showCameraPicker, arrowEdge: .bottom) {
+            DevicePickerPopover(
+              title: "Select Camera",
+              emptyMessage: "No cameras found",
+              devices: session.options.availableCameras.map {
+                DevicePickerItem(id: $0.id, name: $0.name)
+              },
+              selectedId: session.options.selectedCamera?.id,
+              onSelect: { device in
+                session.options.selectedCamera = CaptureDevice(id: device.id, name: device.name)
+                showCameraPicker = false
+                session.toggleCamera()
+              }
+            )
+            .presentationBackground(ReframedColors.backgroundPopover)
+          }
 
           ToolbarToggleButton(
             icon: "mic",
             activeIcon: "mic.fill",
             label: "Mic",
             isOn: session.isMicrophoneOn,
-            isAvailable: session.options.selectedMicrophone != nil,
-            tooltip: session.options.selectedMicrophone != nil ? "Microphone" : "Select a microphone in Options",
-            action: { session.toggleMicrophone() }
+            isAvailable: true,
+            tooltip: "Microphone",
+            action: {
+              if session.options.selectedMicrophone != nil {
+                session.toggleMicrophone()
+              } else {
+                showMicPicker.toggle()
+              }
+            }
           )
           .hoverEffect(id: "toggle.mic")
+          .popover(isPresented: $showMicPicker, arrowEdge: .bottom) {
+            DevicePickerPopover(
+              title: "Select Microphone",
+              emptyMessage: "No microphones found",
+              devices: session.options.availableMicrophones.map {
+                DevicePickerItem(id: $0.id, name: $0.name)
+              },
+              selectedId: session.options.selectedMicrophone?.id,
+              onSelect: { device in
+                session.options.selectedMicrophone = AudioDevice(id: device.id, name: device.name)
+                showMicPicker = false
+                session.toggleMicrophone()
+              }
+            )
+            .presentationBackground(ReframedColors.backgroundPopover)
+          }
 
           ToolbarToggleButton(
             icon: "speaker.wave.2",
