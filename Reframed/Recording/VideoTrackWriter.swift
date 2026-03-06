@@ -2,7 +2,6 @@ import AVFoundation
 import CoreMedia
 import CoreVideo
 import Logging
-import VideoToolbox
 
 final class VideoTrackWriter: @unchecked Sendable {
   private var assetWriter: AVAssetWriter?
@@ -44,49 +43,13 @@ final class VideoTrackWriter: @unchecked Sendable {
     let fileType: AVFileType = captureQuality.isProRes && !isWebcam ? .mov : .mp4
     let writer = try AVAssetWriter(outputURL: outputURL, fileType: fileType)
 
-    let bitRateMultiplier = isWebcam ? 2 : 5
-    let videoSettings: [String: Any]
-    switch captureQuality {
-    case .standard:
-      videoSettings = [
-        AVVideoCodecKey: AVVideoCodecType.hevc,
-        AVVideoWidthKey: width,
-        AVVideoHeightKey: height,
-        AVVideoColorPropertiesKey: [
-          AVVideoColorPrimariesKey: AVVideoColorPrimaries_ITU_R_709_2,
-          AVVideoTransferFunctionKey: AVVideoTransferFunction_ITU_R_709_2,
-          AVVideoYCbCrMatrixKey: AVVideoYCbCrMatrix_ITU_R_709_2,
-        ] as [String: Any],
-        AVVideoCompressionPropertiesKey: [
-          AVVideoAverageBitRateKey: width * height * bitRateMultiplier,
-          AVVideoProfileLevelKey: kVTProfileLevel_HEVC_Main10_AutoLevel,
-          AVVideoExpectedSourceFrameRateKey: fps,
-          AVVideoAllowFrameReorderingKey: false,
-        ] as [String: Any],
-      ]
-    case .high:
-      videoSettings = [
-        AVVideoCodecKey: AVVideoCodecType.proRes422,
-        AVVideoWidthKey: width,
-        AVVideoHeightKey: height,
-        AVVideoColorPropertiesKey: [
-          AVVideoColorPrimariesKey: AVVideoColorPrimaries_ITU_R_709_2,
-          AVVideoTransferFunctionKey: AVVideoTransferFunction_ITU_R_709_2,
-          AVVideoYCbCrMatrixKey: AVVideoYCbCrMatrix_ITU_R_709_2,
-        ] as [String: Any],
-      ]
-    case .veryHigh:
-      videoSettings = [
-        AVVideoCodecKey: AVVideoCodecType.proRes4444,
-        AVVideoWidthKey: width,
-        AVVideoHeightKey: height,
-        AVVideoColorPropertiesKey: [
-          AVVideoColorPrimariesKey: AVVideoColorPrimaries_ITU_R_709_2,
-          AVVideoTransferFunctionKey: AVVideoTransferFunction_ITU_R_709_2,
-          AVVideoYCbCrMatrixKey: AVVideoYCbCrMatrix_ITU_R_709_2,
-        ] as [String: Any],
-      ]
-    }
+    let videoSettings = EncodingSettings.captureVideoSettings(
+      quality: captureQuality,
+      width: width,
+      height: height,
+      fps: fps,
+      isWebcam: isWebcam
+    )
 
     let input = AVAssetWriterInput(mediaType: .video, outputSettings: videoSettings)
     input.expectsMediaDataInRealTime = true

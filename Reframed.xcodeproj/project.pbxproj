@@ -104,6 +104,7 @@
 		A20000000000000000000013 /* BackgroundStyle.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000013 /* BackgroundStyle.swift */; };
 		A20000000000000000000014 /* GradientPresets.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000014 /* GradientPresets.swift */; };
 		A20000000000000000000015 /* ExportSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000015 /* ExportSettings.swift */; };
+		A2VE00000000000000000001 /* EncodingSettings.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2VE00000000000000000001 /* EncodingSettings.swift */; };
 		A20000000000000000000016 /* EditorTopBar.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000016 /* EditorTopBar.swift */; };
 		A20000000000000000000017 /* ExportSheet.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000017 /* ExportSheet.swift */; };
 		A20000000000000000000018 /* PropertiesPanel.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000018 /* PropertiesPanel.swift */; };
@@ -302,6 +303,7 @@
 		B20000000000000000000013 /* BackgroundStyle.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BackgroundStyle.swift; sourceTree = "<group>"; };
 		B20000000000000000000014 /* GradientPresets.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = GradientPresets.swift; sourceTree = "<group>"; };
 		B20000000000000000000015 /* ExportSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportSettings.swift; sourceTree = "<group>"; };
+		B2VE00000000000000000001 /* EncodingSettings.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EncodingSettings.swift; sourceTree = "<group>"; };
 		B20000000000000000000016 /* EditorTopBar.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EditorTopBar.swift; sourceTree = "<group>"; };
 		B20000000000000000000017 /* ExportSheet.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ExportSheet.swift; sourceTree = "<group>"; };
 		B20000000000000000000018 /* PropertiesPanel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PropertiesPanel.swift; sourceTree = "<group>"; };
@@ -533,6 +535,7 @@
 			FB10000000000000000000A8 /* ClickSoundGenerator.swift */,
 				FB10000000000000000000D1 /* ClickSoundData.swift */,
 			FB10000000000000000000B2 /* LenientCodable.swift */,
+				B2VE00000000000000000001 /* EncodingSettings.swift */,
 			);
 			path = Utilities;
 			sourceTree = "<group>";
@@ -897,6 +900,7 @@
 				A20000000000000000000013 /* BackgroundStyle.swift in Sources */,
 				A20000000000000000000014 /* GradientPresets.swift in Sources */,
 				A20000000000000000000015 /* ExportSettings.swift in Sources */,
+				A2VE00000000000000000001 /* EncodingSettings.swift in Sources */,
 				A20000000000000000000016 /* EditorTopBar.swift in Sources */,
 				A20000000000000000000017 /* ExportSheet.swift in Sources */,
 				A20000000000000000000018 /* PropertiesPanel.swift in Sources */,

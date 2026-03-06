@@ -1,7 +1,6 @@
 import AVFoundation
 import CoreMedia
 import Foundation
-import VideoToolbox
 
 extension VideoCompositor {
   private final class ExportProgressPoller: @unchecked Sendable {
@@ -74,40 +73,12 @@ extension VideoCompositor {
 
     nonisolated(unsafe) let writer = try AVAssetWriter(url: url, fileType: fileType)
 
-    let pixels = Double(renderSize.width * renderSize.height)
-    let colorProperties: [String: Any] = [
-      AVVideoColorPrimariesKey: AVVideoColorPrimaries_ITU_R_709_2,
-      AVVideoTransferFunctionKey: AVVideoTransferFunction_ITU_R_709_2,
-      AVVideoYCbCrMatrixKey: AVVideoYCbCrMatrix_ITU_R_709_2,
-    ]
-    let videoSettings: [String: Any]
-    if codec == .proRes4444 || codec == .proRes422 {
-      videoSettings = [
-        AVVideoCodecKey: codec,
-        AVVideoWidthKey: Int(renderSize.width),
-        AVVideoHeightKey: Int(renderSize.height),
-        AVVideoColorPropertiesKey: colorProperties,
-      ]
-    } else {
-      var compressionProperties: [String: Any] = [
-        AVVideoMaxKeyFrameIntervalKey: exportFPS,
-        AVVideoExpectedSourceFrameRateKey: exportFPS,
-      ]
-      if codec == .hevc {
-        compressionProperties[AVVideoAverageBitRateKey] = pixels * 5
-        compressionProperties[AVVideoProfileLevelKey] = kVTProfileLevel_HEVC_Main10_AutoLevel
-      } else {
-        compressionProperties[AVVideoAverageBitRateKey] = pixels * 7
-        compressionProperties[AVVideoProfileLevelKey] = AVVideoProfileLevelH264HighAutoLevel
-      }
-      videoSettings = [
-        AVVideoCodecKey: codec,
-        AVVideoWidthKey: Int(renderSize.width),
-        AVVideoHeightKey: Int(renderSize.height),
-        AVVideoColorPropertiesKey: colorProperties,
-        AVVideoCompressionPropertiesKey: compressionProperties,
-      ]
-    }
+    let videoSettings = EncodingSettings.exportVideoSettings(
+      codec: codec,
+      width: Int(renderSize.width),
+      height: Int(renderSize.height),
+      fps: Int(exportFPS)
+    )
     nonisolated(unsafe) let videoInput = AVAssetWriterInput(
       mediaType: .video,
       outputSettings: videoSettings
@@ -117,13 +88,10 @@ extension VideoCompositor {
 
     nonisolated(unsafe) var audioInput: AVAssetWriterInput?
     if audioOutput != nil {
-      let audioSettings: [String: Any] = [
-        AVFormatIDKey: kAudioFormatMPEG4AAC,
-        AVNumberOfChannelsKey: 2,
-        AVSampleRateKey: 44100,
-        AVEncoderBitRateKey: audioBitrate,
-      ]
-      let aInput = AVAssetWriterInput(mediaType: .audio, outputSettings: audioSettings)
+      let aInput = AVAssetWriterInput(
+        mediaType: .audio,
+        outputSettings: EncodingSettings.aacAudioSettings(bitrate: audioBitrate)
+      )
       aInput.expectsMediaDataInRealTime = false
       writer.add(aInput)
       audioInput = aInput

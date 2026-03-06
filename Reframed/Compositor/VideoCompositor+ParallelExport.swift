@@ -2,7 +2,6 @@ import AVFoundation
 import CoreMedia
 import Foundation
 import Logging
-import VideoToolbox
 
 extension VideoCompositor {
   private final class CancelToken: @unchecked Sendable {
@@ -279,41 +278,12 @@ extension VideoCompositor {
 
     let assetWriter = try AVAssetWriter(outputURL: outputURL, fileType: fileType)
 
-    let videoCodec: AVVideoCodecType = codec.videoCodecType
-    let parallelColorProperties: [String: Any] = [
-      AVVideoColorPrimariesKey: AVVideoColorPrimaries_ITU_R_709_2,
-      AVVideoTransferFunctionKey: AVVideoTransferFunction_ITU_R_709_2,
-      AVVideoYCbCrMatrixKey: AVVideoYCbCrMatrix_ITU_R_709_2,
-    ]
-    let videoOutputSettings: [String: Any]
-    if codec.isProRes {
-      videoOutputSettings = [
-        AVVideoCodecKey: videoCodec,
-        AVVideoWidthKey: Int(renderSize.width),
-        AVVideoHeightKey: Int(renderSize.height),
-        AVVideoColorPropertiesKey: parallelColorProperties,
-      ]
-    } else {
-      let pixels = Double(renderSize.width * renderSize.height)
-      var compressionProperties: [String: Any] = [
-        AVVideoExpectedSourceFrameRateKey: fps,
-        AVVideoMaxKeyFrameIntervalKey: fps,
-      ]
-      if codec == .h265 {
-        compressionProperties[AVVideoAverageBitRateKey] = pixels * 5
-        compressionProperties[AVVideoProfileLevelKey] = kVTProfileLevel_HEVC_Main10_AutoLevel
-      } else {
-        compressionProperties[AVVideoAverageBitRateKey] = pixels * 7
-        compressionProperties[AVVideoProfileLevelKey] = AVVideoProfileLevelH264HighAutoLevel
-      }
-      videoOutputSettings = [
-        AVVideoCodecKey: videoCodec,
-        AVVideoWidthKey: Int(renderSize.width),
-        AVVideoHeightKey: Int(renderSize.height),
-        AVVideoColorPropertiesKey: parallelColorProperties,
-        AVVideoCompressionPropertiesKey: compressionProperties,
-      ]
-    }
+    let videoOutputSettings = EncodingSettings.exportVideoSettings(
+      codec: codec.videoCodecType,
+      width: Int(renderSize.width),
+      height: Int(renderSize.height),
+      fps: fps
+    )
     let videoInput = AVAssetWriterInput(
       mediaType: .video,
       outputSettings: videoOutputSettings
@@ -334,12 +304,7 @@ extension VideoCompositor {
     if !audioTracks.isEmpty {
       let aInput = AVAssetWriterInput(
         mediaType: .audio,
-        outputSettings: [
-          AVFormatIDKey: kAudioFormatMPEG4AAC,
-          AVNumberOfChannelsKey: 2,
-          AVSampleRateKey: 44100,
-          AVEncoderBitRateKey: audioBitrate,
-        ]
+        outputSettings: EncodingSettings.aacAudioSettings(bitrate: audioBitrate)
       )
       aInput.expectsMediaDataInRealTime = false
       assetWriter.add(aInput)
