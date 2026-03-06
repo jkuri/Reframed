@@ -40,9 +40,20 @@ struct MenuBarView: View {
   var body: some View {
     let _ = colorScheme
     VStack(alignment: .leading, spacing: 0) {
+      HStack {
+        if permissionsGranted {
+          SectionHeader(title: "Quick Actions")
+        }
+        Spacer()
+        Text("v\(UpdateChecker.currentVersion)")
+          .font(.system(size: FontSize.xxs, weight: .medium))
+          .foregroundStyle(ReframedColors.secondaryText)
+          .padding(.horizontal, 12)
+          .padding(.top, 8)
+      }
+
       if permissionsGranted {
-        SectionHeader(title: "Quick Actions")
-          .padding(.bottom, 2)
+        Spacer().frame(height: 2)
 
         HoverEffectScope {
           LazyVGrid(columns: gridColumns, spacing: 6) {
@@ -141,7 +152,7 @@ struct MenuBarView: View {
             let path = (ConfigService.shared.projectFolder as NSString).expandingTildeInPath
             NSWorkspace.shared.open(URL(fileURLWithPath: path))
           } label: {
-            Text("Projects")
+            Text("Open Projects")
               .font(.system(size: FontSize.xxs, weight: .medium))
               .foregroundStyle(ReframedColors.primaryText)
               .frame(maxWidth: .infinity)
@@ -150,22 +161,6 @@ struct MenuBarView: View {
           }
           .buttonStyle(.plain)
           .hoverEffect(id: "openFolder")
-
-          Button {
-            onDismiss()
-            SparkleUpdater.shared.checkForUpdates()
-          } label: {
-            HStack(spacing: 4) {
-              Text("v\(UpdateChecker.currentVersion)")
-                .font(.system(size: FontSize.xxs, weight: .medium))
-                .foregroundStyle(ReframedColors.primaryText)
-            }
-            .frame(maxWidth: .infinity)
-            .frame(height: 42)
-            .contentShape(Rectangle())
-          }
-          .buttonStyle(.plain)
-          .hoverEffect(id: "checkUpdate")
 
           Button {
             onDismiss()
@@ -316,7 +311,7 @@ private struct PermissionsPrompt: View {
         .font(.system(size: FontSize.xxs))
         .foregroundStyle(ReframedColors.secondaryText)
         .multilineTextAlignment(.center)
-        .lineLimit(2)
+        .fixedSize(horizontal: false, vertical: true)
 
       Button(action: action) {
         Text("Grant Permissions")
