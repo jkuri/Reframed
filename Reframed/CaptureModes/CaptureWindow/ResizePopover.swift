@@ -4,69 +4,140 @@ struct ResizePopover: View {
   let windowController: WindowController
   let window: WindowInfo
 
-  private let popoverBg = Color.hex("#000000")
-  private let borderColor = Color.white.opacity(0.18)
-  private let dividerColor = Color.white.opacity(0.22)
+  @State private var customWidth: Int = 1920
+  @State private var customHeight: Int = 1080
+
+  private let popoverBg = Color.white
+  private let borderColor = Color.black.opacity(0.1)
+  private let dividerColor = Color.black.opacity(0.12)
+  private let textColor = Color.black
+  private let secondaryTextColor = Color.black.opacity(0.6)
+  private let disabledOpacity = 0.35
+
+  private var screenSize: CGSize {
+    NSScreen.main?.frame.size ?? CGSize(width: 1920, height: 1080)
+  }
+
+  private struct SizePreset {
+    let width: Int
+    let height: Int
+    var label: String { "\(width) \u{00d7} \(height)" }
+    var size: CGSize { CGSize(width: width, height: height) }
+  }
+
+  private struct PresetGroup {
+    let title: String
+    let presets: [SizePreset]
+  }
+
+  private let groups: [PresetGroup] = [
+    PresetGroup(
+      title: "16:9",
+      presets: [
+        SizePreset(width: 1280, height: 720),
+        SizePreset(width: 1920, height: 1080),
+        SizePreset(width: 2560, height: 1440),
+      ]
+    ),
+    PresetGroup(
+      title: "4:3",
+      presets: [
+        SizePreset(width: 1024, height: 768),
+        SizePreset(width: 1280, height: 960),
+      ]
+    ),
+    PresetGroup(
+      title: "16:10",
+      presets: [
+        SizePreset(width: 1280, height: 800),
+        SizePreset(width: 1440, height: 900),
+        SizePreset(width: 1680, height: 1050),
+      ]
+    ),
+    PresetGroup(
+      title: "9:16",
+      presets: [
+        SizePreset(width: 720, height: 1280),
+        SizePreset(width: 1080, height: 1920),
+      ]
+    ),
+    PresetGroup(
+      title: "Square",
+      presets: [
+        SizePreset(width: 720, height: 720),
+        SizePreset(width: 1080, height: 1080),
+      ]
+    ),
+  ]
 
   var body: some View {
     VStack(alignment: .leading, spacing: 0) {
-      resizeSectionHeader("Common")
-
-      ResizePopoverRow(label: "1280 \u{00d7} 720") { windowController.resize(window, to: CGSize(width: 1280, height: 720)) }
-      ResizePopoverRow(label: "1920 \u{00d7} 1080") { windowController.resize(window, to: CGSize(width: 1920, height: 1080)) }
-      ResizePopoverRow(label: "2560 \u{00d7} 1440") { windowController.resize(window, to: CGSize(width: 2560, height: 1440)) }
-
-      Divider().background(dividerColor).padding(.vertical, 4)
-
-      resizeSectionHeader("4:3")
-
-      ResizePopoverRow(label: "640 \u{00d7} 480") { windowController.resize(window, to: CGSize(width: 640, height: 480)) }
-      ResizePopoverRow(label: "800 \u{00d7} 600") { windowController.resize(window, to: CGSize(width: 800, height: 600)) }
-      ResizePopoverRow(label: "1024 \u{00d7} 768") { windowController.resize(window, to: CGSize(width: 1024, height: 768)) }
-      ResizePopoverRow(label: "1280 \u{00d7} 960") { windowController.resize(window, to: CGSize(width: 1280, height: 960)) }
-      ResizePopoverRow(label: "1600 \u{00d7} 1200") { windowController.resize(window, to: CGSize(width: 1600, height: 1200)) }
-
-      Divider().background(dividerColor).padding(.vertical, 4)
-
-      resizeSectionHeader("16:9")
-
-      ResizePopoverRow(label: "854 \u{00d7} 480") { windowController.resize(window, to: CGSize(width: 854, height: 480)) }
-      ResizePopoverRow(label: "1280 \u{00d7} 720") { windowController.resize(window, to: CGSize(width: 1280, height: 720)) }
-      ResizePopoverRow(label: "1920 \u{00d7} 1080") { windowController.resize(window, to: CGSize(width: 1920, height: 1080)) }
-      ResizePopoverRow(label: "2560 \u{00d7} 1440") { windowController.resize(window, to: CGSize(width: 2560, height: 1440)) }
-      ResizePopoverRow(label: "3840 \u{00d7} 2160") { windowController.resize(window, to: CGSize(width: 3840, height: 2160)) }
+      ScrollView {
+        VStack(alignment: .leading, spacing: 0) {
+          ForEach(Array(groups.enumerated()), id: \.offset) { index, group in
+            if index > 0 {
+              Divider().background(dividerColor).padding(.vertical, 4)
+            }
+            resizeSectionHeader(group.title)
+            ForEach(group.presets, id: \.label) { preset in
+              let fits =
+                preset.size.width <= screenSize.width && preset.size.height <= screenSize.height
+              ResizePopoverRow(label: preset.label) {
+                windowController.resize(window, to: preset.size)
+              }
+              .disabled(!fits)
+              .opacity(fits ? 1 : disabledOpacity)
+            }
+          }
+        }
+      }
+      .frame(maxHeight: 300)
 
       Divider().background(dividerColor).padding(.vertical, 4)
 
-      resizeSectionHeader("16:10")
+      resizeSectionHeader("Custom")
 
-      ResizePopoverRow(label: "640 \u{00d7} 400") { windowController.resize(window, to: CGSize(width: 640, height: 400)) }
-      ResizePopoverRow(label: "1280 \u{00d7} 800") { windowController.resize(window, to: CGSize(width: 1280, height: 800)) }
-      ResizePopoverRow(label: "1440 \u{00d7} 900") { windowController.resize(window, to: CGSize(width: 1440, height: 900)) }
-      ResizePopoverRow(label: "1680 \u{00d7} 1050") { windowController.resize(window, to: CGSize(width: 1680, height: 1050)) }
-      ResizePopoverRow(label: "1920 \u{00d7} 1200") { windowController.resize(window, to: CGSize(width: 1920, height: 1200)) }
-      ResizePopoverRow(label: "2560 \u{00d7} 1600") { windowController.resize(window, to: CGSize(width: 2560, height: 1600)) }
+      HStack(spacing: 6) {
+        TextField("W", value: $customWidth, format: .number)
+          .textFieldStyle(.plain)
+          .font(.system(size: FontSize.xs, design: .monospaced))
+          .foregroundStyle(textColor)
+          .multilineTextAlignment(.center)
+          .frame(width: 60, height: 28)
+          .background(Color.black.opacity(0.04))
+          .clipShape(RoundedRectangle(cornerRadius: Radius.sm))
+          .overlay(RoundedRectangle(cornerRadius: Radius.sm).strokeBorder(borderColor))
 
-      Divider().background(dividerColor).padding(.vertical, 4)
+        Text("\u{00D7}")
+          .font(.system(size: FontSize.xs))
+          .foregroundStyle(secondaryTextColor)
 
-      resizeSectionHeader("9:16")
+        TextField("H", value: $customHeight, format: .number)
+          .textFieldStyle(.plain)
+          .font(.system(size: FontSize.xs, design: .monospaced))
+          .foregroundStyle(textColor)
+          .multilineTextAlignment(.center)
+          .frame(width: 60, height: 28)
+          .background(Color.black.opacity(0.04))
+          .clipShape(RoundedRectangle(cornerRadius: Radius.sm))
+          .overlay(RoundedRectangle(cornerRadius: Radius.sm).strokeBorder(borderColor))
 
-      ResizePopoverRow(label: "360 \u{00d7} 640") { windowController.resize(window, to: CGSize(width: 360, height: 640)) }
-      ResizePopoverRow(label: "720 \u{00d7} 1280") { windowController.resize(window, to: CGSize(width: 720, height: 1280)) }
-      ResizePopoverRow(label: "1080 \u{00d7} 1920") { windowController.resize(window, to: CGSize(width: 1080, height: 1920)) }
+        Spacer()
 
-      Divider().background(dividerColor).padding(.vertical, 4)
-
-      resizeSectionHeader("Square")
-
-      ResizePopoverRow(label: "480 \u{00d7} 480") { windowController.resize(window, to: CGSize(width: 480, height: 480)) }
-      ResizePopoverRow(label: "640 \u{00d7} 640") { windowController.resize(window, to: CGSize(width: 640, height: 640)) }
-      ResizePopoverRow(label: "720 \u{00d7} 720") { windowController.resize(window, to: CGSize(width: 720, height: 720)) }
-      ResizePopoverRow(label: "1080 \u{00d7} 1080") { windowController.resize(window, to: CGSize(width: 1080, height: 1080)) }
-      ResizePopoverRow(label: "1440 \u{00d7} 1440") { windowController.resize(window, to: CGSize(width: 1440, height: 1440)) }
+        Button("Apply") {
+          windowController.resize(
+            window,
+            to: CGSize(width: max(customWidth, 100), height: max(customHeight, 100))
+          )
+        }
+        .buttonStyle(PrimaryButtonStyle(size: .small, forceLightMode: true))
+        .fixedSize()
+      }
+      .padding(.horizontal, 12)
+      .padding(.bottom, 8)
     }
     .padding(.vertical, 8)
-    .frame(width: 200)
+    .frame(width: 260)
     .background(popoverBg)
     .clipShape(RoundedRectangle(cornerRadius: Radius.lg))
     .overlay(
@@ -74,12 +145,16 @@ struct ResizePopover: View {
         .strokeBorder(borderColor, lineWidth: 0.5)
     )
     .presentationBackground(popoverBg)
+    .onAppear {
+      customWidth = Int(window.frame.width)
+      customHeight = Int(window.frame.height)
+    }
   }
 
   private func resizeSectionHeader(_ title: String) -> some View {
     Text(title)
       .font(.system(size: FontSize.xs, weight: .medium))
-      .foregroundStyle(Color.white.opacity(0.6))
+      .foregroundStyle(secondaryTextColor)
       .frame(maxWidth: .infinity, alignment: .leading)
       .padding(.horizontal, 12)
       .padding(.top, 8)
@@ -99,7 +174,7 @@ private struct ResizePopoverRow: View {
           .font(.system(size: FontSize.xs))
         Spacer()
       }
-      .foregroundStyle(Color.white)
+      .foregroundStyle(Color.black)
       .padding(.horizontal, 12)
       .padding(.vertical, 5)
       .contentShape(Rectangle())
@@ -107,7 +182,7 @@ private struct ResizePopoverRow: View {
     .buttonStyle(.plain)
     .background(
       RoundedRectangle(cornerRadius: Radius.sm)
-        .fill(isHovered ? Color.white.opacity(0.2) : Color.clear)
+        .fill(isHovered ? Color.black.opacity(0.06) : Color.clear)
         .padding(.horizontal, 4)
     )
     .onHover { isHovered = $0 }

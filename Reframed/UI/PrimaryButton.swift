@@ -73,21 +73,26 @@ struct PrimaryButtonStyle: ButtonStyle {
 
 struct SecondaryButtonStyle: ButtonStyle {
   var size: ButtonSize = .small
+  var forceLightMode: Bool = false
 
   @Environment(\.isEnabled) private var isEnabled
   @Environment(\.colorScheme) private var colorScheme
 
   func makeBody(configuration: Configuration) -> some View {
     let _ = colorScheme
+    let fg = forceLightMode ? Color(white: 0.09) : ReframedColors.primaryText
+    let bg = forceLightMode ? Color.black.opacity(0.06) : ReframedColors.buttonBackground
+    let pressed = forceLightMode ? Color.black.opacity(0.1) : ReframedColors.buttonPressed
+    let hover = forceLightMode ? Color.black.opacity(0.04) : ReframedColors.muted
     configuration.label
       .font(.system(size: size.fontSize, weight: size.fontWeight))
-      .foregroundStyle(ReframedColors.primaryText)
+      .foregroundStyle(fg)
       .padding(.horizontal, size.horizontalPadding)
       .frame(height: size.height)
-      .background(configuration.isPressed ? ReframedColors.buttonPressed : ReframedColors.buttonBackground)
+      .background(configuration.isPressed ? pressed : bg)
       .clipShape(RoundedRectangle(cornerRadius: size.cornerRadius))
       .opacity(isEnabled ? 1.0 : 0.4)
-      .hoverEffect(hoverColor: ReframedColors.muted)
+      .hoverEffect(hoverColor: hover)
   }
 }
 

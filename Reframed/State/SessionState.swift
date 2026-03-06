@@ -811,10 +811,13 @@ final class SessionState {
     guard startRecordingWindows.isEmpty else { return }
     guard !NSScreen.screens.isEmpty else { return }
 
-    for screen in NSScreen.screens {
+    let screens = NSScreen.screens
+    for (index, screen) in screens.enumerated() {
       let window = StartRecordingWindow(
         screen: screen,
         delay: options.timerDelay.rawValue,
+        screenIndex: index + 1,
+        totalScreens: screens.count,
         onCountdownStart: { [weak self] _ in
           MainActor.assumeIsolated {
             self?.toolbarWindow?.orderOut(nil)

@@ -7,55 +7,71 @@ struct CaptureAreaView: View {
   @State private var w: Int = 0
   @State private var h: Int = 0
   @State private var isEditing = false
+  @State private var showPresets = false
+
+  private let textColor = Color.black
+  private let secondaryTextColor = Color.black.opacity(0.6)
+  private let fieldBg = Color.black.opacity(0.04)
+  private let fieldBorder = Color.black.opacity(0.1)
+
+  private let presets: [(String, Int, Int)] = [
+    ("1920 \u{00d7} 1080", 1920, 1080),
+    ("1280 \u{00d7} 720", 1280, 720),
+    ("2560 \u{00d7} 1440", 2560, 1440),
+    ("1080 \u{00d7} 1080", 1080, 1080),
+    ("1080 \u{00d7} 1920", 1080, 1920),
+  ]
 
   var body: some View {
-    VStack(spacing: 0) {
-      VStack(spacing: 10) {
-        HStack(spacing: 0) {
-          Text("Size")
-            .font(.system(size: FontSize.xs))
-            .foregroundStyle(ReframedColors.secondaryText)
-            .frame(width: 56, alignment: .leading)
-
-          NumberField(value: $w, onCommit: commitEditing)
-            .onTapGesture { isEditing = true }
-            .onChange(of: w) { if isEditing { applyValues() } }
-          Text("\u{00D7}")
-            .font(.system(size: FontSize.xs))
-            .foregroundStyle(ReframedColors.secondaryText)
-            .frame(width: 20)
-          NumberField(value: $h, onCommit: commitEditing)
-            .onTapGesture { isEditing = true }
-            .onChange(of: h) { if isEditing { applyValues() } }
-          Text("px")
-            .font(.system(size: FontSize.xs))
-            .foregroundStyle(ReframedColors.secondaryText)
-            .frame(width: 24, alignment: .trailing)
+    VStack(spacing: 16) {
+      HStack(spacing: 12) {
+        fieldGroup("Size") {
+          HStack(spacing: 6) {
+            lightNumberField(value: $w)
+              .onTapGesture { isEditing = true }
+              .onChange(of: w) { if isEditing { applyValues() } }
+            Text("\u{00D7}")
+              .font(.system(size: FontSize.xxs))
+              .foregroundStyle(secondaryTextColor)
+            lightNumberField(value: $h)
+              .onTapGesture { isEditing = true }
+              .onChange(of: h) { if isEditing { applyValues() } }
+          }
         }
 
-        HStack(spacing: 0) {
-          Text("Position")
-            .font(.system(size: FontSize.xs))
-            .foregroundStyle(ReframedColors.secondaryText)
-            .frame(width: 56, alignment: .leading)
-
-          NumberField(value: $x, onCommit: commitEditing)
-            .onTapGesture { isEditing = true }
-            .onChange(of: x) { if isEditing { applyValues() } }
-          Spacer().frame(width: 20)
-          NumberField(value: $y, onCommit: commitEditing)
-            .onTapGesture { isEditing = true }
-            .onChange(of: y) { if isEditing { applyValues() } }
-          Text("px")
-            .font(.system(size: FontSize.xs))
-            .foregroundStyle(ReframedColors.secondaryText)
-            .frame(width: 24, alignment: .trailing)
+        fieldGroup("Position") {
+          HStack(spacing: 6) {
+            lightNumberField(value: $x)
+              .onTapGesture { isEditing = true }
+              .onChange(of: x) { if isEditing { applyValues() } }
+            Text("\u{00D7}")
+              .font(.system(size: FontSize.xxs))
+              .foregroundStyle(secondaryTextColor)
+              .hidden()
+            lightNumberField(value: $y)
+              .onTapGesture { isEditing = true }
+              .onChange(of: y) { if isEditing { applyValues() } }
+          }
         }
       }
-      .padding(.horizontal, 30)
-      .padding(.vertical, 30)
-      .background(ReframedColors.background)
-      .clipShape(RoundedRectangle(cornerRadius: Radius.md))
+
+      HStack(spacing: 6) {
+        Button("Presets") { showPresets.toggle() }
+          .buttonStyle(SecondaryButtonStyle(size: .small, forceLightMode: true))
+          .popover(isPresented: $showPresets, arrowEdge: .bottom) {
+            AreaSizePresetsPopover(presets: presets) { pw, ph in
+              w = pw
+              h = ph
+              showPresets = false
+              applyValues()
+            }
+          }
+
+        Button("Center") {
+          centerSelection()
+        }
+        .buttonStyle(SecondaryButtonStyle(size: .small, forceLightMode: true))
+      }
 
       StartRecordingButton(
         delay: session.options.timerDelay.rawValue,
@@ -63,9 +79,15 @@ struct CaptureAreaView: View {
         onCancel: { session.cancelSelection() },
         action: { session.overlayView?.confirmSelection() }
       )
-      .padding(.top, 8)
+
+      Text("Shift to lock aspect ratio \u{00b7} Esc to cancel \u{00b7} Enter to start")
+        .font(.system(size: FontSize.xxs))
+        .foregroundStyle(Color.black.opacity(0.35))
     }
-    .frame(width: 260)
+    .padding(24)
+    .background(ReframedColors.overlayCardBackground)
+    .clipShape(RoundedRectangle(cornerRadius: Radius.xxl))
+    .shadow(radius: 20)
     .onReceive(NotificationCenter.default.publisher(for: .selectionRectChanged)) { notification in
       guard !isEditing, let rect = notification.object as? NSValue else { return }
       let r = rect.rectValue
@@ -74,6 +96,28 @@ struct CaptureAreaView: View {
       w = Int(r.width)
       h = Int(r.height)
     }
+  }
+
+  private func fieldGroup<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
+    VStack(spacing: 6) {
+      Text(title)
+        .font(.system(size: FontSize.xxs, weight: .medium))
+        .foregroundStyle(secondaryTextColor)
+      content()
+    }
+  }
+
+  private func lightNumberField(value: Binding<Int>) -> some View {
+    TextField("", value: value, format: .number)
+      .textFieldStyle(.plain)
+      .font(.system(size: FontSize.xs, design: .monospaced))
+      .foregroundStyle(textColor)
+      .multilineTextAlignment(.center)
+      .frame(width: 70, height: 40)
+      .background(fieldBg)
+      .clipShape(RoundedRectangle(cornerRadius: Radius.md))
+      .overlay(RoundedRectangle(cornerRadius: Radius.md).strokeBorder(fieldBorder))
+      .onSubmit { commitEditing() }
   }
 
   private func commitEditing() {
@@ -89,6 +133,14 @@ struct CaptureAreaView: View {
       height: CGFloat(max(h, 10))
     )
     session.updateOverlaySelection(rect)
+  }
+
+  private func centerSelection() {
+    guard let screen = NSScreen.main else { return }
+    let screenFrame = screen.frame
+    x = Int((screenFrame.width - CGFloat(w)) / 2)
+    y = Int((screenFrame.height - CGFloat(h)) / 2)
+    applyValues()
   }
 }
 

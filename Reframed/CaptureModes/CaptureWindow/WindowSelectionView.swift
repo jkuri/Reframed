@@ -35,7 +35,7 @@ struct WindowSelectionView: View {
       ZStack {
         Canvas { context, size in
           let fullRect = CGRect(origin: .zero, size: size)
-          context.fill(Path(fullRect), with: .color(.black.opacity(0.55)))
+          context.fill(Path(fullRect), with: .color(ReframedColors.overlayDimBackground))
 
           guard let window = currentWindowOnThisScreen else { return }
 
@@ -63,22 +63,26 @@ struct WindowSelectionView: View {
                 .resizable()
                 .aspectRatio(contentMode: .fit)
                 .frame(width: 64, height: 64)
-                .shadow(color: .black.opacity(0.4), radius: 8, y: 4)
             }
 
             Text(current.appName)
-              .font(.title2.bold())
+              .font(.system(size: FontSize.xs, weight: .medium))
               .foregroundStyle(Color.black)
-              .shadow(color: .white.opacity(0.3), radius: 4)
+
+            if !current.title.isEmpty && current.title != current.appName {
+              Text(current.title)
+                .font(.system(size: FontSize.xs))
+                .foregroundStyle(Color.black.opacity(0.6))
+                .lineLimit(1)
+            }
 
             HStack(spacing: 8) {
               Text("\(Int(current.frame.width)) \u{00d7} \(Int(current.frame.height))")
-                .font(.system(size: FontSize.sm))
-                .foregroundStyle(Color.black)
-                .shadow(color: .white.opacity(0.3), radius: 4)
+                .font(.system(size: FontSize.xs))
+                .foregroundStyle(Color.black.opacity(0.6))
 
               Button("Resize") { showingResize.toggle() }
-                .buttonStyle(PrimaryButtonStyle(size: .small, forceLightMode: true))
+                .buttonStyle(SecondaryButtonStyle(size: .small, forceLightMode: true))
                 .popover(isPresented: $showingResize, arrowEdge: .bottom) {
                   ResizePopover(windowController: windowController, window: current)
                 }
@@ -98,14 +102,50 @@ struct WindowSelectionView: View {
                 }
               }
             }
+
+            Text("Tab to cycle windows · Esc to cancel · Enter to start")
+              .font(.system(size: FontSize.xxs))
+              .foregroundStyle(Color.black.opacity(0.35))
           }
+          .padding(24)
+          .background(ReframedColors.overlayCardBackground)
+          .clipShape(RoundedRectangle(cornerRadius: Radius.xxl))
+          .shadow(radius: 20)
           .position(x: localFrame.midX, y: localFrame.midY)
+        } else {
+          VStack(spacing: 8) {
+            Text("Hover over a window to select it")
+              .font(.system(size: FontSize.sm, weight: .medium))
+              .foregroundStyle(Color.black)
+            Text("Tab to cycle · Esc to cancel")
+              .font(.system(size: FontSize.xxs))
+              .foregroundStyle(Color.black.opacity(0.35))
+          }
+          .padding(.horizontal, 20)
+          .padding(.vertical, 14)
+          .background(ReframedColors.overlayCardBackground)
+          .clipShape(RoundedRectangle(cornerRadius: Radius.xxl))
+          .shadow(radius: 20)
         }
 
         Button("") {
           session.cancelSelection()
         }
         .keyboardShortcut(.escape, modifiers: [])
+        .opacity(0)
+        .frame(width: 0, height: 0)
+
+        Button("") {
+          windowController.cycleToNextWindow()
+        }
+        .keyboardShortcut(.tab, modifiers: [])
+        .opacity(0)
+        .frame(width: 0, height: 0)
+
+        Button("") {
+          windowController.cycleToPreviousWindow()
+        }
+        .keyboardShortcut(.tab, modifiers: .shift)
         .opacity(0)
         .frame(width: 0, height: 0)
       }

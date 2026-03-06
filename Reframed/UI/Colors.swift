@@ -64,9 +64,9 @@ enum ReframedColors {
     NSApp.effectiveAppearance.bestMatch(from: [.darkAqua, .aqua]) == .darkAqua
   }
 
-  static let overlayBackground = NSColor.black.withAlphaComponent(0.5)
+  static let overlayBackground = NSColor.black.withAlphaComponent(0.45)
   static let overlayCardBackground = Color.white
-  static let overlayDimBackground = Color.black.opacity(0.4)
+  static let overlayDimBackground = Color.black.opacity(0.45)
   static let selectionBorder = NSColor(white: 0.55, alpha: 0.6)
   static let selectionGrid = NSColor(white: 0.55, alpha: 0.5)
   static let selectionCenter = NSColor(white: 0.65, alpha: 0.6)

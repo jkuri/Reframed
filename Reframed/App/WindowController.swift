@@ -113,6 +113,78 @@ final class WindowController: ObservableObject {
     return nil
   }
 
+  func allVisibleWindows() -> [WindowInfo] {
+    let myPID = ProcessInfo.processInfo.processIdentifier
+    guard
+      let windowList = CGWindowListCopyWindowInfo(
+        [.optionOnScreenOnly, .excludeDesktopElements],
+        kCGNullWindowID
+      ) as? [[String: Any]]
+    else { return [] }
+
+    var results: [WindowInfo] = []
+    for windowDict in windowList {
+      guard let pid = windowDict[kCGWindowOwnerPID as String] as? pid_t,
+        pid != myPID,
+        let layer = windowDict[kCGWindowLayer as String] as? Int,
+        layer == 0,
+        let boundsDict = windowDict[kCGWindowBounds as String],
+        let bounds = CGRect(dictionaryRepresentation: boundsDict as! CFDictionary),
+        bounds.width > 20,
+        bounds.height > 20
+      else { continue }
+
+      let windowNumber = windowDict[kCGWindowNumber as String] as? Int ?? 0
+      let title = windowDict[kCGWindowName as String] as? String ?? ""
+      let app = NSRunningApplication(processIdentifier: pid)
+      let appName = app?.localizedName ?? "Unknown"
+
+      let axApp = AXUIElementCreateApplication(pid)
+      let axWindow = findAXWindow(for: axApp, matching: bounds) ?? axApp
+
+      let matchedID: Int
+      if let match = scWindows.first(where: { $0.windowID == CGWindowID(windowNumber) }) {
+        matchedID = Int(match.windowID)
+      } else {
+        matchedID = windowNumber
+      }
+
+      results.append(
+        WindowInfo(
+          id: matchedID,
+          frame: bounds,
+          title: title,
+          appPID: pid,
+          appName: appName,
+          axElement: axWindow
+        )
+      )
+    }
+    return results
+  }
+
+  func cycleToNextWindow() {
+    let windows = allVisibleWindows()
+    guard !windows.isEmpty else { return }
+    if let current = currentWindow, let idx = windows.firstIndex(where: { $0.id == current.id }) {
+      let next = (idx + 1) % windows.count
+      currentWindow = windows[next]
+    } else {
+      currentWindow = windows.first
+    }
+  }
+
+  func cycleToPreviousWindow() {
+    let windows = allVisibleWindows()
+    guard !windows.isEmpty else { return }
+    if let current = currentWindow, let idx = windows.firstIndex(where: { $0.id == current.id }) {
+      let prev = (idx - 1 + windows.count) % windows.count
+      currentWindow = windows[prev]
+    } else {
+      currentWindow = windows.last
+    }
+  }
+
   func resize(_ window: WindowInfo, to newSize: CGSize) {
     var size = newSize
     guard let sizeVal = AXValueCreate(.cgSize, &size) else { return }

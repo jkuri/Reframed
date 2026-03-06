@@ -18,6 +18,7 @@ final class SelectionOverlayWindow: NSWindow {
     acceptsMouseMovedEvents = true
     hasShadow = false
     sharingType = Window.sharingType
+    appearance = NSAppearance(named: .aqua)
 
     let localFrame = CGRect(origin: .zero, size: screen.frame.size)
     let overlayView = SelectionOverlayView(frame: localFrame, session: session)

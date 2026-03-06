@@ -262,10 +262,16 @@ final class SelectionOverlayView: NSView {
 
   override func mouseDragged(with event: NSEvent) {
     let point = convert(event.locationInWindow, from: nil)
+    let shiftHeld = event.modifierFlags.contains(.shift)
 
     if let handle = activeHandle, let start = handleDragStart, let original = originalRectBeforeResize {
       let delta = CGPoint(x: point.x - start.x, y: point.y - start.y)
-      selectionRect = handle.resize(original: original, delta: delta).normalized
+      var newRect = handle.resize(original: original, delta: delta).normalized
+      if shiftHeld, original.width > 0, original.height > 0 {
+        let aspect = original.width / original.height
+        newRect = constrainToAspect(original, delta: delta, aspect: aspect, handle: handle)
+      }
+      selectionRect = newRect
       needsDisplay = true
       updateControlsPanel()
     } else if handleDragStart != nil, let original = originalRectBeforeResize {
@@ -279,14 +285,118 @@ final class SelectionOverlayView: NSView {
       needsDisplay = true
       updateControlsPanel()
     } else if let origin = dragOrigin {
+      let w = abs(point.x - origin.x)
+      var h = abs(point.y - origin.y)
+      if shiftHeld, w > 0, h > 0 {
+        h = w * 9.0 / 16.0
+      }
       selectionRect = CGRect(
-        x: min(origin.x, point.x),
-        y: min(origin.y, point.y),
-        width: abs(point.x - origin.x),
-        height: abs(point.y - origin.y)
+        x: point.x >= origin.x ? origin.x : origin.x - w,
+        y: point.y >= origin.y ? origin.y : origin.y - h,
+        width: w,
+        height: h
       )
       needsDisplay = true
       updateControlsPanel()
+    }
+  }
+
+  private func constrainToAspect(
+    _ original: CGRect,
+    delta: CGPoint,
+    aspect: CGFloat,
+    handle: ResizeHandle
+  ) -> CGRect {
+    let dw: CGFloat
+    let dh: CGFloat
+
+    switch handle {
+    case .right:
+      dw = delta.x
+      dh = dw / aspect
+      return CGRect(
+        x: original.minX,
+        y: original.maxY - (original.height + dh),
+        width: max(original.width + dw, 10),
+        height: max(original.height + dh, 10)
+      )
+    case .left:
+      dw = -delta.x
+      dh = dw / aspect
+      let newW = max(original.width + dw, 10)
+      let newH = max(original.height + dh, 10)
+      return CGRect(
+        x: original.maxX - newW,
+        y: original.maxY - newH,
+        width: newW,
+        height: newH
+      )
+    case .top:
+      dh = delta.y
+      dw = dh * aspect
+      let newW = max(original.width + dw, 10)
+      let newH = max(original.height + dh, 10)
+      return CGRect(
+        x: original.minX,
+        y: original.minY,
+        width: newW,
+        height: newH
+      )
+    case .bottom:
+      dh = -delta.y
+      dw = dh * aspect
+      let newW = max(original.width + dw, 10)
+      let newH = max(original.height + dh, 10)
+      return CGRect(
+        x: original.minX,
+        y: original.maxY - newH,
+        width: newW,
+        height: newH
+      )
+    case .topRight:
+      dw = delta.x
+      dh = dw / aspect
+      let newW = max(original.width + dw, 10)
+      let newH = max(original.height + dh, 10)
+      return CGRect(
+        x: original.minX,
+        y: original.minY,
+        width: newW,
+        height: newH
+      )
+    case .topLeft:
+      dw = -delta.x
+      dh = dw / aspect
+      let newW = max(original.width + dw, 10)
+      let newH = max(original.height + dh, 10)
+      return CGRect(
+        x: original.maxX - newW,
+        y: original.minY,
+        width: newW,
+        height: newH
+      )
+    case .bottomRight:
+      dw = delta.x
+      dh = dw / aspect
+      let newW = max(original.width + dw, 10)
+      let newH = max(original.height + dh, 10)
+      return CGRect(
+        x: original.minX,
+        y: original.maxY - newH,
+        width: newW,
+        height: newH
+      )
+    case .bottomLeft:
+      dw = -delta.x
+      dh = dw / aspect
+      let newW = max(original.width + dw, 10)
+      let newH = max(original.height + dh, 10)
+      return CGRect(
+        x: original.maxX - newW,
+        y: original.maxY - newH,
+        width: newW,
+        height: newH
+      )
     }
   }
 

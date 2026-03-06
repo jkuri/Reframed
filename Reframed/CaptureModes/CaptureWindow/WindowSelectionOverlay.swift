@@ -18,6 +18,7 @@ final class WindowSelectionOverlay: NSWindow {
     ignoresMouseEvents = false
     acceptsMouseMovedEvents = true
     hasShadow = false
+    appearance = NSAppearance(named: .aqua)
 
     let view = WindowSelectionView(
       session: session,
