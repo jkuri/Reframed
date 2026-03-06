@@ -21,7 +21,10 @@ struct MenuBarView: View {
 
   @State private var recentProjects: [RecentProject] = []
   @State private var totalProjectCount: Int = 0
+  @State private var permissionsGranted = Permissions.allPermissionsGranted
   @Environment(\.colorScheme) private var colorScheme
+
+  private let permissionTimer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
   private var isBusy: Bool {
     if case .idle = session.state { return false }
@@ -37,60 +40,63 @@ struct MenuBarView: View {
   var body: some View {
     let _ = colorScheme
     VStack(alignment: .leading, spacing: 0) {
-      SectionHeader(title: "Quick Actions")
-        .padding(.bottom, 2)
+      if permissionsGranted {
+        SectionHeader(title: "Quick Actions")
+          .padding(.bottom, 2)
 
-      HoverEffectScope {
-        LazyVGrid(columns: gridColumns, spacing: 6) {
-          ActionGridItem(
-            icon: "house",
-            title: "Home",
-            hoverId: "action.home"
-          ) {
-            onDismiss()
-            if Permissions.allPermissionsGranted {
+        HoverEffectScope {
+          LazyVGrid(columns: gridColumns, spacing: 6) {
+            ActionGridItem(
+              icon: "house",
+              title: "Home",
+              hoverId: "action.home"
+            ) {
+              onDismiss()
               session.showToolbar()
-            } else {
-              onShowPermissions()
+            }
+
+            ActionGridItem(
+              icon: "display",
+              title: "Display",
+              hoverId: "action.display"
+            ) {
+              onDismiss()
+              guard case .idle = session.state else { return }
+              session.showToolbar()
+              session.selectMode(.entireScreen)
+            }
+
+            ActionGridItem(
+              icon: "macwindow",
+              title: "Window",
+              hoverId: "action.window"
+            ) {
+              onDismiss()
+              guard case .idle = session.state else { return }
+              session.showToolbar()
+              session.selectMode(.selectedWindow)
+            }
+
+            ActionGridItem(
+              icon: "rectangle.dashed",
+              title: "Area",
+              hoverId: "action.area"
+            ) {
+              onDismiss()
+              guard case .idle = session.state else { return }
+              session.showToolbar()
+              session.selectMode(.selectedArea)
             }
           }
-
-          ActionGridItem(
-            icon: "display",
-            title: "Display",
-            hoverId: "action.display"
-          ) {
-            onDismiss()
-            guard case .idle = session.state else { return }
-            session.showToolbar()
-            session.selectMode(.entireScreen)
-          }
-
-          ActionGridItem(
-            icon: "macwindow",
-            title: "Window",
-            hoverId: "action.window"
-          ) {
-            onDismiss()
-            guard case .idle = session.state else { return }
-            session.showToolbar()
-            session.selectMode(.selectedWindow)
-          }
-
-          ActionGridItem(
-            icon: "rectangle.dashed",
-            title: "Area",
-            hoverId: "action.area"
-          ) {
-            onDismiss()
-            guard case .idle = session.state else { return }
-            session.showToolbar()
-            session.selectMode(.selectedArea)
-          }
+        }
+        .disabled(isBusy)
+        .padding(.horizontal, 10)
+      } else {
+        PermissionsPrompt {
+          onDismiss()
+          onShowPermissions()
         }
       }
-      .disabled(isBusy)
-      .padding(.horizontal, 10)
 
       MenuBarDivider()
 
@@ -152,6 +158,9 @@ struct MenuBarView: View {
     .background(ReframedColors.backgroundPopover)
     .task {
       await loadRecentProjects()
+    }
+    .onReceive(permissionTimer) { _ in
+      permissionsGranted = Permissions.allPermissionsGranted
     }
   }
 
@@ -251,6 +260,35 @@ private struct ActionGridItem: View {
     }
     .buttonStyle(.plain)
     .hoverEffect(id: hoverId)
+  }
+}
+
+private struct PermissionsPrompt: View {
+  let action: () -> Void
+
+  @Environment(\.colorScheme) private var colorScheme
+
+  var body: some View {
+    let _ = colorScheme
+    VStack(spacing: 8) {
+      Image(systemName: "lock.shield")
+        .font(.system(size: FontSize.xl))
+        .foregroundStyle(ReframedColors.secondaryText)
+
+      Text("Permissions required to start recording.")
+        .font(.system(size: FontSize.xxs))
+        .foregroundStyle(ReframedColors.secondaryText)
+        .multilineTextAlignment(.center)
+
+      Button(action: action) {
+        Text("Grant Permissions")
+          .font(.system(size: FontSize.xxs, weight: .medium))
+      }
+      .buttonStyle(OutlineButtonStyle())
+    }
+    .frame(maxWidth: .infinity)
+    .padding(.horizontal, 10)
+    .padding(.vertical, 10)
   }
 }
 
