@@ -6,6 +6,13 @@ struct VideoPreviewView: NSViewRepresentable {
   let screenPlayer: AVPlayer
   let webcamPlayer: AVPlayer?
   @Binding var cameraLayout: CameraLayout
+  var defaultPipLayout: CameraLayout?
+  var defaultPipCameraAspect: CameraAspect?
+  var defaultPipCornerRadius: CGFloat?
+  var defaultPipBorderWidth: CGFloat?
+  var defaultPipBorderColor: CGColor?
+  var defaultPipShadow: CGFloat?
+  var defaultPipMirrored: Bool?
   let webcamSize: CGSize?
   let screenSize: CGSize
   let canvasSize: CGSize
@@ -187,6 +194,23 @@ struct VideoPreviewView: NSViewRepresentable {
 
     nsView.cameraTransitionProgress = transitionProgress
     nsView.cameraTransitionType = activeTransitionType
+
+    let isCustomTransition =
+      customRegion != nil
+      && hiddenRegion == nil
+      && (activeTransitionType == .scale || activeTransitionType == .slide)
+      && transitionProgress < 1.0
+      && defaultPipLayout != nil
+    nsView.isCustomRegionTransition = isCustomTransition
+    if isCustomTransition {
+      nsView.defaultPipLayout = defaultPipLayout!
+      nsView.defaultPipCameraAspect = defaultPipCameraAspect ?? cameraAspect
+      nsView.defaultPipCornerRadius = defaultPipCornerRadius ?? cameraCornerRadius
+      nsView.defaultPipBorderWidth = defaultPipBorderWidth ?? cameraBorderWidth
+      nsView.defaultPipBorderColor = defaultPipBorderColor ?? cameraBorderColor
+      nsView.defaultPipShadow = defaultPipShadow ?? cameraShadow
+      nsView.defaultPipMirrored = defaultPipMirrored ?? cameraMirrored
+    }
 
     let videoRegion = videoRegions.first(where: { currentTime >= $0.start && currentTime <= $0.end })
     let screenTransitionProgress: CGFloat = {
@@ -397,6 +421,14 @@ final class VideoPreviewContainer: NSView {
   var currentVideoShadow: CGFloat = 0
   var currentCameraShadow: CGFloat = 0
   var currentCameraMirrored: Bool = false
+  var isCustomRegionTransition = false
+  var defaultPipLayout = CameraLayout()
+  var defaultPipCameraAspect: CameraAspect = .original
+  var defaultPipCornerRadius: CGFloat = 12
+  var defaultPipBorderWidth: CGFloat = 0
+  var defaultPipBorderColor: CGColor = CGColor(srgbRed: 1, green: 1, blue: 1, alpha: 0.3)
+  var defaultPipShadow: CGFloat = 0
+  var defaultPipMirrored: Bool = false
   let screenMaskLayer = CAShapeLayer()
   let screenShadowLayer = CALayer()
   var trackingArea: NSTrackingArea?
