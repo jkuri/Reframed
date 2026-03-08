@@ -74,6 +74,26 @@ final class StateService {
     }
   }
 
+  var recordingPreviewPosition: CGPoint? {
+    get {
+      guard let p = data.recordingPreviewPosition else { return nil }
+      return CGPoint(x: p.x, y: p.y)
+    }
+    set {
+      if let p = newValue {
+        data.recordingPreviewPosition = PointData(x: p.x, y: p.y)
+      } else {
+        data.recordingPreviewPosition = nil
+      }
+      save()
+    }
+  }
+
+  var recordingPreviewHeight: CGFloat? {
+    get { data.recordingPreviewHeight }
+    set { data.recordingPreviewHeight = newValue; save() }
+  }
+
   var editorWindowFrame: NSRect? {
     get {
       guard let r = data.editorWindowFrame else { return nil }
@@ -133,5 +153,7 @@ private struct StateData: Codable {
   var webcamPreviewPosition: PointData? = nil
   var devicePreviewPosition: PointData? = nil
   var toolbarPosition: PointData? = nil
+  var recordingPreviewPosition: PointData? = nil
+  var recordingPreviewHeight: CGFloat? = nil
   var editorWindowFrame: RectData? = nil
 }

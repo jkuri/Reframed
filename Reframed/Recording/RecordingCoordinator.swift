@@ -596,4 +596,13 @@ actor RecordingCoordinator {
     return SendableBox(session)
   }
 
+  func setPreviewFrameHandler(_ handler: @escaping @Sendable (CMSampleBuffer) -> Void) {
+    captureSession?.onPreviewFrame = handler
+    deviceCapture?.onPreviewFrame = handler
+  }
+
+  func getVideoDimensions() -> (width: Int, height: Int) {
+    (pixelW, pixelH)
+  }
+
 }

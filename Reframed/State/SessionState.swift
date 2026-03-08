@@ -47,6 +47,7 @@ final class SessionState {
   private var verifiedCameraInfo: VerifiedCamera?
   private var mouseClickMonitor: MouseClickMonitor?
   private var cursorMetadataRecorder: CursorMetadataRecorder?
+  private var recordingPreviewWindow: RecordingPreviewWindow?
   private var devicePreviewWindow: DevicePreviewWindow?
   private var deviceCapture: DeviceCapture?
   private var deviceName: String?
@@ -128,6 +129,19 @@ final class SessionState {
     webcamPreviewWindow?.close()
     webcamPreviewWindow = nil
     cameraPreviewState = .off
+  }
+
+  private func startRecordingPreview(coordinator: RecordingCoordinator) async {
+    guard options.showRecordingPreview else { return }
+
+    let dims = await coordinator.getVideoDimensions()
+    let previewWindow = RecordingPreviewWindow()
+    previewWindow.show(width: dims.width, height: dims.height)
+    self.recordingPreviewWindow = previewWindow
+
+    await coordinator.setPreviewFrameHandler { [weak previewWindow] sampleBuffer in
+      previewWindow?.updateFrame(sampleBuffer)
+    }
   }
 
   private func startAudioLevelPolling() {
@@ -399,6 +413,8 @@ final class SessionState {
         }
       }
 
+      await startRecordingPreview(coordinator: coordinator)
+
       SoundEffect.startRecording.play()
       transition(to: .recording(startedAt: startedAt))
       return
@@ -458,6 +474,8 @@ final class SessionState {
     monitor.start()
     mouseClickMonitor = monitor
 
+    await startRecordingPreview(coordinator: coordinator)
+
     SoundEffect.startRecording.play()
     transition(to: .recording(startedAt: startedAt))
   }
@@ -473,6 +491,8 @@ final class SessionState {
     mouseClickMonitor?.stop()
     mouseClickMonitor = nil
     cursorMetadataRecorder = nil
+    recordingPreviewWindow?.close()
+    recordingPreviewWindow = nil
 
     SoundEffect.stopRecording.play()
     transition(to: .processing)
@@ -642,6 +662,8 @@ final class SessionState {
 
     Task {
       cleanupCoordinators()
+      recordingPreviewWindow?.close()
+      recordingPreviewWindow = nil
       if !keepWebcam {
         webcamPreviewWindow?.close()
         webcamPreviewWindow = nil

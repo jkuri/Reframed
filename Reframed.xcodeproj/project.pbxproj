@@ -89,6 +89,7 @@
 		A1F00000000000000000001 /* WindowPositionObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1F00000000000000000001 /* WindowPositionObserver.swift */; };
 		A20000000000000000000001 /* WebcamCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000001 /* WebcamCapture.swift */; };
 		A20000000000000000000002 /* WebcamPreviewWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000002 /* WebcamPreviewWindow.swift */; };
+		A20000000000000000000099 /* RecordingPreviewWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000099 /* RecordingPreviewWindow.swift */; };
 		A20000000000000000000003 /* RecordingResult.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000003 /* RecordingResult.swift */; };
 		A20000000000000000000004 /* CameraLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000004 /* CameraLayout.swift */; };
 		A20000000000000000000005 /* SyncedPlayerController.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000005 /* SyncedPlayerController.swift */; };
@@ -290,6 +291,7 @@
 		B1F00000000000000000001 /* WindowPositionObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowPositionObserver.swift; sourceTree = "<group>"; };
 		B20000000000000000000001 /* WebcamCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebcamCapture.swift; sourceTree = "<group>"; };
 		B20000000000000000000002 /* WebcamPreviewWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebcamPreviewWindow.swift; sourceTree = "<group>"; };
+		B20000000000000000000099 /* RecordingPreviewWindow.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingPreviewWindow.swift; sourceTree = "<group>"; };
 		B20000000000000000000003 /* RecordingResult.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = RecordingResult.swift; sourceTree = "<group>"; };
 		B20000000000000000000004 /* CameraLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraLayout.swift; sourceTree = "<group>"; };
 		B20000000000000000000005 /* SyncedPlayerController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SyncedPlayerController.swift; sourceTree = "<group>"; };
@@ -508,6 +510,7 @@
 				B50000000000000000000002 /* MouseClickWindow.swift */,
 				B20000000000000000000001 /* WebcamCapture.swift */,
 				B20000000000000000000002 /* WebcamPreviewWindow.swift */,
+				B20000000000000000000099 /* RecordingPreviewWindow.swift */,
 				B20000000000000000000003 /* RecordingResult.swift */,
 				B70000000000000000000001 /* DeviceDiscovery.swift */,
 				B70000000000000000000002 /* DeviceCapture.swift */,
@@ -895,6 +898,7 @@
 				A1000000000000000000003D /* Constants.swift in Sources */,
 				A20000000000000000000001 /* WebcamCapture.swift in Sources */,
 				A20000000000000000000002 /* WebcamPreviewWindow.swift in Sources */,
+				A20000000000000000000099 /* RecordingPreviewWindow.swift in Sources */,
 				A20000000000000000000003 /* RecordingResult.swift in Sources */,
 				A20000000000000000000004 /* CameraLayout.swift in Sources */,
 				A20000000000000000000005 /* SyncedPlayerController.swift in Sources */,

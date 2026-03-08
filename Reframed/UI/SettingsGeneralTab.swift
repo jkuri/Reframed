@@ -83,6 +83,14 @@ extension SettingsView {
           set: { options?.hideCameraPreviewWhileRecording = $0 }
         )
       )
+
+      settingsToggle(
+        "Show Recording Preview",
+        isOn: Binding(
+          get: { options?.showRecordingPreview ?? false },
+          set: { options?.showRecordingPreview = $0 }
+        )
+      )
     }
   }
 }

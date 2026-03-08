@@ -16,6 +16,7 @@ final class ScreenCaptureSession: NSObject, SCStreamDelegate, SCStreamOutput, @u
   private var lastPixelBuffer: CVPixelBuffer?
   private let captureQuality: CaptureQuality
   var onStreamError: (@Sendable (any Error) -> Void)?
+  var onPreviewFrame: (@Sendable (CMSampleBuffer) -> Void)?
 
   init(videoWriter: VideoTrackWriter, captureQuality: CaptureQuality = .standard) {
     self.videoWriter = videoWriter
@@ -133,6 +134,7 @@ final class ScreenCaptureSession: NSObject, SCStreamDelegate, SCStreamOutput, @u
       if let imageBuffer = CMSampleBufferGetImageBuffer(sampleBuffer) {
         lastPixelBuffer = imageBuffer
       }
+      onPreviewFrame?(sampleBuffer)
       videoWriter.appendSampleBuffer(sampleBuffer)
     } else if status == .idle {
       idleFrames += 1

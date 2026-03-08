@@ -84,6 +84,10 @@ final class RecordingOptions {
     didSet { ConfigService.shared.hideCameraPreviewWhileRecording = hideCameraPreviewWhileRecording }
   }
 
+  var showRecordingPreview: Bool {
+    didSet { ConfigService.shared.showRecordingPreview = showRecordingPreview }
+  }
+
   var selectedCamera: CaptureDevice? {
     didSet { ConfigService.shared.cameraDeviceId = selectedCamera?.id }
   }
@@ -118,6 +122,7 @@ final class RecordingOptions {
     retinaCapture = config.retinaCapture
     dimOuterArea = config.dimOuterArea
     hideCameraPreviewWhileRecording = config.hideCameraPreviewWhileRecording
+    showRecordingPreview = config.showRecordingPreview
 
     let savedDeviceId = config.audioDeviceId
     if let deviceId = savedDeviceId {

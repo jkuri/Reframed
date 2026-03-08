@@ -101,6 +101,13 @@ struct OptionsPopover: View {
       ) {
         options.hideCameraPreviewWhileRecording.toggle()
       }
+
+      CheckmarkRow(
+        title: "Show Recording Preview",
+        isSelected: options.showRecordingPreview
+      ) {
+        options.showRecordingPreview.toggle()
+      }
     }
     .padding(.vertical, 8)
     .frame(minWidth: 280)

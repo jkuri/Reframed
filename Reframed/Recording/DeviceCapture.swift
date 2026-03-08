@@ -15,6 +15,7 @@ final class DeviceCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
   private var videoWriter: VideoTrackWriter?
   private var audioWriter: AudioTrackWriter?
   private let logger = Logger(label: "eu.jankuri.reframed.device-capture")
+  var onPreviewFrame: (@Sendable (CMSampleBuffer) -> Void)?
   private var isPaused = false
   private let verifyQueue = DispatchQueue(label: "eu.jankuri.reframed.device-verify", qos: .userInteractive)
   private let audioQueue = DispatchQueue(label: "eu.jankuri.reframed.device-audio", qos: .userInteractive)
@@ -135,6 +136,7 @@ final class DeviceCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
         return
       }
       if isPaused { return }
+      onPreviewFrame?(sampleBuffer)
       videoWriter?.appendSampleBuffer(sampleBuffer)
     } else if output is AVCaptureAudioDataOutput {
       if isPaused { return }
