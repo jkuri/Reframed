@@ -1,5 +1,23 @@
 # Changelog
 
+## [v0.14.0](https://github.com/jkuri/Reframed/compare/v0.13.2...v0.14.0) (2026-03-09)
+
+### Features
+
+- **compositor:** add HDR export via CIImage pipeline, refactor shared helpers, fix recording capture ([b6c9986](https://github.com/jkuri/Reframed/commit/b6c99865b7c043a98dee0fb0e5ef98281abeaad3))
+- **recording:** add PiP recording preview window ([6457c72](https://github.com/jkuri/Reframed/commit/6457c72506d4dc0f5e94b80f158b21795f474a65))
+
+### Bug Fixes
+
+- **compositor:** rewrite manual export to render directly like parallel export ([75bec65](https://github.com/jkuri/Reframed/commit/75bec652b17632a81a3ef5db93a4eeb30c576605))
+- **recording:** clamp preview window position within screen bounds ([2df5c21](https://github.com/jkuri/Reframed/commit/2df5c21393805ff836448d963af66092b297d9b1))
+- **compositor:** scale custom region border width for export resolution ([906a911](https://github.com/jkuri/Reframed/commit/906a91140d9bdc194a919ceba7effee7139a2596))
+- **compositor:** camera slide/scale transitions interpolate from PiP position ([60c2f55](https://github.com/jkuri/Reframed/commit/60c2f553dab6b9294ae3c21fd5426c83ce1d0d7f))
+
+### Chores
+
+- bump LastUpgradeCheck to 2630 to suppress Xcode settings warning ([11b09fb](https://github.com/jkuri/Reframed/commit/11b09fb981ddac499a5927e9cc05b2c867dfc678))
+
 ## [v0.13.2](https://github.com/jkuri/Reframed/compare/v0.13.1...v0.13.2) (2026-03-06)
 
 ### Features
