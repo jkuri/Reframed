@@ -105,18 +105,20 @@ enum TranscriptionService {
     }
 
     await onProgress?(1.0)
-    return mergeShortSegments(segments)
+    let valid = segments.filter { $0.startSeconds < $0.endSeconds }
+    return mergeShortSegments(valid)
   }
 
   private static func mergeShortSegments(_ segments: [CaptionSegment]) -> [CaptionSegment] {
     guard segments.count > 1 else { return segments }
 
+    let sorted = segments.sorted { $0.startSeconds < $1.startSeconds }
     let minWordCount = 4
     let maxMergedWordCount = 16
     let maxGap = 1.5
 
     var merged: [CaptionSegment] = []
-    for segment in segments {
+    for segment in sorted {
       let currentWordCount = segment.text.split(separator: " ").count
 
       if let lastIdx = merged.indices.last {
@@ -124,21 +126,18 @@ enum TranscriptionService {
         let lastWordCount = last.text.split(separator: " ").count
         let gap = segment.startSeconds - last.endSeconds
         let canMerge =
-          gap < maxGap && (lastWordCount + currentWordCount) <= maxMergedWordCount
+          gap >= 0 && gap < maxGap && (lastWordCount + currentWordCount) <= maxMergedWordCount
 
         if canMerge && (currentWordCount < minWordCount || lastWordCount < minWordCount) {
-          let combinedText = last.text + " " + segment.text
           let combinedWords: [CaptionWord]? = {
-            guard let lw = last.words, let sw = segment.words else {
-              return last.words ?? segment.words
-            }
+            guard let lw = last.words, let sw = segment.words else { return nil }
             return lw + sw
           }()
           merged[lastIdx] = CaptionSegment(
             id: last.id,
             startSeconds: last.startSeconds,
-            endSeconds: segment.endSeconds,
-            text: combinedText,
+            endSeconds: max(last.endSeconds, segment.endSeconds),
+            text: last.text + " " + segment.text,
             words: combinedWords
           )
         } else {

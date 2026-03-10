@@ -87,6 +87,23 @@ extension EditorState {
     history.pushSnapshot(createSnapshot())
   }
 
+  func updateSegmentText(_ id: UUID, text: String) {
+    guard let idx = captionSegments.firstIndex(where: { $0.id == id }) else { return }
+    captionSegments[idx].text = text
+    captionSegments[idx].words = nil
+    scheduleSave()
+    history.pushSnapshot(createSnapshot())
+  }
+
+  func deleteSegment(_ id: UUID) {
+    captionSegments.removeAll { $0.id == id }
+    if captionSegments.isEmpty {
+      captionsEnabled = false
+    }
+    scheduleSave()
+    history.pushSnapshot(createSnapshot())
+  }
+
   func captionAtTime(_ time: Double) -> CaptionSegment? {
     FrameRenderer.captionSegmentAt(time: time, in: captionSegments)
   }

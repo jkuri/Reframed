@@ -305,6 +305,12 @@ extension PropertiesPanel {
                   editorState.seek(
                     to: CMTime(seconds: segment.startSeconds, preferredTimescale: 600)
                   )
+                },
+                onUpdateText: { newText in
+                  editorState.updateSegmentText(segment.id, text: newText)
+                },
+                onDelete: {
+                  editorState.deleteSegment(segment.id)
                 }
               )
             }
