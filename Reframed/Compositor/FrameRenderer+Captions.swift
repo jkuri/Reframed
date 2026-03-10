@@ -6,6 +6,7 @@ extension FrameRenderer {
   static func drawCaptions(
     in context: CGContext,
     videoRect: CGRect,
+    canvasRect: CGRect,
     instruction: CompositionInstruction,
     compositionTime: CMTime
   ) {
@@ -83,15 +84,15 @@ extension FrameRenderer {
     let bgWidth = suggestedSize.width + paddingH * 2
     let bgHeight = suggestedSize.height + paddingV * 2
 
-    let bgX = videoRect.midX - bgWidth / 2
+    let bgX = canvasRect.midX - bgWidth / 2
     let bgY: CGFloat = {
       switch instruction.captionPosition {
       case .bottom:
-        return videoRect.minY + videoRect.height * 0.05
+        return canvasRect.minY + canvasRect.height * 0.05
       case .top:
-        return videoRect.maxY - videoRect.height * 0.05 - bgHeight
+        return canvasRect.maxY - canvasRect.height * 0.05 - bgHeight
       case .center:
-        return videoRect.midY - bgHeight / 2
+        return canvasRect.midY - bgHeight / 2
       }
     }()
 

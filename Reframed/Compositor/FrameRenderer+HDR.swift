@@ -597,7 +597,8 @@ extension FrameRenderer {
     else { return background }
 
     ctx.clear(CGRect(x: 0, y: 0, width: outputWidth, height: outputHeight))
-    drawCaptions(in: ctx, videoRect: videoRect, instruction: instruction, compositionTime: compositionTime)
+    let canvasRect = CGRect(x: 0, y: 0, width: outputWidth, height: outputHeight)
+    drawCaptions(in: ctx, videoRect: videoRect, canvasRect: canvasRect, instruction: instruction, compositionTime: compositionTime)
 
     guard let overlayImage = ctx.makeImage() else { return background }
     let overlay = CIImage(cgImage: overlayImage)

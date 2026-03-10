@@ -291,6 +291,7 @@ final class FrameRenderer: NSObject, AVVideoCompositing, @unchecked Sendable {
         drawCaptions(
           in: context,
           videoRect: state.videoRect,
+          canvasRect: state.canvasRect,
           instruction: instruction,
           compositionTime: compositionTime
         )
@@ -322,6 +323,7 @@ final class FrameRenderer: NSObject, AVVideoCompositing, @unchecked Sendable {
       drawCaptions(
         in: context,
         videoRect: vRect,
+        canvasRect: state.canvasRect,
         instruction: instruction,
         compositionTime: compositionTime
       )
