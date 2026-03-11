@@ -379,6 +379,10 @@ final class SessionState {
         guard let self else { return }
         Task { @MainActor in await self.handleStreamError() }
       }
+      await coordinator.setDeviceLostHandler { [weak self] device in
+        guard let self else { return }
+        Task { @MainActor in self.handleDeviceLost(device) }
+      }
       self.recordingCoordinator = coordinator
       overlayView = nil
 
@@ -429,6 +433,10 @@ final class SessionState {
     await coordinator.setStreamErrorHandler { [weak self] _ in
       guard let self else { return }
       Task { @MainActor in await self.handleStreamError() }
+    }
+    await coordinator.setDeviceLostHandler { [weak self] device in
+      guard let self else { return }
+      Task { @MainActor in self.handleDeviceLost(device) }
     }
     self.recordingCoordinator = coordinator
     overlayView = nil
@@ -537,6 +545,18 @@ final class SessionState {
     } catch {
       logger.error("Failed to create project bundle: \(error)")
       openEditor(project: nil, result: result)
+    }
+  }
+
+  private func handleDeviceLost(_ device: String) {
+    logger.warning("\(device) disconnected during recording, continuing without it")
+    if device == "camera" {
+      webcamPreviewWindow?.close()
+      webcamPreviewWindow = nil
+      isCameraOn = false
+    }
+    if device == "microphone" {
+      isMicrophoneOn = false
     }
   }
 

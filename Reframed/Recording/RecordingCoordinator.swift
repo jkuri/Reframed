@@ -20,6 +20,7 @@ actor RecordingCoordinator {
   private var cursorMetadataRecorder: CursorMetadataRecorder?
   private let logger = Logger(label: "eu.jankuri.reframed.recording-coordinator")
   private var onStreamError: (@Sendable (any Error) -> Void)?
+  private var onDeviceLost: (@Sendable (String) -> Void)?
   private var pauseStartTime: CMTime = .invalid
   private var totalPauseOffset: CMTime = .zero
   private var pixelW: Int = 0
@@ -185,6 +186,10 @@ actor RecordingCoordinator {
       )
       self.webcamWriter = camWriter
       cam.attachWriter(camWriter)
+      cam.onDisconnected = { [weak self] in
+        guard let self else { return }
+        Task { await self.handleDeviceLost("camera") }
+      }
       self.webcamCapture = cam
     }
 
@@ -199,6 +204,10 @@ actor RecordingCoordinator {
       )
       self.micAudioWriter = micWriter
       mic.attachWriter(micWriter)
+      mic.onDisconnected = { [weak self] in
+        guard let self else { return }
+        Task { await self.handleDeviceLost("microphone") }
+      }
       self.microphoneCapture = mic
     }
 
@@ -358,6 +367,10 @@ actor RecordingCoordinator {
       )
       self.webcamWriter = camWriter
       cam.attachWriter(camWriter)
+      cam.onDisconnected = { [weak self] in
+        guard let self else { return }
+        Task { await self.handleDeviceLost("camera") }
+      }
       self.webcamCapture = cam
     }
 
@@ -372,6 +385,10 @@ actor RecordingCoordinator {
       )
       self.micAudioWriter = micWriter
       mic.attachWriter(micWriter)
+      mic.onDisconnected = { [weak self] in
+        guard let self else { return }
+        Task { await self.handleDeviceLost("microphone") }
+      }
       self.microphoneCapture = mic
     }
 
@@ -590,9 +607,18 @@ actor RecordingCoordinator {
     onStreamError = handler
   }
 
+  func setDeviceLostHandler(_ handler: @escaping @Sendable (String) -> Void) {
+    onDeviceLost = handler
+  }
+
   private func handleStreamError(_ error: any Error) {
     logger.error("Stream error received: \(error.localizedDescription)")
     onStreamError?(error)
+  }
+
+  private func handleDeviceLost(_ device: String) {
+    logger.warning("\(device) disconnected during recording")
+    onDeviceLost?(device)
   }
 
   func getAudioLevels() -> (mic: Float, system: Float) {

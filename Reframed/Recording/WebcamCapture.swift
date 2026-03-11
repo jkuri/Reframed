@@ -17,6 +17,7 @@ final class WebcamCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
   private let verifyQueue = DispatchQueue(label: "eu.jankuri.reframed.webcam-verify", qos: .userInteractive)
   private var firstFrameContinuation: CheckedContinuation<Void, any Error>?
   private var selectedDims: (width: Int, height: Int) = (1280, 720)
+  var onDisconnected: (@Sendable () -> Void)?
 
   override init() {
     super.init()
@@ -109,6 +110,13 @@ final class WebcamCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
     }
     self.captureSession = session
 
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(sessionWasInterrupted),
+      name: AVCaptureSession.wasInterruptedNotification,
+      object: session
+    )
+
     try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, any Error>) in
       self.verifyQueue.async {
         self.firstFrameContinuation = continuation
@@ -165,9 +173,16 @@ final class WebcamCapture: NSObject, AVCaptureVideoDataOutputSampleBufferDelegat
   }
 
   func stop() {
+    NotificationCenter.default.removeObserver(self, name: AVCaptureSession.wasInterruptedNotification, object: captureSession)
     captureSession?.stopRunning()
     captureSession = nil
+    onDisconnected = nil
     logger.info("Webcam capture stopped")
+  }
+
+  @objc private func sessionWasInterrupted(_ notification: Notification) {
+    logger.warning("Webcam session interrupted — device likely disconnected")
+    onDisconnected?()
   }
 
   func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {

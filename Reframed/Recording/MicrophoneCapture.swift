@@ -14,6 +14,7 @@ final class MicrophoneCapture: NSObject, AVCaptureAudioDataOutputSampleBufferDel
   private var isPaused = false
   private let verifyQueue = DispatchQueue(label: "eu.jankuri.reframed.mic-verify", qos: .userInteractive)
   private var firstSampleContinuation: CheckedContinuation<Void, any Error>?
+  var onDisconnected: (@Sendable () -> Void)?
 
   override init() {
     super.init()
@@ -87,6 +88,13 @@ final class MicrophoneCapture: NSObject, AVCaptureAudioDataOutputSampleBufferDel
     session.startRunning()
     self.captureSession = session
 
+    NotificationCenter.default.addObserver(
+      self,
+      selector: #selector(sessionWasInterrupted),
+      name: AVCaptureSession.wasInterruptedNotification,
+      object: session
+    )
+
     try await withCheckedThrowingContinuation { (continuation: CheckedContinuation<Void, any Error>) in
       self.verifyQueue.async {
         self.firstSampleContinuation = continuation
@@ -129,9 +137,16 @@ final class MicrophoneCapture: NSObject, AVCaptureAudioDataOutputSampleBufferDel
   }
 
   func stop() {
+    NotificationCenter.default.removeObserver(self, name: AVCaptureSession.wasInterruptedNotification, object: captureSession)
     captureSession?.stopRunning()
     captureSession = nil
+    onDisconnected = nil
     logger.info("Microphone capture stopped")
+  }
+
+  @objc private func sessionWasInterrupted(_ notification: Notification) {
+    logger.warning("Microphone session interrupted — device likely disconnected")
+    onDisconnected?()
   }
 
   func captureOutput(_ output: AVCaptureOutput, didOutput sampleBuffer: CMSampleBuffer, from connection: AVCaptureConnection) {
