@@ -132,5 +132,4 @@ struct PropertiesPanel: View {
     }
   }
 
-
 }

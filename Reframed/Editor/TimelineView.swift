@@ -30,7 +30,7 @@ struct TimelineView: View {
   @Environment(\.colorScheme) private var colorScheme
 
   let sidebarWidth: CGFloat = 70
-  private let rulerHeight: CGFloat = 32
+  let rulerHeight: CGFloat = Layout.rulerHeight
   private let playheadInset: CGFloat = 7
   let trackHeight: CGFloat = Track.height
 

@@ -2,30 +2,6 @@ import AVFoundation
 import SwiftUI
 
 extension TimelineView {
-  func zoomTrackContent(width: CGFloat, keyframes: [ZoomKeyframe]) -> some View {
-    ZoomKeyframeEditor(
-      keyframes: keyframes,
-      duration: totalSeconds,
-      width: width,
-      height: trackHeight,
-      scrollOffset: scrollOffset,
-      timelineZoom: timelineZoom,
-      onAddKeyframe: { time in
-        if let provider = editorState.cursorMetadataProvider {
-          let pos = provider.sample(at: time)
-          editorState.addManualZoomKeyframe(at: time, center: pos)
-        }
-      },
-      onRemoveRegion: { startIndex, count in
-        editorState.removeZoomRegion(startIndex: startIndex, count: count)
-      },
-      onUpdateRegion: { startIndex, count, newKeyframes in
-        editorState.updateZoomRegion(startIndex: startIndex, count: count, newKeyframes: newKeyframes)
-      }
-    )
-    .frame(width: width, height: trackHeight)
-  }
-
   func trimBorderOverlay(
     width: CGFloat,
     height: CGFloat,
@@ -90,21 +66,19 @@ extension TimelineView {
           playheadFraction
         }
       let centerX = inset + contentWidth * fraction
-      // TimelineHeight should be accessible from TimelineView instance. We calculate it inline here since it depends on Ruler Height
-      // Actually we have it in self.timelineHeight, and self.rulerHeight is 32.
-      let lineHeight = timelineHeight - 32
+      let lineHeight = timelineHeight - rulerHeight
 
       ZStack {
         Rectangle()
           .fill(ReframedColors.primaryText.opacity(0.9))
           .frame(width: 2, height: lineHeight)
-          .position(x: centerX, y: 32 + lineHeight / 2)
+          .position(x: centerX, y: rulerHeight + lineHeight / 2)
           .allowsHitTesting(false)
 
         RoundedRectangle(cornerRadius: Radius.md)
           .fill(ReframedColors.primaryText.opacity(0.9))
-          .frame(width: 12, height: 32)
-          .position(x: centerX, y: 16)
+          .frame(width: 12, height: rulerHeight)
+          .position(x: centerX, y: rulerHeight / 2)
           .gesture(
             DragGesture(minimumDistance: 0)
               .onChanged { value in

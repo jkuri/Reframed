@@ -235,6 +235,63 @@ extension TimelineView {
     .allowsHitTesting(false)
   }
 
+  func buildWaveformPath(top: [CGPoint], bottom: [CGPoint], minX: CGFloat, maxX: CGFloat) -> Path {
+    guard top.count > 1, maxX > minX else { return Path() }
+    let step = top.count > 1 ? top[1].x - top[0].x : 1
+
+    var clippedTop: [CGPoint] = []
+    var clippedBottom: [CGPoint] = []
+
+    for i in 0..<top.count {
+      let x = top[i].x
+      if x >= minX - step && x <= maxX + step {
+        let cx = max(minX, min(maxX, x))
+        if x != cx {
+          let t: CGFloat
+          if i > 0 && x < minX {
+            t = (minX - top[i].x) / step
+            let ty = top[i].y + (top[min(i + 1, top.count - 1)].y - top[i].y) * t
+            let by = bottom[i].y + (bottom[min(i + 1, bottom.count - 1)].y - bottom[i].y) * t
+            clippedTop.append(CGPoint(x: minX, y: ty))
+            clippedBottom.append(CGPoint(x: minX, y: by))
+          } else if x > maxX {
+            t = (maxX - top[max(i - 1, 0)].x) / step
+            let ty = top[max(i - 1, 0)].y + (top[i].y - top[max(i - 1, 0)].y) * t
+            let by = bottom[max(i - 1, 0)].y + (bottom[i].y - bottom[max(i - 1, 0)].y) * t
+            clippedTop.append(CGPoint(x: maxX, y: ty))
+            clippedBottom.append(CGPoint(x: maxX, y: by))
+          }
+        } else {
+          clippedTop.append(top[i])
+          clippedBottom.append(bottom[i])
+        }
+      }
+    }
+
+    guard clippedTop.count > 1 else { return Path() }
+
+    var path = Path()
+    path.move(to: clippedTop[0])
+    for i in 1..<clippedTop.count {
+      let prev = clippedTop[i - 1]
+      let curr = clippedTop[i]
+      let mx = (prev.x + curr.x) / 2
+      path.addCurve(to: curr, control1: CGPoint(x: mx, y: prev.y), control2: CGPoint(x: mx, y: curr.y))
+    }
+    for i in stride(from: clippedBottom.count - 1, through: 0, by: -1) {
+      let curr = clippedBottom[i]
+      if i == clippedBottom.count - 1 {
+        path.addLine(to: curr)
+      } else {
+        let prev = clippedBottom[i + 1]
+        let mx = (prev.x + curr.x) / 2
+        path.addCurve(to: curr, control1: CGPoint(x: mx, y: prev.y), control2: CGPoint(x: mx, y: curr.y))
+      }
+    }
+    path.closeSubpath()
+    return path
+  }
+
   func effectiveAudioRegion(_ region: AudioRegionData, width: CGFloat) -> (start: Double, end: Double) {
     guard audioDragRegionId == region.id, let dt = audioDragType else {
       return (region.startSeconds, region.endSeconds)

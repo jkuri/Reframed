@@ -67,7 +67,7 @@ final class VideoPreviewContainer: NSView {
   let segmentationQueue = DispatchQueue(label: "eu.jkuri.reframed.segmentation", qos: .userInteractive)
   var isProcessingWebcamFrame = false
   var lastProcessedWebcamTime: Double = -1
-  
+
   override init(frame: NSRect) {
     super.init(frame: frame)
     wantsLayer = true

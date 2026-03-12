@@ -19,6 +19,7 @@ enum Layout {
 
   static let segmentSpacing: CGFloat = 8
 
+  static let rulerHeight: CGFloat = 32
   static let toolbarHeight: CGFloat = 52
   static let toolbarIconSize: CGFloat = FontSize.lg
 

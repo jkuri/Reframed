@@ -2,6 +2,29 @@ import AVFoundation
 import SwiftUI
 
 extension TimelineView {
+  func screenTrackContent(width: CGFloat) -> some View {
+    let h = trackHeight
+    let regions = editorState.videoRegions
+
+    return ZStack(alignment: .leading) {
+      ForEach(regions) { region in
+        videoRegionView(
+          region: region,
+          width: width,
+          height: h
+        )
+      }
+    }
+    .frame(width: width, height: h)
+    .clipped()
+    .coordinateSpace(name: "videoRegion")
+    .contentShape(Rectangle())
+    .onTapGesture(count: 2) { location in
+      let time = (location.x / width) * totalSeconds
+      editorState.addVideoRegion(atTime: time)
+    }
+  }
+
   @ViewBuilder
   func videoRegionView(
     region: VideoRegionData,

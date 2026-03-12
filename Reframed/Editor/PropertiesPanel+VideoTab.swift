@@ -1,83 +1,17 @@
 import SwiftUI
 
 extension PropertiesPanel {
-  var backgroundSection: some View {
+  var canvasSection: some View {
     VStack(alignment: .leading, spacing: Layout.itemSpacing) {
-      SectionHeader(icon: "paintbrush.fill", title: "Background")
+      SectionHeader(icon: "rectangle.dashed", title: "Canvas")
 
       SegmentPicker(
-        items: BackgroundMode.allCases,
+        items: CanvasAspect.allCases,
         label: { $0.label },
-        selection: $backgroundMode
+        selection: $editorState.canvasAspect
       )
-
-      switch backgroundMode {
-      case .color:
-        solidColorGrid
-      case .gradient:
-        gradientGrid
-      case .image:
-        imageBackgroundSection
-      }
-    }
-  }
-
-  private var swatchColumns: [GridItem] {
-    Array(repeating: GridItem(.flexible(), spacing: 6), count: 8)
-  }
-
-  var gradientGrid: some View {
-    LazyVGrid(columns: swatchColumns, spacing: 6) {
-      ForEach(GradientPresets.all) { preset in
-        SwatchButton(
-          fill: LinearGradient(
-            colors: preset.colors,
-            startPoint: preset.startPoint,
-            endPoint: preset.endPoint
-          ),
-          isSelected: selectedGradientId == preset.id
-        ) {
-          selectedGradientId = preset.id
-        }
-      }
-    }
-  }
-
-  var imageBackgroundSection: some View {
-    VStack(alignment: .leading, spacing: Layout.itemSpacing) {
-      ImageDropSection(
-        image: editorState.backgroundImage,
-        onPick: { pickBackgroundImage() },
-        onDrop: { url in
-          editorState.setBackgroundImage(from: url)
-          if case .image(let f) = editorState.backgroundStyle {
-            backgroundImageFilename = f
-          }
-        }
-      )
-      if editorState.backgroundImage != nil {
-        VStack(alignment: .leading, spacing: Layout.itemSpacing) {
-          SectionHeader(icon: "arrow.up.left.and.arrow.down.right", title: "Fill Mode")
-
-          SegmentPicker(
-            items: BackgroundImageFillMode.allCases,
-            label: { $0.label },
-            selection: $editorState.backgroundImageFillMode
-          )
-        }
-      }
-    }
-  }
-
-  var solidColorGrid: some View {
-    LazyVGrid(columns: swatchColumns, spacing: 6) {
-      ForEach(TailwindColors.all) { preset in
-        SwatchButton(
-          fill: preset.swiftUIColor,
-          isSelected: selectedColorId == preset.id
-        ) {
-          selectedColorId = preset.id
-        }
+      .onChange(of: editorState.canvasAspect) { _, _ in
+        editorState.clampCameraPosition()
       }
     }
   }

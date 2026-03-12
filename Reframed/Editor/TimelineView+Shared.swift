@@ -12,44 +12,27 @@ extension TimelineView {
     .foregroundStyle(ReframedColors.primaryText)
   }
 
-  func screenTrackContent(width: CGFloat) -> some View {
-    let h = trackHeight
-    let regions = editorState.videoRegions
-
-    return ZStack(alignment: .leading) {
-      ForEach(regions) { region in
-        videoRegionView(
-          region: region,
-          width: width,
-          height: h
-        )
+  func zoomTrackContent(width: CGFloat, keyframes: [ZoomKeyframe]) -> some View {
+    ZoomKeyframeEditor(
+      keyframes: keyframes,
+      duration: totalSeconds,
+      width: width,
+      height: trackHeight,
+      scrollOffset: scrollOffset,
+      timelineZoom: timelineZoom,
+      onAddKeyframe: { time in
+        if let provider = editorState.cursorMetadataProvider {
+          let pos = provider.sample(at: time)
+          editorState.addManualZoomKeyframe(at: time, center: pos)
+        }
+      },
+      onRemoveRegion: { startIndex, count in
+        editorState.removeZoomRegion(startIndex: startIndex, count: count)
+      },
+      onUpdateRegion: { startIndex, count, newKeyframes in
+        editorState.updateZoomRegion(startIndex: startIndex, count: count, newKeyframes: newKeyframes)
       }
-    }
-    .frame(width: width, height: h)
-    .clipped()
-    .coordinateSpace(name: "videoRegion")
-    .contentShape(Rectangle())
-    .onTapGesture(count: 2) { location in
-      let time = (location.x / width) * totalSeconds
-      editorState.addVideoRegion(atTime: time)
-    }
-  }
-
-  func videoTrackBackground(
-    width: CGFloat,
-    height: CGFloat,
-    isWebcam: Bool = false,
-    trimStart: Double,
-    trimEnd: Double
-  ) -> some View {
-    return ZStack(alignment: .leading) {
-      Color.clear
-
-      RoundedRectangle(cornerRadius: Track.borderRadius)
-        .fill(Track.background)
-        .frame(width: max(0, width * (trimEnd - trimStart)), height: height)
-        .offset(x: width * trimStart)
-    }
-    .frame(width: width, height: height)
+    )
+    .frame(width: width, height: trackHeight)
   }
 }

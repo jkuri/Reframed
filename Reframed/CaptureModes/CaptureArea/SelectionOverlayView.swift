@@ -206,9 +206,9 @@ final class SelectionOverlayView: NSView {
     }
 
     switch event.keyCode {
-    case 53: // escape
+    case 53:  // escape
       session.cancelSelection()
-    case 36: // enter
+    case 36:  // enter
       NotificationCenter.default.post(name: .areaSelectionConfirmRequested, object: nil)
     default:
       super.keyDown(with: event)
