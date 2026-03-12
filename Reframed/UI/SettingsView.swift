@@ -84,7 +84,7 @@ struct SettingsView: View {
               .clipShape(RoundedRectangle(cornerRadius: Radius.lg))
               .contentShape(Rectangle())
           }
-          .buttonStyle(.plain)
+          .buttonStyle(PlainCustomButtonStyle())
           .hoverEffect(id: "settings.tab.\(tab.rawValue)")
         }
       }

@@ -1,7 +1,7 @@
 import AppKit
 import SwiftUI
 
-private enum ExportPhase {
+enum ExportPhase {
   case settings
   case exporting
   case completed
@@ -11,21 +11,21 @@ private enum ExportPhase {
 struct ExportSheet: View {
   @Bindable var editorState: EditorState
   @Binding var isPresented: Bool
-  @State private var settings = ExportSettings()
-  @State private var selectedPreset: ExportPreset = .custom
-  @State private var phase: ExportPhase = .settings
-  @State private var errorMessage = ""
-  @State private var exportTask: Task<Void, Never>?
+  @State var settings = ExportSettings()
+  @State var selectedPreset: ExportPreset = .custom
+  @State var phase: ExportPhase = .settings
+  @State var errorMessage = ""
+  @State var exportTask: Task<Void, Never>?
   @Environment(\.colorScheme) private var colorScheme
 
-  private var sourceFPS: Int { editorState.result.fps }
+  var sourceFPS: Int { editorState.result.fps }
 
-  private var hasAudio: Bool {
+  var hasAudio: Bool {
     (editorState.hasSystemAudio && !editorState.systemAudioMuted)
       || (editorState.hasMicAudio && !editorState.micAudioMuted)
   }
 
-  private var hasCaptions: Bool {
+  var hasCaptions: Bool {
     editorState.captionsEnabled && !editorState.captionSegments.isEmpty
   }
 
@@ -222,159 +222,7 @@ struct ExportSheet: View {
     }
   }
 
-  private var exportingContent: some View {
-    VStack(spacing: 0) {
-      if let statusMessage = editorState.exportStatusMessage {
-        Text(statusMessage)
-          .font(.system(size: FontSize.xs, weight: .medium).monospacedDigit())
-          .foregroundStyle(ReframedColors.secondaryText)
-          .padding(.top, 32)
-          .padding(.bottom, 24)
-      } else {
-        Text("Exporting…")
-          .font(.system(size: FontSize.sm, weight: .semibold))
-          .foregroundStyle(ReframedColors.primaryText)
-          .padding(.top, 32)
-          .padding(.bottom, 24)
-
-        VStack(spacing: 8) {
-          ProgressView(value: editorState.exportProgress)
-            .tint(ReframedColors.primaryText)
-            .frame(width: 320)
-
-          HStack(spacing: 12) {
-            Text("\(Int(editorState.exportProgress * 100))%")
-              .font(.system(size: FontSize.xs).monospacedDigit())
-              .foregroundStyle(ReframedColors.secondaryText)
-
-            if let eta = editorState.exportETA, eta > 0 {
-              Text("ETA \(formatDuration(seconds: Int(ceil(eta))))")
-                .font(.system(size: FontSize.xs).monospacedDigit())
-                .foregroundStyle(ReframedColors.secondaryText)
-            }
-          }
-        }
-        .padding(.bottom, 24)
-      }
-
-      Button("Cancel") {
-        editorState.cancelExport()
-        phase = .settings
-      }
-      .buttonStyle(OutlineButtonStyle(size: .small))
-      .padding(.bottom, 28)
-    }
-  }
-
-  private var completedContent: some View {
-    VStack(spacing: 0) {
-      Image(systemName: "checkmark.circle.fill")
-        .font(.system(size: FontSize.display))
-        .foregroundStyle(ReframedColors.primaryText)
-        .padding(.top, 28)
-        .padding(.bottom, 12)
-
-      Text("Export Successful")
-        .font(.system(size: FontSize.sm, weight: .semibold))
-        .foregroundStyle(ReframedColors.primaryText)
-        .padding(.bottom, 16)
-
-      if let url = editorState.lastExportedURL {
-        VStack(spacing: 6) {
-          Text(url.lastPathComponent)
-            .font(.system(size: FontSize.xs, weight: .medium))
-            .foregroundStyle(ReframedColors.primaryText)
-            .lineLimit(1)
-            .truncationMode(.middle)
-
-          Text(MediaFileInfo.formattedFileSize(url: url))
-            .font(.system(size: FontSize.xs))
-            .foregroundStyle(ReframedColors.secondaryText)
-        }
-        .padding(.bottom, 24)
-      }
-
-      HStack(spacing: 12) {
-        Button("Copy to Clipboard") {
-          copyToClipboard()
-        }
-        .buttonStyle(OutlineButtonStyle(size: .small))
-
-        Button("Show in Finder") {
-          editorState.openExportedFile()
-          isPresented = false
-        }
-        .buttonStyle(OutlineButtonStyle(size: .small))
-
-        Button("Done") {
-          isPresented = false
-        }
-        .buttonStyle(PrimaryButtonStyle(size: .small))
-      }
-      .padding(.bottom, 28)
-    }
-  }
-
-  private var failedContent: some View {
-    VStack(spacing: 0) {
-      Image(systemName: "xmark.circle.fill")
-        .font(.system(size: FontSize.display))
-        .foregroundStyle(ReframedColors.primaryText)
-        .padding(.top, 28)
-        .padding(.bottom, 12)
-
-      Text("Export Failed")
-        .font(.system(size: FontSize.sm, weight: .semibold))
-        .foregroundStyle(ReframedColors.primaryText)
-        .padding(.bottom, 12)
-
-      Text(errorMessage)
-        .font(.system(size: FontSize.xs))
-        .foregroundStyle(ReframedColors.secondaryText)
-        .multilineTextAlignment(.center)
-        .padding(.horizontal, 28)
-        .padding(.bottom, 24)
-
-      HStack(spacing: 12) {
-        Button("Back") {
-          phase = .settings
-        }
-        .buttonStyle(OutlineButtonStyle(size: .small))
-
-        Button("Done") {
-          isPresented = false
-        }
-        .buttonStyle(PrimaryButtonStyle(size: .small))
-      }
-      .padding(.bottom, 28)
-    }
-  }
-
-  private func startExport() {
-    phase = .exporting
-    exportTask = Task {
-      do {
-        let url = try await editorState.export(settings: settings)
-        try Task.checkCancellation()
-        editorState.lastExportedURL = url
-        phase = .completed
-      } catch is CancellationError {
-      } catch {
-        errorMessage = error.localizedDescription
-        phase = .failed
-      }
-    }
-    editorState.exportTask = exportTask
-  }
-
-  private func copyToClipboard() {
-    guard let url = editorState.lastExportedURL else { return }
-    let pasteboard = NSPasteboard.general
-    pasteboard.clearContents()
-    pasteboard.writeObjects([url as NSURL])
-  }
-
-  private func manualBinding<T: Equatable>(_ keyPath: WritableKeyPath<ExportSettings, T>) -> Binding<T> {
+  func manualBinding<T: Equatable>(_ keyPath: WritableKeyPath<ExportSettings, T>) -> Binding<T> {
     Binding(
       get: { settings[keyPath: keyPath] },
       set: { newValue in
@@ -384,7 +232,7 @@ struct ExportSheet: View {
     )
   }
 
-  private var gifAllowedFPSCases: [ExportFPS] {
+  var gifAllowedFPSCases: [ExportFPS] {
     if settings.format.isGIF {
       return ExportFPS.allCases.filter { fps in
         guard let val = fps.numericValue else { return true }
@@ -394,7 +242,7 @@ struct ExportSheet: View {
     return ExportFPS.allCases
   }
 
-  private func settingsRow<Content: View>(label: String, @ViewBuilder content: () -> Content) -> some View {
+  func settingsRow<Content: View>(label: String, @ViewBuilder content: () -> Content) -> some View {
     VStack(alignment: .leading, spacing: 6) {
       Text(label)
         .font(.system(size: FontSize.xs, weight: .medium))

@@ -8,8 +8,8 @@
 
 /* Begin PBXBuildFile section */
 		0255AD69477B42D2B028628B /* CaptureTarget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CFD921258364EA6A604537F /* CaptureTarget.swift */; };
+		026E7D919650C4854FCBCF33 /* ExportSheet+Phases.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496C1D98B8AB2982DF4AA7D4 /* ExportSheet+Phases.swift */; };
 		07D41C6C5E3E6E5D646991CC /* SessionState+Recording.swift in Sources */ = {isa = PBXBuildFile; fileRef = E926AD0DCDC6B2F794EF9C92 /* SessionState+Recording.swift */; };
-		A1B2C3D4E5F6A7B8C9D0E1F2 /* SessionState+Selection.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E2D3C4B5A6978869705142 /* SessionState+Selection.swift */; };
 		083CE52934446637B35EF2A7 /* RecordingCoordinator+Lifecycle.swift in Sources */ = {isa = PBXBuildFile; fileRef = 2630C23881313B30C965A75A /* RecordingCoordinator+Lifecycle.swift */; };
 		099C5B4AFE46AC44C6636A86 /* EditorState+CameraRegions.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1183EC0D0DA57B9B73BC950 /* EditorState+CameraRegions.swift */; };
 		0C3E2333C8FFBF5A49499D2C /* ZoomKeyframeEditor+RegionView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 15FC8EFFF8F25B538B770019 /* ZoomKeyframeEditor+RegionView.swift */; };
@@ -113,6 +113,7 @@
 		A1000000000000000000004D /* PrimaryButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000004D /* PrimaryButton.swift */; };
 		A1000000000000000000004E /* SelectButton.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000004E /* SelectButton.swift */; };
 		A1000000000000000000004F /* LanguagePicker.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1000000000000000000004F /* LanguagePicker.swift */; };
+		A1B2C3D4E5F6A7B8C9D0E1F2 /* SessionState+Selection.swift in Sources */ = {isa = PBXBuildFile; fileRef = F1E2D3C4B5A6978869705142 /* SessionState+Selection.swift */; };
 		A1F00000000000000000001 /* WindowPositionObserver.swift in Sources */ = {isa = PBXBuildFile; fileRef = B1F00000000000000000001 /* WindowPositionObserver.swift */; };
 		A20000000000000000000001 /* WebcamCapture.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000001 /* WebcamCapture.swift */; };
 		A20000000000000000000002 /* WebcamPreviewWindow.swift in Sources */ = {isa = PBXBuildFile; fileRef = B20000000000000000000002 /* WebcamPreviewWindow.swift */; };
@@ -207,6 +208,7 @@
 		CB00000000000000000000A3 /* MenuBarIcon.swift in Sources */ = {isa = PBXBuildFile; fileRef = CB00000000000000000000B3 /* MenuBarIcon.swift */; };
 		CD88FB9E14F75D2DA0513D3C /* FrameRenderer+Cursor.swift in Sources */ = {isa = PBXBuildFile; fileRef = BDF80A89DF90D50CD417CEE5 /* FrameRenderer+Cursor.swift */; };
 		D231D2CA1110B032A7D42474 /* EditorState+Zoom.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2354223AAA382DB82EF31D5 /* EditorState+Zoom.swift */; };
+		D3134AAE9FC7FC1D4E19341B /* History+ChangeRules.swift in Sources */ = {isa = PBXBuildFile; fileRef = EB80B289E404CFF82DC2A109 /* History+ChangeRules.swift */; };
 		D94D3AEDD28008B3B0E5A36A /* RecordingCoordinator+Device.swift in Sources */ = {isa = PBXBuildFile; fileRef = F8881A46BBB4614D3C430CF0 /* RecordingCoordinator+Device.swift */; };
 		DB000000000000000000000A /* RNNoiseProcessor.swift in Sources */ = {isa = PBXBuildFile; fileRef = DA000000000000000000001D /* RNNoiseProcessor.swift */; };
 		E10000000000000000000009 /* WhisperKit in Frameworks */ = {isa = PBXBuildFile; productRef = E10000000000000000000008 /* WhisperKit */; };
@@ -261,6 +263,7 @@
 		3DCA03E02F3B511C003FE309 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
 		4016F798AD537E3A9A1EB1F0 /* EditorState+Project.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EditorState+Project.swift"; sourceTree = "<group>"; };
 		414D0B4B5049DED5527EE523 /* MenuBarComponents.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = MenuBarComponents.swift; sourceTree = "<group>"; };
+		496C1D98B8AB2982DF4AA7D4 /* ExportSheet+Phases.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "ExportSheet+Phases.swift"; sourceTree = "<group>"; };
 		496D11968908B4B678987F2F /* FrameRenderer+Webcam.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "FrameRenderer+Webcam.swift"; sourceTree = "<group>"; };
 		55C3A4D8ED8A124F0232C7E9 /* CmdScrollZoomOverlay.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = CmdScrollZoomOverlay.swift; sourceTree = "<group>"; };
 		5F3469C70747A78B7BDD2B5C /* VideoPreviewContainer+Interaction.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VideoPreviewContainer+Interaction.swift"; sourceTree = "<group>"; };
@@ -455,11 +458,12 @@
 		E20000000000000000000004 /* VideoCompositor+Audio.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VideoCompositor+Audio.swift"; sourceTree = "<group>"; };
 		E8596CD61869ECC16EAECA92 /* EditorState+CameraLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EditorState+CameraLayout.swift"; sourceTree = "<group>"; };
 		E926AD0DCDC6B2F794EF9C92 /* SessionState+Recording.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "SessionState+Recording.swift"; sourceTree = "<group>"; };
-		F1E2D3C4B5A6978869705142 /* SessionState+Selection.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "SessionState+Selection.swift"; sourceTree = "<group>"; };
+		EB80B289E404CFF82DC2A109 /* History+ChangeRules.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "History+ChangeRules.swift"; sourceTree = "<group>"; };
 		EC41BA6DF5654C57AC930549 /* WindowController.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowController.swift; sourceTree = "<group>"; };
 		EFF5D8C3FCEE6DC1F9BB700A /* ZoomKeyframeEditor+Logic.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "ZoomKeyframeEditor+Logic.swift"; sourceTree = "<group>"; };
 		F10139C60D4C38761A7D3914 /* EditorView+Preview.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "EditorView+Preview.swift"; sourceTree = "<group>"; };
 		F1874AA3B515AEFC58016EC5 /* MenuBarView+Projects.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "MenuBarView+Projects.swift"; sourceTree = "<group>"; };
+		F1E2D3C4B5A6978869705142 /* SessionState+Selection.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "SessionState+Selection.swift"; sourceTree = "<group>"; };
 		F53532FE545B3134E1F23E97 /* EditorState+Background.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EditorState+Background.swift"; sourceTree = "<group>"; };
 		F8881A46BBB4614D3C430CF0 /* RecordingCoordinator+Device.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "RecordingCoordinator+Device.swift"; sourceTree = "<group>"; };
 		FB10000000000000000000A1 /* SpotlightOverlayLayer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SpotlightOverlayLayer.swift; sourceTree = "<group>"; };
@@ -831,6 +835,7 @@
 				D5C03E11186EDDA74B1B6958 /* PropertiesPanel+Background.swift */,
 				EFF5D8C3FCEE6DC1F9BB700A /* ZoomKeyframeEditor+Logic.swift */,
 				15FC8EFFF8F25B538B770019 /* ZoomKeyframeEditor+RegionView.swift */,
+				EB80B289E404CFF82DC2A109 /* History+ChangeRules.swift */,
 			);
 			path = Editor;
 			sourceTree = "<group>";
@@ -869,6 +874,7 @@
 				FB10000000000000000000A9 /* FrameRenderer+Spotlight.swift */,
 				CA20000000000000000000B0 /* FrameRenderer+HDR.swift */,
 				CA20000000000000000000B1 /* FrameRenderer+Helpers.swift */,
+				496C1D98B8AB2982DF4AA7D4 /* ExportSheet+Phases.swift */,
 			);
 			path = Compositor;
 			sourceTree = "<group>";
@@ -1179,6 +1185,8 @@
 				1B2EAECB17848CEF321B71D3 /* RecordingCoordinator+Screen.swift in Sources */,
 				D94D3AEDD28008B3B0E5A36A /* RecordingCoordinator+Device.swift in Sources */,
 				083CE52934446637B35EF2A7 /* RecordingCoordinator+Lifecycle.swift in Sources */,
+				D3134AAE9FC7FC1D4E19341B /* History+ChangeRules.swift in Sources */,
+				026E7D919650C4854FCBCF33 /* ExportSheet+Phases.swift in Sources */,
 			);
 		};
 /* End PBXSourcesBuildPhase section */

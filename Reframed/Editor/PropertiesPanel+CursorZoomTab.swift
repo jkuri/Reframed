@@ -30,7 +30,7 @@ extension PropertiesPanel {
               .lineLimit(1)
           }
         }
-        .buttonStyle(.plain)
+        .buttonStyle(PlainCustomButtonStyle())
       }
     }
   }
