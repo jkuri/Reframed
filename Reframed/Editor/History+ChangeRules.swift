@@ -286,8 +286,8 @@ extension History {
         sub(\.captionSettings, \.fontWeight, default: .bold) {
           "Caption font weight set to \($0.label)"
         },
-        sub(\.captionSettings, \.position, default: .bottom) {
-          "Caption position set to \($0.label.lowercased())"
+        sub(\.captionSettings, \.position, default: .bottom) { _ in
+          "Caption position updated"
         },
         sub(\.captionSettings, \.textColor, default: CodableColor(r: 1, g: 1, b: 1)) { _ in
           "Caption text color updated"

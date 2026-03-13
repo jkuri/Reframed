@@ -199,11 +199,17 @@ extension PropertiesPanel {
         Text("Position")
           .font(.system(size: FontSize.xs))
           .foregroundStyle(ReframedColors.secondaryText)
-        SegmentPicker(
-          items: CaptionPosition.allCases,
-          label: { $0.label },
-          selection: $editorState.captionPosition
-        )
+        HStack(spacing: 4) {
+          ForEach(Array(CaptionPosition.presets.enumerated()), id: \.offset) { _, preset in
+            Button(preset.label) {
+              editorState.captionPosition = preset.position
+            }
+            .buttonStyle(OutlineButtonStyle(size: .small, fullWidth: true))
+          }
+        }
+        Text("Drag captions in preview to reposition")
+          .font(.system(size: FontSize.xxs))
+          .foregroundStyle(ReframedColors.tertiaryText)
       }
       .disabled(!editorState.captionsEnabled)
 

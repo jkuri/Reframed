@@ -1,5 +1,8 @@
+import AppKit
 import CoreGraphics
+import CoreText
 import Foundation
+import SwiftUI
 
 struct ProjectMetadata: Codable, Sendable {
   var version: Int = 1
@@ -158,17 +161,101 @@ struct CaptionWord: Codable, Sendable, Equatable {
   var endSeconds: Double
 }
 
-enum CaptionPosition: String, Codable, Sendable, CaseIterable, Identifiable {
-  case bottom, top, center
+struct CaptionPosition: Codable, Sendable, Equatable {
+  var relativeX: CGFloat
+  var relativeY: CGFloat
 
-  var id: String { rawValue }
+  static let bottom = CaptionPosition(relativeX: 0.5, relativeY: 0.9)
+  static let top = CaptionPosition(relativeX: 0.5, relativeY: 0.1)
+  static let center = CaptionPosition(relativeX: 0.5, relativeY: 0.5)
 
-  var label: String {
-    switch self {
-    case .bottom: "Bottom"
-    case .top: "Top"
-    case .center: "Center"
+  static let presets: [(label: String, position: CaptionPosition)] = [
+    ("Bottom", .bottom),
+    ("Center", .center),
+    ("Top", .top),
+  ]
+
+  init(relativeX: CGFloat = 0.5, relativeY: CGFloat = 0.9) {
+    self.relativeX = min(1, max(0, relativeX))
+    self.relativeY = min(1, max(0, relativeY))
+  }
+
+  init(from decoder: Decoder) throws {
+    if let container = try? decoder.singleValueContainer(),
+      let raw = try? container.decode(String.self)
+    {
+      switch raw {
+      case "top": self = .top
+      case "center": self = .center
+      default: self = .bottom
+      }
+      return
     }
+    let container = try decoder.container(keyedBy: CodingKeys.self)
+    relativeX = min(1, max(0, try container.decode(CGFloat.self, forKey: .relativeX)))
+    relativeY = min(1, max(0, try container.decode(CGFloat.self, forKey: .relativeY)))
+  }
+
+  enum CodingKeys: String, CodingKey {
+    case relativeX, relativeY
+  }
+}
+
+enum CaptionLayout {
+  static let paddingHRatio: CGFloat = 0.4
+  static let paddingVRatio: CGFloat = 0.2
+  static let maxWidthRatio: CGFloat = 0.9
+  static let maxHeightRatio: CGFloat = 0.08
+  static let minFontSize: CGFloat = 12
+
+  static func scaledFontSize(
+    fontSize: CGFloat,
+    canvasWidth: CGFloat,
+    canvasHeight: CGFloat,
+    screenWidth: CGFloat
+  ) -> CGFloat {
+    let raw = fontSize * (canvasWidth / max(screenWidth, 1))
+    return max(minFontSize, min(raw, canvasHeight * maxHeightRatio))
+  }
+
+  static func measureText(
+    _ text: String,
+    scaledFontSize: CGFloat,
+    fontWeight: CaptionFontWeight,
+    maxTextWidth: CGFloat
+  ) -> CGSize {
+    let nsFont = NSFont.systemFont(ofSize: scaledFontSize, weight: fontWeight.nsWeight)
+    let ctFont = CTFontCreateWithName(nsFont.fontName as CFString, scaledFontSize, nil)
+    var alignment = CTTextAlignment.center
+    let paragraphStyle = withUnsafeMutablePointer(to: &alignment) { alignPtr in
+      let setting = CTParagraphStyleSetting(
+        spec: .alignment,
+        valueSize: MemoryLayout<CTTextAlignment>.size,
+        value: alignPtr
+      )
+      return withUnsafePointer(to: setting) { ptr in
+        CTParagraphStyleCreate(ptr, 1)
+      }
+    }
+    let attributes: [NSAttributedString.Key: Any] = [
+      .font: ctFont,
+      NSAttributedString.Key(kCTParagraphStyleAttributeName as String): paragraphStyle,
+    ]
+    let attrString = NSAttributedString(string: text, attributes: attributes)
+    let frameSetter = CTFramesetterCreateWithAttributedString(attrString)
+    let suggestedSize = CTFramesetterSuggestFrameSizeWithConstraints(
+      frameSetter,
+      CFRangeMake(0, 0),
+      nil,
+      CGSize(width: maxTextWidth, height: .greatestFiniteMagnitude),
+      nil
+    )
+    let paddingH = scaledFontSize * paddingHRatio
+    let paddingV = scaledFontSize * paddingVRatio
+    return CGSize(
+      width: suggestedSize.width + paddingH * 2,
+      height: suggestedSize.height + paddingV * 2
+    )
   }
 }
 
@@ -183,6 +270,24 @@ enum CaptionFontWeight: String, Codable, Sendable, CaseIterable, Identifiable {
     case .medium: "Medium"
     case .semibold: "Semibold"
     case .bold: "Bold"
+    }
+  }
+
+  var nsWeight: NSFont.Weight {
+    switch self {
+    case .regular: .regular
+    case .medium: .medium
+    case .semibold: .semibold
+    case .bold: .bold
+    }
+  }
+
+  var swiftUIWeight: Font.Weight {
+    switch self {
+    case .regular: .regular
+    case .medium: .medium
+    case .semibold: .semibold
+    case .bold: .bold
     }
   }
 }

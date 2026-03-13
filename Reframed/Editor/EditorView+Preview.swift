@@ -145,7 +145,14 @@ extension EditorView {
             backgroundColor: editorState.captionBackgroundColor,
             backgroundOpacity: editorState.captionBackgroundOpacity,
             showBackground: editorState.captionShowBackground,
-            screenWidth: editorState.result.screenSize.width
+            screenWidth: editorState.result.screenSize.width,
+            onDrag: { relX, relY in
+              editorState.captionPosition = CaptionPosition(relativeX: relX, relativeY: relY)
+            },
+            onDragEnd: {
+              editorState.scheduleSave()
+              editorState.history.pushSnapshot(editorState.createSnapshot())
+            }
           )
         }
       }

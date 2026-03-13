@@ -27,19 +27,13 @@ extension FrameRenderer {
     )
     guard !displayText.isEmpty else { return }
 
-    let refWidth = max(instruction.captionScreenWidth, 1)
-    let fontSize = instruction.captionFontSize * (canvasRect.width / refWidth)
-    let clampedFontSize = max(12, min(fontSize, canvasRect.height * 0.08))
-
-    let nsWeight: NSFont.Weight = {
-      switch instruction.captionFontWeight {
-      case .regular: return .regular
-      case .medium: return .medium
-      case .semibold: return .semibold
-      case .bold: return .bold
-      }
-    }()
-    let nsFont = NSFont.systemFont(ofSize: clampedFontSize, weight: nsWeight)
+    let clampedFontSize = CaptionLayout.scaledFontSize(
+      fontSize: instruction.captionFontSize,
+      canvasWidth: canvasRect.width,
+      canvasHeight: canvasRect.height,
+      screenWidth: instruction.captionScreenWidth
+    )
+    let nsFont = NSFont.systemFont(ofSize: clampedFontSize, weight: instruction.captionFontWeight.nsWeight)
     let weightedFont = CTFontCreateWithName(nsFont.fontName as CFString, clampedFontSize, nil)
 
     let textColor = instruction.captionTextColor
@@ -70,7 +64,7 @@ extension FrameRenderer {
 
     let attrString = NSAttributedString(string: displayText, attributes: attributes)
 
-    let maxTextWidth = canvasRect.width * 0.9
+    let maxTextWidth = canvasRect.width * CaptionLayout.maxWidthRatio
     let frameSetter = CTFramesetterCreateWithAttributedString(attrString)
     let suggestedSize = CTFramesetterSuggestFrameSizeWithConstraints(
       frameSetter,
@@ -80,22 +74,16 @@ extension FrameRenderer {
       nil
     )
 
-    let paddingH = clampedFontSize * 0.4
-    let paddingV = clampedFontSize * 0.2
+    let paddingH = clampedFontSize * CaptionLayout.paddingHRatio
+    let paddingV = clampedFontSize * CaptionLayout.paddingVRatio
     let bgWidth = suggestedSize.width + paddingH * 2
     let bgHeight = suggestedSize.height + paddingV * 2
 
-    let bgX = canvasRect.midX - bgWidth / 2
-    let bgY: CGFloat = {
-      switch instruction.captionPosition {
-      case .bottom:
-        return canvasRect.minY + canvasRect.height * 0.05
-      case .top:
-        return canvasRect.maxY - canvasRect.height * 0.05 - bgHeight
-      case .center:
-        return canvasRect.midY - bgHeight / 2
-      }
-    }()
+    let pos = instruction.captionPosition
+    let rawBgX = canvasRect.minX + canvasRect.width * pos.relativeX - bgWidth / 2
+    let rawBgY = canvasRect.minY + canvasRect.height * (1.0 - pos.relativeY) - bgHeight / 2
+    let bgX = max(canvasRect.minX, min(canvasRect.maxX - bgWidth, rawBgX))
+    let bgY = max(canvasRect.minY, min(canvasRect.maxY - bgHeight, rawBgY))
 
     let bgRect = CGRect(x: bgX, y: bgY, width: bgWidth, height: bgHeight)
 
@@ -107,7 +95,7 @@ extension FrameRenderer {
         blue: bgColor.b,
         alpha: bgColor.a * instruction.captionBackgroundOpacity
       )
-      let cornerRadius = clampedFontSize * 0.2
+      let cornerRadius = clampedFontSize * CaptionLayout.paddingVRatio
       let bgPath = CGPath(
         roundedRect: bgRect,
         cornerWidth: cornerRadius,
