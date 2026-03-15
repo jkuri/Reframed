@@ -160,7 +160,7 @@ extension FrameRenderer {
     return previous
   }
 
-  private static func visibleText(
+  static func visibleText(
     for segment: CaptionSegment,
     at time: Double,
     maxWordsPerLine: Int

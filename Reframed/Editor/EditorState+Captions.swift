@@ -110,35 +110,12 @@ extension EditorState {
 
   func visibleCaptionText(at time: Double) -> String? {
     guard captionsEnabled, let segment = captionAtTime(time) else { return nil }
-
-    let words = segment.text.split(separator: " ").map(String.init)
-    guard !words.isEmpty else { return segment.text }
-
-    let maxWords = captionMaxWordsPerLine
-    if words.count <= maxWords {
-      return words.joined(separator: " ")
-    }
-
-    var lines: [String] = []
-    var i = 0
-    while i < words.count {
-      let chunk = words[i..<min(i + maxWords, words.count)]
-      lines.append(chunk.joined(separator: " "))
-      i += maxWords
-    }
-
-    let totalLines = lines.count
-    let windowStart = time - segment.startSeconds
-    let segmentDuration = segment.endSeconds - segment.startSeconds
-    guard segmentDuration > 0 else { return lines.prefix(2).joined(separator: "\n") }
-
-    let linesPerWindow = 2
-    let windowCount = max(1, Int(ceil(Double(totalLines) / Double(linesPerWindow))))
-    let windowDuration = segmentDuration / Double(windowCount)
-    let windowIndex = min(Int(windowStart / windowDuration), windowCount - 1)
-    let lineStart = windowIndex * linesPerWindow
-    let visibleLines = lines[lineStart..<min(lineStart + linesPerWindow, totalLines)]
-    return visibleLines.joined(separator: "\n")
+    let text = FrameRenderer.visibleText(
+      for: segment,
+      at: time,
+      maxWordsPerLine: captionMaxWordsPerLine
+    )
+    return text.isEmpty ? nil : text
   }
 
   private static let nonSpeechPattern: Regex = /^\s*[\[\(].*[\]\)]\s*$/

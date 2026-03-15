@@ -242,22 +242,22 @@ enum CaptionLayout {
       NSAttributedString.Key(kCTParagraphStyleAttributeName as String): paragraphStyle,
     ]
     let attrString = NSAttributedString(string: text, attributes: attributes)
-    let frameSetter = CTFramesetterCreateWithAttributedString(attrString)
+    let typesetter = CTTypesetterCreateWithAttributedString(attrString)
     let lineHeight = CTFontGetAscent(ctFont) + CTFontGetDescent(ctFont) + CTFontGetLeading(ctFont)
-    let measurPath = CGPath(
-      rect: CGRect(x: 0, y: 0, width: maxTextWidth, height: CGFloat.greatestFiniteMagnitude),
-      transform: nil
-    )
-    let measurFrame = CTFramesetterCreateFrame(frameSetter, CFRangeMake(0, 0), measurPath, nil)
-    let ctLines = CTFrameGetLines(measurFrame) as? [CTLine] ?? []
-    let actualLineCount = max(ctLines.count, 1)
+    var lineCount = 0
     var maxLineWidth: CGFloat = 0
-    for line in ctLines {
+    var startIndex: CFIndex = 0
+    let totalLength = CFAttributedStringGetLength(attrString)
+    while startIndex < totalLength {
+      let count = CTTypesetterSuggestLineBreak(typesetter, startIndex, Double(maxTextWidth))
+      let line = CTTypesetterCreateLine(typesetter, CFRangeMake(startIndex, count))
       maxLineWidth = max(maxLineWidth, CTLineGetTypographicBounds(line, nil, nil, nil))
+      lineCount += 1
+      startIndex += count
     }
     let suggestedSize = CGSize(
       width: ceil(maxLineWidth),
-      height: ceil(lineHeight * CGFloat(actualLineCount))
+      height: ceil(lineHeight * CGFloat(max(lineCount, 1)))
     )
     let paddingH = scaledFontSize * paddingHRatio
     let paddingV = scaledFontSize * paddingVRatio
