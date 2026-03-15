@@ -111,13 +111,7 @@ extension EditorState {
   func visibleCaptionText(at time: Double) -> String? {
     guard captionsEnabled, let segment = captionAtTime(time) else { return nil }
 
-    let words: [String]
-    if let segmentWords = segment.words, !segmentWords.isEmpty {
-      words = segmentWords.map(\.word)
-    } else {
-      words = segment.text.split(separator: " ").map(String.init)
-    }
-
+    let words = segment.text.split(separator: " ").map(String.init)
     guard !words.isEmpty else { return segment.text }
 
     let maxWords = captionMaxWordsPerLine

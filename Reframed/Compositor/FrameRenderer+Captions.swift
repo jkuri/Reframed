@@ -65,19 +65,33 @@ extension FrameRenderer {
     let attrString = NSAttributedString(string: displayText, attributes: attributes)
 
     let maxTextWidth = canvasRect.width * CaptionLayout.maxWidthRatio
-    let frameSetter = CTFramesetterCreateWithAttributedString(attrString)
-    let suggestedSize = CTFramesetterSuggestFrameSizeWithConstraints(
-      frameSetter,
-      CFRangeMake(0, 0),
-      nil,
-      CGSize(width: maxTextWidth, height: .greatestFiniteMagnitude),
-      nil
-    )
+    let typesetter = CTTypesetterCreateWithAttributedString(attrString)
+    let ascent = CTFontGetAscent(weightedFont)
+    let descent = CTFontGetDescent(weightedFont)
+    let leading = CTFontGetLeading(weightedFont)
+    let lineHeight = ascent + descent + leading
+
+    var ctLines: [CTLine] = []
+    var lineWidths: [CGFloat] = []
+    var startIndex: CFIndex = 0
+    let totalLength = CFAttributedStringGetLength(attrString)
+    while startIndex < totalLength {
+      let count = CTTypesetterSuggestLineBreak(typesetter, startIndex, Double(maxTextWidth))
+      let line = CTTypesetterCreateLine(typesetter, CFRangeMake(startIndex, count))
+      ctLines.append(line)
+      lineWidths.append(CTLineGetTypographicBounds(line, nil, nil, nil))
+      startIndex += count
+    }
+
+    let lineCount = max(ctLines.count, 1)
+    let maxLineWidth = lineWidths.max() ?? 0
+    let textWidth = ceil(maxLineWidth)
+    let textHeight = ceil(lineHeight * CGFloat(lineCount))
 
     let paddingH = clampedFontSize * CaptionLayout.paddingHRatio
     let paddingV = clampedFontSize * CaptionLayout.paddingVRatio
-    let bgWidth = suggestedSize.width + paddingH * 2
-    let bgHeight = suggestedSize.height + paddingV * 2
+    let bgWidth = textWidth + paddingH * 2
+    let bgHeight = textHeight + paddingV * 2
 
     let pos = instruction.captionPosition
     let rawBgX = canvasRect.minX + canvasRect.width * pos.relativeX - bgWidth / 2
@@ -109,18 +123,16 @@ extension FrameRenderer {
       context.restoreGState()
     }
 
-    let textRect = CGRect(
-      x: bgRect.origin.x + paddingH,
-      y: bgRect.origin.y + paddingV,
-      width: suggestedSize.width,
-      height: suggestedSize.height
-    )
-    let path = CGPath(rect: textRect, transform: nil)
-    let frame = CTFramesetterCreateFrame(frameSetter, CFRangeMake(0, 0), path, nil)
-
     context.saveGState()
     context.textMatrix = .identity
-    CTFrameDraw(frame, context)
+    for (i, line) in ctLines.enumerated() {
+      let lineW = lineWidths[i]
+      let xOffset = (textWidth - lineW) / 2
+      let penX = bgRect.origin.x + paddingH + xOffset
+      let penY = bgRect.origin.y + paddingV + textHeight - CGFloat(i + 1) * lineHeight + descent
+      context.textPosition = CGPoint(x: penX, y: penY)
+      CTLineDraw(line, context)
+    }
     context.restoreGState()
   }
 
@@ -153,12 +165,7 @@ extension FrameRenderer {
     at time: Double,
     maxWordsPerLine: Int
   ) -> String {
-    let words: [String]
-    if let segmentWords = segment.words, !segmentWords.isEmpty {
-      words = segmentWords.map(\.word)
-    } else {
-      words = segment.text.split(separator: " ").map(String.init)
-    }
+    let words = segment.text.split(separator: " ").map(String.init)
 
     guard !words.isEmpty else { return segment.text }
 

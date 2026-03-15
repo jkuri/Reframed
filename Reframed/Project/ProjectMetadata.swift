@@ -243,12 +243,21 @@ enum CaptionLayout {
     ]
     let attrString = NSAttributedString(string: text, attributes: attributes)
     let frameSetter = CTFramesetterCreateWithAttributedString(attrString)
-    let suggestedSize = CTFramesetterSuggestFrameSizeWithConstraints(
-      frameSetter,
-      CFRangeMake(0, 0),
-      nil,
-      CGSize(width: maxTextWidth, height: .greatestFiniteMagnitude),
-      nil
+    let lineHeight = CTFontGetAscent(ctFont) + CTFontGetDescent(ctFont) + CTFontGetLeading(ctFont)
+    let measurPath = CGPath(
+      rect: CGRect(x: 0, y: 0, width: maxTextWidth, height: CGFloat.greatestFiniteMagnitude),
+      transform: nil
+    )
+    let measurFrame = CTFramesetterCreateFrame(frameSetter, CFRangeMake(0, 0), measurPath, nil)
+    let ctLines = CTFrameGetLines(measurFrame) as? [CTLine] ?? []
+    let actualLineCount = max(ctLines.count, 1)
+    var maxLineWidth: CGFloat = 0
+    for line in ctLines {
+      maxLineWidth = max(maxLineWidth, CTLineGetTypographicBounds(line, nil, nil, nil))
+    }
+    let suggestedSize = CGSize(
+      width: ceil(maxLineWidth),
+      height: ceil(lineHeight * CGFloat(actualLineCount))
     )
     let paddingH = scaledFontSize * paddingHRatio
     let paddingV = scaledFontSize * paddingVRatio
