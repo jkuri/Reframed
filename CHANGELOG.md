@@ -1,5 +1,12 @@
 # Changelog
 
+## [v0.14.2](https://github.com/jkuri/Reframed/compare/v0.14.1...v0.14.2) (2026-03-17)
+
+### Bug Fixes
+
+- **logging:** correct log directory and file name to match app name ([cdaf7fb](https://github.com/jkuri/Reframed/commit/cdaf7fbb210d5ceef4e915b39b27864c908685c3))
+- **camera:** add missing camera entitlement to enable permission prompt ([399591f](https://github.com/jkuri/Reframed/commit/399591f970dbe7d09ff1af5301a02ca69aadd318))
+
 ## [v0.14.1](https://github.com/jkuri/Reframed/compare/v0.14.0...v0.14.1) (2026-03-15)
 
 ### Features
