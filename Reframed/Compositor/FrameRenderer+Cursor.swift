@@ -45,17 +45,63 @@ extension FrameRenderer {
       return 1.0
     }()
 
-    CursorRenderer.drawCursor(
-      in: context,
-      position: CGPoint(x: pixelX, y: pixelY),
-      style: instruction.cursorStyle,
-      size: instruction.cursorSize * drawScale * zoomScale,
-      fillColor: instruction.cursorFillColor,
-      strokeColor: instruction.cursorStrokeColor
+    let sampleDelta = 1.0 / 60.0
+    let prevPos = snapshot.sample(at: max(0, metadataTime - sampleDelta))
+    let dx = cursorPos.x - prevPos.x
+    let dy = cursorPos.y - prevPos.y
+
+    let swayRotation = -CursorEffects.computeSwayRotation(
+      dx: dx,
+      dy: dy,
+      deltaSeconds: sampleDelta,
+      swayIntensity: instruction.cursorSway
     )
 
+    let clicks = snapshot.activeClicks(at: metadataTime)
+    let bounceScale = CursorEffects.computeClickBounceScale(
+      clicks: clicks,
+      clickBounce: instruction.clickBounce
+    )
+
+    let blur = CursorEffects.computeMotionBlurVelocity(
+      normalizedDx: dx,
+      normalizedDy: dy,
+      deltaSeconds: sampleDelta,
+      blurIntensity: instruction.cursorMotionBlur,
+      outputSize: flippedVideoRect.width
+    )
+
+    if instruction.useSystemCursor {
+      let cursorType = snapshot.cursorType(at: metadataTime)
+      let systemCursorScale = instruction.cursorSize * drawScale * zoomScale / 24.0
+      SystemCursorRenderer.drawSystemCursor(
+        in: context,
+        position: CGPoint(x: pixelX, y: pixelY),
+        cursorType: cursorType,
+        scale: systemCursorScale,
+        rotation: swayRotation,
+        bounceScale: bounceScale,
+        motionBlurDx: blur.dx,
+        motionBlurDy: blur.dy,
+        motionBlurMagnitude: blur.magnitude
+      )
+    } else {
+      CursorRenderer.drawCursor(
+        in: context,
+        position: CGPoint(x: pixelX, y: pixelY),
+        style: instruction.cursorStyle,
+        size: instruction.cursorSize * drawScale * zoomScale,
+        fillColor: instruction.cursorFillColor,
+        strokeColor: instruction.cursorStrokeColor,
+        rotation: swayRotation,
+        bounceScale: bounceScale,
+        motionBlurDx: blur.dx,
+        motionBlurDy: blur.dy,
+        motionBlurMagnitude: blur.magnitude
+      )
+    }
+
     if instruction.showClickHighlights {
-      let clicks = snapshot.activeClicks(at: metadataTime)
       for (clickPoint, progress) in clicks {
         var clickPixelX: CGFloat
         var clickPixelY: CGFloat

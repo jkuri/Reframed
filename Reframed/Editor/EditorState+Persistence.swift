@@ -50,7 +50,11 @@ extension EditorState {
     if cursorMetadataProvider != nil {
       animationSettings = AnimationSettingsData(
         cursorMovementEnabled: cursorMovementEnabled,
-        cursorMovementSpeed: cursorMovementSpeed
+        cursorMovementSpeed: cursorMovementSpeed,
+        useSystemCursor: useSystemCursor,
+        cursorSway: cursorSway,
+        cursorMotionBlur: cursorMotionBlur,
+        clickBounce: clickBounce
       )
     }
     var audioSettings: AudioSettingsData?
@@ -187,6 +191,10 @@ extension EditorState {
     if let animSettings = data.animationSettings {
       cursorMovementEnabled = animSettings.cursorMovementEnabled
       cursorMovementSpeed = animSettings.cursorMovementSpeed
+      useSystemCursor = animSettings.useSystemCursor
+      cursorSway = animSettings.cursorSway
+      cursorMotionBlur = animSettings.cursorMotionBlur
+      clickBounce = animSettings.clickBounce
     }
 
     if let savedSysRegions = data.systemAudioRegions, !savedSysRegions.isEmpty {
@@ -383,6 +391,10 @@ extension EditorState {
       _ = self.zoomTimeline
       _ = self.cursorMovementEnabled
       _ = self.cursorMovementSpeed
+      _ = self.useSystemCursor
+      _ = self.cursorSway
+      _ = self.cursorMotionBlur
+      _ = self.clickBounce
       _ = self.trimStart
       _ = self.trimEnd
       _ = self.systemAudioRegions

@@ -180,6 +180,8 @@
 		A9000000000000000000000C /* CursorSmoothing.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9000000000000000000000C /* CursorSmoothing.swift */; };
 		A9000000000000000000000D /* CameraRegionEditPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9000000000000000000000D /* CameraRegionEditPopover.swift */; };
 		A9000000000000000000000E /* VideoRegionEditPopover.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9000000000000000000000E /* VideoRegionEditPopover.swift */; };
+		A9000000000000000000000F /* CursorEffects.swift in Sources */ = {isa = PBXBuildFile; fileRef = B9000000000000000000000F /* CursorEffects.swift */; };
+		A90000000000000000000010 /* SystemCursorRenderer.swift in Sources */ = {isa = PBXBuildFile; fileRef = B90000000000000000000010 /* SystemCursorRenderer.swift */; };
 		AA0000000000000000000001 /* Credits.html in Resources */ = {isa = PBXBuildFile; fileRef = AA0000000000000000000002 /* Credits.html */; };
 		AF0DCBA95E23A6E551FCEF8C /* EditorState+Background.swift in Sources */ = {isa = PBXBuildFile; fileRef = F53532FE545B3134E1F23E97 /* EditorState+Background.swift */; };
 		B995E88D7945615EBBDBC8EA /* SessionState+Project.swift in Sources */ = {isa = PBXBuildFile; fileRef = 34DD091866B47680E34A452B /* SessionState+Project.swift */; };
@@ -429,6 +431,8 @@
 		B9000000000000000000000C /* CursorSmoothing.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CursorSmoothing.swift; sourceTree = "<group>"; };
 		B9000000000000000000000D /* CameraRegionEditPopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CameraRegionEditPopover.swift; sourceTree = "<group>"; };
 		B9000000000000000000000E /* VideoRegionEditPopover.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = VideoRegionEditPopover.swift; sourceTree = "<group>"; };
+		B9000000000000000000000F /* CursorEffects.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CursorEffects.swift; sourceTree = "<group>"; };
+		B90000000000000000000010 /* SystemCursorRenderer.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SystemCursorRenderer.swift; sourceTree = "<group>"; };
 		BC84C35E4DD49FCEA9DE6CBB /* CursorRenderer+Shapes.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "CursorRenderer+Shapes.swift"; sourceTree = "<group>"; };
 		BCBD89EA34FAF09DD7B4EFCD /* PropertiesPanel+GeneralTab.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "PropertiesPanel+GeneralTab.swift"; sourceTree = "<group>"; };
 		BCE0AE650CCD0FAC70EC7C05 /* EditorState+Export.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "EditorState+Export.swift"; sourceTree = "<group>"; };
@@ -801,6 +805,8 @@
 				B2000000000000000000001E /* PropertiesPanel+CameraTab.swift */,
 				B2000000000000000000001F /* PropertiesPanel+CursorZoomTab.swift */,
 				B9000000000000000000000C /* CursorSmoothing.swift */,
+				B9000000000000000000000F /* CursorEffects.swift */,
+				B90000000000000000000010 /* SystemCursorRenderer.swift */,
 				B20000000000000000000021 /* PropertiesPanel+AudioTab.swift */,
 				FB20000000000000000000B1 /* PropertiesPanel+EffectsTab.swift */,
 				B2000000000000000000002A /* EditorView+TransportBar.swift */,
@@ -1112,6 +1118,8 @@
 				A10000000000000000000042 /* ShortcutRecorderButton.swift in Sources */,
 				A10000000000000000000043 /* ShortcutCaptureView.swift in Sources */,
 				A9000000000000000000000C /* CursorSmoothing.swift in Sources */,
+				A9000000000000000000000F /* CursorEffects.swift in Sources */,
+				A90000000000000000000010 /* SystemCursorRenderer.swift in Sources */,
 				A20000000000000000000021 /* PropertiesPanel+AudioTab.swift in Sources */,
 				A20000000000000000000022 /* History.swift in Sources */,
 				A20000000000000000000023 /* HistoryPopover.swift in Sources */,

@@ -200,7 +200,34 @@ extension VideoPreviewView {
   func updateOverlays(_ nsView: VideoPreviewContainer) {
     if let provider = cursorMetadataProvider, showCursor {
       let pos = provider.sample(at: currentTime)
-      let clicks = showClickHighlights ? provider.activeClicks(at: currentTime) : []
+      let allClicks = provider.activeClicks(at: currentTime)
+      let clicks = showClickHighlights ? allClicks : []
+
+      let sampleDelta = 1.0 / 60.0
+      let prevPos = provider.sample(at: max(0, currentTime - sampleDelta))
+      let dx = pos.x - prevPos.x
+      let dy = pos.y - prevPos.y
+
+      let swayRotation = CursorEffects.computeSwayRotation(
+        dx: dx,
+        dy: dy,
+        deltaSeconds: sampleDelta,
+        swayIntensity: cursorSway
+      )
+      let bounceScale = CursorEffects.computeClickBounceScale(
+        clicks: allClicks,
+        clickBounce: clickBounce
+      )
+      let blur = CursorEffects.computeMotionBlurVelocity(
+        normalizedDx: dx,
+        normalizedDy: dy,
+        deltaSeconds: sampleDelta,
+        blurIntensity: cursorMotionBlur,
+        outputSize: screenSize.width
+      )
+
+      let systemCursorType: SystemCursorType? = useSystemCursor ? provider.cursorType(at: currentTime) : nil
+
       nsView.updateCursorOverlay(
         normalizedPosition: pos,
         style: cursorStyle,
@@ -210,7 +237,13 @@ extension VideoPreviewView {
         clickHighlightColor: clickHighlightColor,
         clickHighlightSize: clickHighlightSize,
         cursorFillColor: cursorFillColor,
-        cursorStrokeColor: cursorStrokeColor
+        cursorStrokeColor: cursorStrokeColor,
+        swayRotation: swayRotation,
+        bounceScale: bounceScale,
+        motionBlurDx: blur.dx,
+        motionBlurDy: blur.dy,
+        motionBlurMagnitude: blur.magnitude,
+        systemCursorType: systemCursorType
       )
 
       nsView.updateSpotlightOverlay(

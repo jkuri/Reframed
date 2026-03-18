@@ -42,7 +42,11 @@ extension PropertiesPanel {
       ToggleRow(label: "Show Cursor", isOn: $editorState.showCursor)
 
       if editorState.showCursor {
-        cursorStyleGrid
+        ToggleRow(label: "System Cursor", isOn: $editorState.useSystemCursor)
+
+        if !editorState.useSystemCursor {
+          cursorStyleGrid
+        }
 
         SliderRow(
           label: "Size",
@@ -54,20 +58,22 @@ extension PropertiesPanel {
           valueWidth: Layout.labelWidth
         )
 
-        HStack(spacing: 8) {
-          Text("Fill")
-            .font(.system(size: FontSize.xs))
-            .foregroundStyle(ReframedColors.secondaryText)
-            .frame(width: Layout.labelWidth, alignment: .leading)
-          cursorFillColorPicker
-        }
+        if !editorState.useSystemCursor {
+          HStack(spacing: 8) {
+            Text("Fill")
+              .font(.system(size: FontSize.xs))
+              .foregroundStyle(ReframedColors.secondaryText)
+              .frame(width: Layout.labelWidth, alignment: .leading)
+            cursorFillColorPicker
+          }
 
-        HStack(spacing: 8) {
-          Text("Stroke")
-            .font(.system(size: FontSize.xs))
-            .foregroundStyle(ReframedColors.secondaryText)
-            .frame(width: Layout.labelWidth, alignment: .leading)
-          cursorStrokeColorPicker
+          HStack(spacing: 8) {
+            Text("Stroke")
+              .font(.system(size: FontSize.xs))
+              .foregroundStyle(ReframedColors.secondaryText)
+              .frame(width: Layout.labelWidth, alignment: .leading)
+            cursorStrokeColorPicker
+          }
         }
       }
     }
@@ -122,6 +128,42 @@ extension PropertiesPanel {
       fallbackName: "Black",
       onSelect: { editorState.clickHighlightColor = $0 }
     )
+  }
+
+  var cursorEffectsSection: some View {
+    VStack(alignment: .leading, spacing: Layout.itemSpacing) {
+      SectionHeader(icon: "sparkles", title: "Cursor Effects")
+
+      SliderRow(
+        label: "Click Bounce",
+        labelWidth: 82,
+        value: $editorState.clickBounce,
+        range: 0...10,
+        step: 0.5,
+        formattedValue: String(format: "%.1f", editorState.clickBounce),
+        valueWidth: 36
+      )
+
+      SliderRow(
+        label: "Sway",
+        labelWidth: 82,
+        value: $editorState.cursorSway,
+        range: 0...2,
+        step: 0.05,
+        formattedValue: String(format: "%.2f", editorState.cursorSway),
+        valueWidth: 36
+      )
+
+      SliderRow(
+        label: "Motion Blur",
+        labelWidth: 82,
+        value: $editorState.cursorMotionBlur,
+        range: 0...5,
+        step: 0.1,
+        formattedValue: String(format: "%.1f", editorState.cursorMotionBlur),
+        valueWidth: 36
+      )
+    }
   }
 
   var cursorMovementSection: some View {

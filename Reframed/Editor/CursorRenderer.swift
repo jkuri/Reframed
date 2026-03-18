@@ -109,18 +109,76 @@ enum CursorRenderer {
     size: CGFloat,
     scale: CGFloat = 1.0,
     fillColor: CodableColor = CodableColor(r: 1, g: 1, b: 1),
-    strokeColor: CodableColor = CodableColor(r: 0, g: 0, b: 0)
+    strokeColor: CodableColor = CodableColor(r: 0, g: 0, b: 0),
+    rotation: CGFloat = 0,
+    bounceScale: CGFloat = 1.0,
+    motionBlurDx: CGFloat = 0,
+    motionBlurDy: CGFloat = 0,
+    motionBlurMagnitude: CGFloat = 0
   ) {
-    let s = size * scale
-    let pixelSize = Int(ceil(s))
+    let s = size * scale * bounceScale
+    let pixelSize = Int(ceil(size * scale))
     let svg = colorizedSVG(for: style, fillHex: fillColor.hexString, strokeHex: strokeColor.hexString)
     guard let image = renderSVGToImage(svgString: svg, pixelSize: pixelSize) else { return }
+
+    if motionBlurMagnitude > 1.0 {
+      let samples = min(Int(motionBlurMagnitude / 3) + 3, CursorEffects.motionBlurMaxSamples)
+      let maxOffset = min(motionBlurMagnitude, CursorEffects.motionBlurMaxOffset)
+      let dirX = motionBlurDx / motionBlurMagnitude
+      let dirY = motionBlurDy / motionBlurMagnitude
+      for i in (1..<samples).reversed() {
+        let fraction = CGFloat(i) / CGFloat(samples)
+        let offset = maxOffset * fraction
+        let alpha = (1.0 - fraction) * 0.5
+        let offsetPos = CGPoint(
+          x: position.x - dirX * offset,
+          y: position.y - dirY * offset
+        )
+        drawSingleCursor(
+          in: context,
+          image: image,
+          position: offsetPos,
+          size: s,
+          style: style,
+          rotation: rotation,
+          alpha: alpha
+        )
+      }
+    }
+
+    drawSingleCursor(
+      in: context,
+      image: image,
+      position: position,
+      size: s,
+      style: style,
+      rotation: rotation,
+      alpha: 1.0
+    )
+  }
+
+  private static func drawSingleCursor(
+    in context: CGContext,
+    image: CGImage,
+    position: CGPoint,
+    size: CGFloat,
+    style: CursorStyle,
+    rotation: CGFloat,
+    alpha: CGFloat
+  ) {
     context.saveGState()
+    if alpha < 1.0 {
+      context.setAlpha(alpha)
+    }
     let drawRect: CGRect
     if style.isCentered {
-      drawRect = CGRect(x: position.x - s / 2, y: position.y - s / 2, width: s, height: s)
+      drawRect = CGRect(x: -size / 2, y: -size / 2, width: size, height: size)
     } else {
-      drawRect = CGRect(x: position.x, y: position.y, width: s, height: s)
+      drawRect = CGRect(x: 0, y: 0, width: size, height: size)
+    }
+    context.translateBy(x: position.x, y: position.y)
+    if abs(rotation) > 0.001 {
+      context.rotate(by: rotation)
     }
     context.draw(image, in: drawRect)
     context.restoreGState()

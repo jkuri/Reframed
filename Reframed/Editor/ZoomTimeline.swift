@@ -92,11 +92,29 @@ final class ZoomTimeline: @unchecked Sendable {
 
   static func followCursor(_ rect: CGRect, cursorPosition: CGPoint) -> CGRect {
     guard rect.width < 1.0 || rect.height < 1.0 else { return rect }
-    let cx = max(0, min(1, cursorPosition.x))
-    let cy = max(0, min(1, cursorPosition.y))
+    let zoomScale = 1.0 / min(rect.width, rect.height)
+    let margin = min(0.3, 1.0 / (2.0 * zoomScale) + 0.05)
+    let cx = softClamp(cursorPosition.x, margin: margin)
+    let cy = softClamp(cursorPosition.y, margin: margin)
     let originX = cx * (1 - rect.width)
     let originY = cy * (1 - rect.height)
     return CGRect(x: originX, y: originY, width: rect.width, height: rect.height)
+  }
+
+  private static func softClamp(_ value: CGFloat, margin: CGFloat) -> CGFloat {
+    if value < margin {
+      let t = max(0, value / margin)
+      return margin * softEase(t)
+    }
+    if value > 1.0 - margin {
+      let t = max(0, (1.0 - value) / margin)
+      return 1.0 - margin * softEase(t)
+    }
+    return value
+  }
+
+  private static func softEase(_ t: CGFloat) -> CGFloat {
+    -t * t * t + 2 * t * t
   }
 
   private func easeInOut(_ t: Double) -> Double {

@@ -82,7 +82,7 @@ enum CursorSmoothing {
     var velX = 0.0
     var velY = 0.0
 
-    result.append(CursorSample(t: samples[0].t, x: posX, y: posY, p: samples[0].p))
+    result.append(CursorSample(t: samples[0].t, x: posX, y: posY, p: samples[0].p, c: samples[0].c))
 
     for i in 1..<samples.count {
       let target = samples[i]
@@ -93,7 +93,7 @@ enum CursorSmoothing {
         posY = target.y
         velX = 0
         velY = 0
-        result.append(CursorSample(t: target.t, x: posX, y: posY, p: target.p))
+        result.append(CursorSample(t: target.t, x: posX, y: posY, p: target.p, c: target.c))
         while clickIdx < sortedClicks.count && sortedClicks[clickIdx].t <= target.t {
           clickIdx += 1
         }
@@ -142,7 +142,7 @@ enum CursorSmoothing {
           posY = click.y
           velX = 0
           velY = 0
-          result.append(CursorSample(t: target.t, x: posX, y: posY, p: target.p))
+          result.append(CursorSample(t: target.t, x: posX, y: posY, p: target.p, c: target.c))
           clickIdx += 1
           continue
         }
@@ -163,7 +163,7 @@ enum CursorSmoothing {
         }
       }
 
-      result.append(CursorSample(t: target.t, x: outX, y: outY, p: target.p))
+      result.append(CursorSample(t: target.t, x: outX, y: outY, p: target.p, c: target.c))
     }
 
     return result

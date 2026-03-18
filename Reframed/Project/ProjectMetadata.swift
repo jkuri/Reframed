@@ -52,6 +52,10 @@ struct ZoomSettingsData: Codable, Sendable, Equatable {
 struct AnimationSettingsData: Codable, Sendable, Equatable {
   var cursorMovementEnabled: Bool = false
   var cursorMovementSpeed: CursorMovementSpeed = .medium
+  var useSystemCursor: Bool = true
+  var cursorSway: CGFloat = 0
+  var cursorMotionBlur: CGFloat = 0
+  var clickBounce: CGFloat = 0
 }
 
 struct AudioSettingsData: Codable, Sendable, Equatable {
@@ -569,6 +573,10 @@ extension AnimationSettingsData {
     let c = try decoder.container(keyedBy: CodingKeys.self)
     cursorMovementEnabled = try c.decodeOrDefault(.cursorMovementEnabled, false)
     cursorMovementSpeed = try c.decodeOrDefault(.cursorMovementSpeed, .medium)
+    useSystemCursor = try c.decodeOrDefault(.useSystemCursor, true)
+    cursorSway = try c.decodeOrDefault(.cursorSway, 0)
+    cursorMotionBlur = try c.decodeOrDefault(.cursorMotionBlur, 0)
+    clickBounce = try c.decodeOrDefault(.clickBounce, 0)
   }
 }
 

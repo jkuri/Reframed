@@ -54,6 +54,12 @@ final class VideoPreviewContainer: NSView {
   var lastClickHighlightSize: CGFloat = 36
   var lastCursorFillColor: CodableColor = CodableColor(r: 1, g: 1, b: 1)
   var lastCursorStrokeColor: CodableColor = CodableColor(r: 0, g: 0, b: 0)
+  var lastSwayRotation: CGFloat = 0
+  var lastBounceScale: CGFloat = 1.0
+  var lastMotionBlurDx: CGFloat = 0
+  var lastMotionBlurDy: CGFloat = 0
+  var lastMotionBlurMagnitude: CGFloat = 0
+  var lastSystemCursorType: SystemCursorType?
   var lastSpotlightNormalizedPosition: CGPoint = .zero
   var lastSpotlightRadius: CGFloat = 200
   var lastSpotlightDimOpacity: CGFloat = 0.6

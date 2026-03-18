@@ -18,6 +18,8 @@ final class CursorMetadataRecorder: @unchecked Sendable {
   private var samples: [CursorSample] = []
   private var clicks: [CursorClickEvent] = []
   private var keystrokes: [KeystrokeEvent] = []
+  private var cachedCursorType: Int = 0
+  private var cursorTypeTimer: DispatchSourceTimer?
 
   private var startHostTime: CMTime = .invalid
   private var isPaused = false
@@ -62,8 +64,20 @@ final class CursorMetadataRecorder: @unchecked Sendable {
     }
     source.resume()
 
+    let ctSource = DispatchSource.makeTimerSource(queue: .main)
+    ctSource.schedule(deadline: .now(), repeating: .milliseconds(16))
+    ctSource.setEventHandler { [weak self] in
+      guard let self else { return }
+      let cursorType = Self.detectCursorType()
+      self.lock.lock()
+      self.cachedCursorType = cursorType
+      self.lock.unlock()
+    }
+    ctSource.resume()
+
     lock.lock()
     timer = source
+    cursorTypeTimer = ctSource
     lock.unlock()
   }
 
@@ -122,6 +136,8 @@ final class CursorMetadataRecorder: @unchecked Sendable {
     lock.lock()
     timer?.cancel()
     timer = nil
+    cursorTypeTimer?.cancel()
+    cursorTypeTimer = nil
     lock.unlock()
   }
 
@@ -129,7 +145,7 @@ final class CursorMetadataRecorder: @unchecked Sendable {
     lock.lock()
     for i in samples.indices {
       let s = samples[i]
-      samples[i] = CursorSample(t: s.t + offset, x: s.x, y: s.y, p: s.p)
+      samples[i] = CursorSample(t: s.t + offset, x: s.x, y: s.y, p: s.p, c: s.c)
     }
     for i in clicks.indices {
       let c = clicks[i]
@@ -177,6 +193,7 @@ final class CursorMetadataRecorder: @unchecked Sendable {
     let captW = captureWidth
     let captH = captureHeight
     let dispH = displayHeight
+    let cursorType = cachedCursorType
     lock.unlock()
 
     let mouseLocation = NSEvent.mouseLocation
@@ -188,11 +205,113 @@ final class CursorMetadataRecorder: @unchecked Sendable {
     let nx = (mouseX - captOriginX) / captW
     let ny = (sckY - captOriginY) / captH
 
-    let sample = CursorSample(t: t, x: nx, y: ny, p: pressed)
+    let sample = CursorSample(t: t, x: nx, y: ny, p: pressed, c: cursorType == 0 ? nil : cursorType)
 
     lock.lock()
     samples.append(sample)
     lock.unlock()
+  }
+
+  private static let pixelHashSize = 32
+
+  private static let cursorsBasePath =
+    "/System/Library/Frameworks/ApplicationServices.framework/Versions/A/Frameworks/HIServices.framework/Versions/A/Resources/cursors"
+
+  private static let pdfOnlyCursors: [(String, SystemCursorType)] = [
+    ("move", .move), ("busybutclickable", .busyButClickable), ("cell", .cell),
+    ("help", .help), ("zoomin", .zoomIn), ("zoomout", .zoomOut),
+    ("resizenorth", .resizeNorth), ("resizesouth", .resizeSouth),
+    ("resizeeast", .resizeEast), ("resizewest", .resizeWest),
+    ("resizenortheast", .resizeNortheast), ("resizenorthwest", .resizeNorthwest),
+    ("resizesoutheast", .resizeSoutheast), ("resizesouthwest", .resizeSouthwest),
+    ("resizenorthsouth", .resizeNorthSouth), ("resizeeastwest", .resizeEastWest),
+    ("resizenortheastsouthwest", .resizeNortheastSouthwest),
+    ("resizenorthwestsoutheast", .resizeNorthwestSoutheast),
+    ("countinguphand", .countingUpHand), ("countingdownhand", .countingDownHand),
+    ("countingupandownhand", .countingUpAndDownHand),
+  ]
+
+  private static func loadPDFAsNSImage(dirName: String) -> NSImage? {
+    let url = URL(fileURLWithPath: "\(cursorsBasePath)/\(dirName)/cursor.pdf")
+    return NSImage(contentsOf: url)
+  }
+
+  private static let knownCursorPixelHashes: [Data: Int] = {
+    var map: [Data: Int] = [:]
+    let nsCursors: [(NSCursor, SystemCursorType)] = [
+      (.arrow, .arrow), (.iBeam, .iBeam), (.pointingHand, .pointingHand),
+      (.crosshair, .crosshair), (.openHand, .openHand), (.closedHand, .closedHand),
+      (.resizeLeftRight, .resizeLeftRight), (.resizeUpDown, .resizeUpDown),
+      (.operationNotAllowed, .operationNotAllowed),
+      (.resizeUp, .resizeUp), (.resizeDown, .resizeDown),
+      (.resizeLeft, .resizeLeft), (.resizeRight, .resizeRight),
+      (.disappearingItem, .disappearingItem), (.contextualMenu, .contextMenu),
+      (.dragCopy, .dragCopy), (.dragLink, .dragLink),
+      (.iBeamCursorForVerticalLayout, .iBeamHorizontal),
+    ]
+    for (cursor, type) in nsCursors {
+      if let pixels = renderCursorPixels(cursor.image) {
+        map[pixels] = type.rawValue
+      }
+    }
+    for (dirName, type) in pdfOnlyCursors {
+      if let image = loadPDFAsNSImage(dirName: dirName),
+        let pixels = renderCursorPixels(image)
+      {
+        map[pixels] = type.rawValue
+      }
+    }
+    return map
+  }()
+
+  private nonisolated(unsafe) static var lastCursorPointer: ObjectIdentifier?
+  private nonisolated(unsafe) static var lastCursorResult: Int = 0
+
+  private static func renderCursorPixels(_ image: NSImage) -> Data? {
+    let s = pixelHashSize
+    let bytesPerRow = s * 4
+    let bitmapInfo =
+      CGBitmapInfo.byteOrder32Little.rawValue | CGImageAlphaInfo.premultipliedFirst.rawValue
+    guard
+      let ctx = CGContext(
+        data: nil,
+        width: s,
+        height: s,
+        bitsPerComponent: 8,
+        bytesPerRow: bytesPerRow,
+        space: CGColorSpaceCreateDeviceRGB(),
+        bitmapInfo: bitmapInfo
+      ),
+      let ptr = ctx.data
+    else { return nil }
+    ctx.clear(CGRect(x: 0, y: 0, width: s, height: s))
+    NSGraphicsContext.saveGraphicsState()
+    NSGraphicsContext.current = NSGraphicsContext(cgContext: ctx, flipped: false)
+    image.draw(
+      in: NSRect(x: 0, y: 0, width: s, height: s),
+      from: .zero,
+      operation: .sourceOver,
+      fraction: 1.0
+    )
+    NSGraphicsContext.restoreGraphicsState()
+    return Data(bytes: ptr, count: s * bytesPerRow)
+  }
+
+  private static func detectCursorType() -> Int {
+    guard let current = NSCursor.currentSystem else { return 0 }
+    let oid = ObjectIdentifier(current)
+    if oid == lastCursorPointer {
+      return lastCursorResult
+    }
+    let result: Int
+    if let pixels = renderCursorPixels(current.image) {
+      result = knownCursorPixelHashes[pixels] ?? 0
+    } else {
+      result = 0
+    }
+    lastCursorPointer = oid
+    lastCursorResult = result
+    return result
   }
 
   private func adjustedTime() -> Double {

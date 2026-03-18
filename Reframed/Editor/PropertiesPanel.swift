@@ -78,6 +78,7 @@ struct PropertiesPanel: View {
           cursorSection
           if editorState.showCursor {
             clickHighlightsSubsection
+            cursorEffectsSection
             cursorMovementSection
           }
         case .zoom:

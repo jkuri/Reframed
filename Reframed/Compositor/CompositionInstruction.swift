@@ -67,6 +67,10 @@ final class CompositionInstruction: NSObject, AVVideoCompositionInstructionProto
   let showClickHighlights: Bool
   let clickHighlightColor: CGColor
   let clickHighlightSize: CGFloat
+  let useSystemCursor: Bool
+  let cursorSway: CGFloat
+  let cursorMotionBlur: CGFloat
+  let clickBounce: CGFloat
   let zoomFollowCursor: Bool
   let zoomTimeline: ZoomTimeline?
   let trimStartSeconds: Double
@@ -130,6 +134,10 @@ final class CompositionInstruction: NSObject, AVVideoCompositionInstructionProto
     showClickHighlights: Bool = true,
     clickHighlightColor: CGColor = CGColor(srgbRed: 0, green: 0, blue: 0, alpha: 1.0),
     clickHighlightSize: CGFloat = 36,
+    useSystemCursor: Bool = false,
+    cursorSway: CGFloat = 0,
+    cursorMotionBlur: CGFloat = 0,
+    clickBounce: CGFloat = 0,
     zoomFollowCursor: Bool = true,
     zoomTimeline: ZoomTimeline? = nil,
     trimStartSeconds: Double = 0,
@@ -190,6 +198,10 @@ final class CompositionInstruction: NSObject, AVVideoCompositionInstructionProto
     self.showClickHighlights = showClickHighlights
     self.clickHighlightColor = clickHighlightColor
     self.clickHighlightSize = clickHighlightSize
+    self.useSystemCursor = useSystemCursor
+    self.cursorSway = cursorSway
+    self.cursorMotionBlur = cursorMotionBlur
+    self.clickBounce = clickBounce
     self.zoomFollowCursor = zoomFollowCursor
     self.zoomTimeline = zoomTimeline
     self.trimStartSeconds = trimStartSeconds

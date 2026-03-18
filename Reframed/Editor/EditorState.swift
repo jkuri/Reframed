@@ -78,6 +78,11 @@ final class EditorState {
   var cursorMovementSpeed: CursorMovementSpeed = .medium
   var smoothedCursorProvider: CursorMetadataProvider?
 
+  var useSystemCursor: Bool = true
+  var cursorSway: CGFloat = 0
+  var cursorMotionBlur: CGFloat = 0
+  var clickBounce: CGFloat = 0
+
   var history = History()
   var isRestoringState = false
   var pendingUndoTask: Task<Void, Never>?
@@ -300,6 +305,10 @@ final class EditorState {
       if let animSettings = saved.animationSettings {
         cursorMovementEnabled = animSettings.cursorMovementEnabled
         cursorMovementSpeed = animSettings.cursorMovementSpeed
+        useSystemCursor = animSettings.useSystemCursor
+        cursorSway = animSettings.cursorSway
+        cursorMotionBlur = animSettings.cursorMotionBlur
+        clickBounce = animSettings.clickBounce
       }
       if let savedSysRegions = saved.systemAudioRegions, !savedSysRegions.isEmpty {
         systemAudioRegions = savedSysRegions

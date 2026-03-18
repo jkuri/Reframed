@@ -11,7 +11,13 @@ extension VideoPreviewContainer {
     clickHighlightColor: CGColor? = nil,
     clickHighlightSize: CGFloat = 36,
     cursorFillColor: CodableColor = CodableColor(r: 1, g: 1, b: 1),
-    cursorStrokeColor: CodableColor = CodableColor(r: 0, g: 0, b: 0)
+    cursorStrokeColor: CodableColor = CodableColor(r: 0, g: 0, b: 0),
+    swayRotation: CGFloat = 0,
+    bounceScale: CGFloat = 1.0,
+    motionBlurDx: CGFloat = 0,
+    motionBlurDy: CGFloat = 0,
+    motionBlurMagnitude: CGFloat = 0,
+    systemCursorType: SystemCursorType? = nil
   ) {
     lastCursorNormalizedPosition = normalizedPosition
     lastCursorStyle = style
@@ -22,6 +28,12 @@ extension VideoPreviewContainer {
     lastClickHighlightSize = clickHighlightSize
     lastCursorFillColor = cursorFillColor
     lastCursorStrokeColor = cursorStrokeColor
+    lastSwayRotation = swayRotation
+    lastSystemCursorType = systemCursorType
+    lastBounceScale = bounceScale
+    lastMotionBlurDx = motionBlurDx
+    lastMotionBlurDy = motionBlurDy
+    lastMotionBlurMagnitude = motionBlurMagnitude
 
     applyCursorOverlay()
   }
@@ -86,7 +98,13 @@ extension VideoPreviewContainer {
       highlightColor: clickHighlightColor,
       highlightSize: clickHighlightSize * baseScale * zoomScale,
       fillColor: lastCursorFillColor,
-      strokeColor: lastCursorStrokeColor
+      strokeColor: lastCursorStrokeColor,
+      swayRotation: lastSwayRotation,
+      bounceScale: lastBounceScale,
+      systemCursorType: lastSystemCursorType,
+      motionBlurDx: lastMotionBlurDx * baseScale,
+      motionBlurDy: lastMotionBlurDy * baseScale,
+      motionBlurMagnitude: lastMotionBlurMagnitude * baseScale
     )
   }
 }

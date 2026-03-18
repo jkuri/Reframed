@@ -36,6 +36,10 @@ struct ExportConfiguration: Sendable {
   var showClickHighlights: Bool = true
   var clickHighlightColor: CodableColor = CodableColor(r: 0, g: 0, b: 0, a: 1.0)
   var clickHighlightSize: CGFloat = 36
+  var useSystemCursor: Bool = false
+  var cursorSway: CGFloat = 0
+  var cursorMotionBlur: CGFloat = 0
+  var clickBounce: CGFloat = 0
   var zoomFollowCursor: Bool = true
   var zoomTimeline: ZoomTimeline? = nil
   var systemAudioVolume: Float = 1.0

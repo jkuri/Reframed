@@ -27,6 +27,13 @@ private func cursorSample(samples: [CursorSample], at time: Double) -> CGPoint {
   return CGPoint(x: s0.x + (s1.x - s0.x) * t, y: s0.y + (s1.y - s0.y) * t)
 }
 
+private func cursorTypeAtTime(samples: [CursorSample], at time: Double) -> SystemCursorType {
+  guard !samples.isEmpty else { return .arrow }
+  let idx = cursorBinarySearch(samples: samples, time: time)
+  let rawType = samples[idx].c ?? 0
+  return SystemCursorType(rawValue: rawType) ?? .arrow
+}
+
 private func cursorActiveClicks(
   clicks: [CursorClickEvent],
   at time: Double,
@@ -57,6 +64,10 @@ final class CursorMetadataProvider: @unchecked Sendable {
 
   func sample(at time: Double) -> CGPoint {
     cursorSample(samples: metadata.samples, at: time)
+  }
+
+  func cursorType(at time: Double) -> SystemCursorType {
+    cursorTypeAtTime(samples: metadata.samples, at: time)
   }
 
   func activeClicks(at time: Double, within duration: Double = 0.4) -> [(point: CGPoint, progress: Double)] {
@@ -95,6 +106,10 @@ final class CursorMetadataSnapshot: @unchecked Sendable {
 
   func sample(at time: Double) -> CGPoint {
     cursorSample(samples: samples, at: time)
+  }
+
+  func cursorType(at time: Double) -> SystemCursorType {
+    cursorTypeAtTime(samples: samples, at: time)
   }
 
   func activeClicks(at time: Double, within duration: Double = 0.4) -> [(point: CGPoint, progress: Double)] {
