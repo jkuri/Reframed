@@ -173,6 +173,22 @@ extension History {
         sub(\.animationSettings, \.cursorMovementSpeed, default: .medium) {
           "Cursor smoothing speed set to \($0.label)"
         },
+        subToggle(
+          \.animationSettings,
+          \.useSystemCursor,
+          default: true,
+          on: "System cursor enabled",
+          off: "System cursor disabled"
+        ),
+        sub(\.animationSettings, \.clickBounce, default: CGFloat(0)) {
+          "Click bounce set to \(String(format: "%.1f", $0))"
+        },
+        sub(\.animationSettings, \.cursorSway, default: CGFloat(0)) {
+          "Cursor sway set to \(String(format: "%.2f", $0))"
+        },
+        sub(\.animationSettings, \.cursorMotionBlur, default: CGFloat(0)) {
+          "Cursor motion blur set to \(String(format: "%.1f", $0))"
+        },
       ]
       return subRules.flatMap { $0(old, new) }
     },
