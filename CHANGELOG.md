@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.14.5](https://github.com/jkuri/Reframed/compare/v0.14.4...v0.14.5) (2026-03-25)
+
+### Bug Fixes
+
+- **ui:** guard against nil NSApp in isDark getter to prevent crash on launch for macOS 15.1 (closes #7) ([c6a94e2](https://github.com/jkuri/Reframed/commit/c6a94e2a8b08b7067787637799f76ade89cbba35))
+
 ## [v0.14.4](https://github.com/jkuri/Reframed/compare/v0.14.3...v0.14.4) (2026-03-22)
 
 ### Features
