@@ -1,5 +1,11 @@
 # Changelog
 
+## [v0.14.6](https://github.com/jkuri/Reframed/compare/v0.14.5...v0.14.6) (2026-03-26)
+
+### Bug Fixes
+
+- **export:** fix audio quality by matching sample rate and removing destructive time-scaling ([22dc93c](https://github.com/jkuri/Reframed/commit/22dc93cf9c8e525b12ada335fbc4133a1894b4f0))
+
 ## [v0.14.5](https://github.com/jkuri/Reframed/compare/v0.14.4...v0.14.5) (2026-03-25)
 
 ### Bug Fixes
