@@ -103,7 +103,7 @@ enum EncodingSettings {
     [
       AVFormatIDKey: kAudioFormatMPEG4AAC,
       AVNumberOfChannelsKey: 2,
-      AVSampleRateKey: 44100,
+      AVSampleRateKey: 48000,
       AVEncoderBitRateKey: bitrate,
     ]
   }

@@ -178,8 +178,7 @@ enum VideoCompositor {
         to: composition,
         sources: audioSources,
         videoTrimRange: effectiveTrim,
-        videoSegments: audioSegInfo,
-        videoDuration: screenTimeRange.duration
+        videoSegments: audioSegInfo
       )
       let audioMix = buildAudioMix(for: composition, sources: audioSources)
 
@@ -232,8 +231,7 @@ enum VideoCompositor {
     try await addAudioTracks(
       to: composition,
       sources: audioSources,
-      videoTrimRange: effectiveTrim,
-      videoDuration: screenTimeRange.duration
+      videoTrimRange: effectiveTrim
     )
 
     let outputURL = FileManager.default.tempRecordingURL()
