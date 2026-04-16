@@ -30,7 +30,7 @@ enum SystemCursorRenderer {
   }
 
   private static let cursorDirNames: [SystemCursorType: String] = [
-    .iBeam: "ibeamvertical",
+    .iBeam: "ibeamhorizontal",
     .pointingHand: "pointinghand",
     .crosshair: "cross",
     .openHand: "openhand",
@@ -46,7 +46,7 @@ enum SystemCursorRenderer {
     .contextMenu: "contextualmenu",
     .dragCopy: "copy",
     .dragLink: "makealias",
-    .iBeamHorizontal: "ibeamhorizontal",
+    .iBeamHorizontal: "ibeamvertical",
     .move: "move",
     .busyButClickable: "busybutclickable",
     .cell: "cell",
