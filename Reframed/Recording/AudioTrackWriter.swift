@@ -71,6 +71,9 @@ final class AudioTrackWriter: @unchecked Sendable {
     }
   }
 
+  private var pendingSamples: [(CMSampleBuffer, CMTime)] = []
+  private let maxPendingSamples = 4800
+
   func appendSample(_ sampleBuffer: CMSampleBuffer) {
     dispatchPrecondition(condition: .onQueue(queue))
 
@@ -126,14 +129,41 @@ final class AudioTrackWriter: @unchecked Sendable {
       logger.info("Audio writing started at PTS \(String(format: "%.3f", CMTimeGetSeconds(finalPTS)))s")
     }
 
-    guard let audioInput, audioInput.isReadyForMoreMediaData else {
-      droppedSamples += 1
-      return
+    let adjusted = createTimingAdjustedSample(sampleBuffer, pts: finalPTS)
+
+    guard let audioInput else { return }
+
+    if audioInput.isReadyForMoreMediaData {
+      flushPendingSamples(audioInput)
+      if let adj = adjusted {
+        if audioInput.isReadyForMoreMediaData {
+          audioInput.append(adj)
+          writtenSamples += 1
+          lastWrittenPTS = finalPTS
+        } else {
+          enqueuePending(adj, pts: finalPTS)
+        }
+      }
+    } else {
+      if let adj = adjusted {
+        enqueuePending(adj, pts: finalPTS)
+      }
     }
 
+    let now = CFAbsoluteTimeGetCurrent()
+    if now - lastLogTime >= 2.0 {
+      logger.info(
+        "Audio stats: \(writtenSamples) written, \(droppedSamples) dropped, pending \(pendingSamples.count), PTS \(String(format: "%.3f", CMTimeGetSeconds(finalPTS)))s"
+      )
+      resetStats()
+      lastLogTime = now
+    }
+  }
+
+  private func createTimingAdjustedSample(_ sampleBuffer: CMSampleBuffer, pts: CMTime) -> CMSampleBuffer? {
     var timingInfo = CMSampleTimingInfo(
       duration: CMSampleBufferGetDuration(sampleBuffer),
-      presentationTimeStamp: finalPTS,
+      presentationTimeStamp: pts,
       decodeTimeStamp: .invalid
     )
     var adjustedBuffer: CMSampleBuffer?
@@ -144,22 +174,27 @@ final class AudioTrackWriter: @unchecked Sendable {
       sampleTimingArray: &timingInfo,
       sampleBufferOut: &adjustedBuffer
     )
-    if status == noErr, let adjusted = adjustedBuffer {
-      audioInput.append(adjusted)
-      writtenSamples += 1
-      lastWrittenPTS = finalPTS
-    } else {
+    if status != noErr {
       droppedSamples += 1
     }
+    return adjustedBuffer
+  }
 
-    let now = CFAbsoluteTimeGetCurrent()
-    if now - lastLogTime >= 2.0 {
-      logger.info(
-        "Audio stats: \(writtenSamples) written, \(droppedSamples) dropped, PTS \(String(format: "%.3f", CMTimeGetSeconds(finalPTS)))s"
-      )
-      resetStats()
-      lastLogTime = now
+  private func flushPendingSamples(_ input: AVAssetWriterInput) {
+    while !pendingSamples.isEmpty && input.isReadyForMoreMediaData {
+      let (sample, pts) = pendingSamples.removeFirst()
+      input.append(sample)
+      writtenSamples += 1
+      lastWrittenPTS = pts
     }
+  }
+
+  private func enqueuePending(_ sample: CMSampleBuffer, pts: CMTime) {
+    if pendingSamples.count >= maxPendingSamples {
+      pendingSamples.removeFirst()
+      droppedSamples += 1
+    }
+    pendingSamples.append((sample, pts))
   }
 
   private func computePeakLevel(_ sampleBuffer: CMSampleBuffer) -> Float {
@@ -217,9 +252,11 @@ final class AudioTrackWriter: @unchecked Sendable {
 
         if self.lastWrittenPTS.isValid {
           self.logger.info(
-            "Audio final: last PTS \(String(format: "%.3f", CMTimeGetSeconds(self.lastWrittenPTS)))s, drift correction \(String(format: "%.3f", CMTimeGetSeconds(self.driftCorrection)))s"
+            "Audio final: last PTS \(String(format: "%.3f", CMTimeGetSeconds(self.lastWrittenPTS)))s, drift correction \(String(format: "%.3f", CMTimeGetSeconds(self.driftCorrection)))s, pending \(self.pendingSamples.count)"
           )
         }
+
+        self.flushPendingSamples(audioInput)
 
         audioInput.markAsFinished()
 
