@@ -1,5 +1,15 @@
 # Changelog
 
+## [v0.14.7](https://github.com/jkuri/Reframed/compare/v0.14.6...v0.14.7) (2026-04-16)
+
+### Features
+
+- implement sample buffering in AudioTrackWriter to prevent data loss when input is not ready ([8c67fff](https://github.com/jkuri/Reframed/commit/8c67fff4949c3754743f8724f5acf18cb7cbcd10))
+
+### Bug Fixes
+
+- **cursor:** swap ibeam PDF directory mapping so default iBeam renders as vertical bar ([ef898ca](https://github.com/jkuri/Reframed/commit/ef898cada2f55410bd593b72f5db7f37b5fa974c))
+
 ## [v0.14.6](https://github.com/jkuri/Reframed/compare/v0.14.5...v0.14.6) (2026-03-26)
 
 ### Bug Fixes
