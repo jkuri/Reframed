@@ -13,12 +13,12 @@ struct SectionHeader: View {
         Image(systemName: icon)
           .font(.system(size: FontSize.sm))
           .foregroundStyle(ReframedColors.secondaryText)
-        Text(title)
+        Text(LocalizedStringKey(title))
           .font(.system(size: FontSize.xs, weight: .semibold))
           .foregroundStyle(ReframedColors.primaryText)
       }
     } else {
-      Text(title)
+      Text(LocalizedStringKey(title))
         .font(.system(size: FontSize.xxs, weight: .semibold))
         .foregroundStyle(ReframedColors.secondaryText)
         .frame(maxWidth: .infinity, alignment: .leading)

@@ -22,7 +22,7 @@ struct TransitionControlsSection: View {
           value: $entryDuration,
           range: 0.05...1.0,
           step: 0.05,
-          formattedValue: String(format: "%.2fs", entryDuration)
+          formattedValue: String(format: "%.2f秒", entryDuration)
         )
       }
 
@@ -42,7 +42,7 @@ struct TransitionControlsSection: View {
           value: $exitDuration,
           range: 0.05...1.0,
           step: 0.05,
-          formattedValue: String(format: "%.2fs", exitDuration)
+          formattedValue: String(format: "%.2f秒", exitDuration)
         )
       }
     }

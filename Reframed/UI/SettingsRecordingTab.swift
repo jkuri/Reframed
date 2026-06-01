@@ -14,7 +14,7 @@ extension SettingsView {
         )
       }
 
-      Text(captureQualityDescription)
+      Text(LocalizedStringKey(captureQualityDescription))
         .font(.system(size: FontSize.xs))
         .foregroundStyle(ReframedColors.secondaryText)
         .padding(.top, -10)

@@ -31,7 +31,7 @@ struct ActionGridItem: View {
           .foregroundStyle(ReframedColors.primaryText)
           .frame(height: 22)
 
-        Text(title)
+        Text(LocalizedStringKey(title))
           .font(.system(size: FontSize.xxs, weight: .semibold))
           .foregroundStyle(ReframedColors.primaryText)
       }

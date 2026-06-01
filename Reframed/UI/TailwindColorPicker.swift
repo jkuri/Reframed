@@ -74,7 +74,7 @@ private struct ColorPickerRow: View {
           .fill(preset.swiftUIColor)
           .overlay(Circle().stroke(ReframedColors.border, lineWidth: 1))
           .frame(width: 18, height: 18)
-        Text(preset.name)
+        Text(LocalizedStringKey(preset.name))
           .font(.system(size: FontSize.xs))
           .foregroundStyle(ReframedColors.primaryText)
         Spacer()

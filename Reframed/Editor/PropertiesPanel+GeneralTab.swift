@@ -31,7 +31,7 @@ extension PropertiesPanel {
         }
 
         infoRow("Project Size", value: formattedProjectSize())
-        infoRow("Cursor Data", value: editorState.cursorMetadataProvider != nil ? "Yes" : "No")
+        infoRow("Cursor Data", value: yesNo(editorState.cursorMetadataProvider != nil))
 
         if let date = editorState.project?.metadata.createdAt {
           infoRow("Recorded", value: formattedDate(date))
@@ -54,7 +54,7 @@ extension PropertiesPanel {
         infoRow("Resolution", value: "\(Int(editorState.result.screenSize.width))x\(Int(editorState.result.screenSize.height))")
         infoRow("FPS", value: "\(editorState.result.fps)")
         infoRow("Codec", value: codecLabel(editorState.result.captureQuality))
-        infoRow("HDR", value: editorState.result.isHDR ? "Yes" : "No")
+        infoRow("HDR", value: yesNo(editorState.result.isHDR))
         if let info = screenInfo {
           infoRow("Size", value: info.fileSize)
           if let bitrate = info.bitrate {
@@ -149,12 +149,16 @@ extension PropertiesPanel {
 
   func captureModeLabel(_ mode: CaptureMode) -> String {
     switch mode {
-    case .none: "None"
-    case .entireScreen: "Entire Screen"
-    case .selectedWindow: "Window"
-    case .selectedArea: "Area"
-    case .device: "iOS Device"
+    case .none: "无"
+    case .entireScreen: "整个屏幕"
+    case .selectedWindow: "窗口"
+    case .selectedArea: "区域"
+    case .device: "iOS 设备"
     }
+  }
+
+  func yesNo(_ value: Bool) -> String {
+    value ? "是" : "否"
   }
 
   func formattedProjectSize() -> String {
@@ -181,7 +185,7 @@ extension PropertiesPanel {
 
   func infoRow(_ label: String, value: String) -> some View {
     HStack {
-      Text(label)
+      Text(LocalizedStringKey(label))
         .font(.system(size: FontSize.xs))
         .foregroundStyle(ReframedColors.secondaryText)
       Spacer()

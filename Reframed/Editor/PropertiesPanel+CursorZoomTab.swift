@@ -24,7 +24,7 @@ extension PropertiesPanel {
               RoundedRectangle(cornerRadius: Radius.md)
                 .stroke(isSelected ? ReframedColors.ring : Color.clear, lineWidth: 2)
             )
-            Text(style.label)
+            Text(LocalizedStringKey(style.label))
               .font(.system(size: FontSize.xs, weight: isSelected ? .semibold : .regular))
               .foregroundStyle(isSelected ? ReframedColors.primaryText : ReframedColors.secondaryText)
               .lineLimit(1)
@@ -208,7 +208,7 @@ extension PropertiesPanel {
 
   private func infoParam(_ label: String, value: String) -> some View {
     HStack {
-      Text(label)
+      Text(LocalizedStringKey(label))
         .font(.system(size: FontSize.xs))
         .foregroundStyle(ReframedColors.secondaryText)
       Spacer()
@@ -262,7 +262,7 @@ extension PropertiesPanel {
             value: $editorState.zoomTransitionSpeed,
             range: 0.1...4.0,
             step: 0.05,
-            formattedValue: String(format: "%.2fs", editorState.zoomTransitionSpeed),
+            formattedValue: String(format: "%.2f秒", editorState.zoomTransitionSpeed),
             valueWidth: 40
           )
           .onChange(of: editorState.zoomTransitionSpeed) { _, _ in
@@ -275,7 +275,7 @@ extension PropertiesPanel {
             value: $editorState.zoomDwellThreshold,
             range: 0.5...10.0,
             step: 0.1,
-            formattedValue: String(format: "%.1fs", editorState.zoomDwellThreshold),
+            formattedValue: String(format: "%.1f秒", editorState.zoomDwellThreshold),
             valueWidth: 40
           )
           .onChange(of: editorState.zoomDwellThreshold) { _, _ in

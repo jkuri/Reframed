@@ -58,7 +58,7 @@ final class WindowController: ObservableObject {
       let windowNumber = windowDict[kCGWindowNumber as String] as? Int ?? 0
       let title = windowDict[kCGWindowName as String] as? String ?? ""
       let app = NSRunningApplication(processIdentifier: pid)
-      let appName = app?.localizedName ?? "Unknown"
+      let appName = app?.localizedName ?? "未知"
 
       let axApp = AXUIElementCreateApplication(pid)
       let axWindow = findAXWindow(for: axApp, matching: bounds) ?? axApp
@@ -137,7 +137,7 @@ final class WindowController: ObservableObject {
       let windowNumber = windowDict[kCGWindowNumber as String] as? Int ?? 0
       let title = windowDict[kCGWindowName as String] as? String ?? ""
       let app = NSRunningApplication(processIdentifier: pid)
-      let appName = app?.localizedName ?? "Unknown"
+      let appName = app?.localizedName ?? "未知"
 
       let axApp = AXUIElementCreateApplication(pid)
       let axWindow = findAXWindow(for: axApp, matching: bounds) ?? axApp

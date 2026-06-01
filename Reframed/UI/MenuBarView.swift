@@ -98,7 +98,7 @@ struct MenuBarView: View {
 
       MenuBarDivider()
 
-      Text(totalProjectCount > 0 ? "Projects (\(totalProjectCount))" : "Projects")
+      Text(totalProjectCount > 0 ? "项目 (\(totalProjectCount))" : "项目")
         .font(.system(size: FontSize.xxs, weight: .semibold))
         .foregroundStyle(ReframedColors.secondaryText)
         .padding(.horizontal, 12)

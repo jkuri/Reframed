@@ -75,7 +75,7 @@ struct HistoryPopover: View {
                   : isCurrent ? ReframedColors.primaryText : ReframedColors.secondaryText
               )
           } else {
-            Text(diffs.first ?? "Editor settings updated")
+            Text(diffs.first ?? "编辑设置已更新")
               .font(.system(size: FontSize.xs, weight: isCurrent ? .semibold : .regular))
               .foregroundStyle(
                 isFuture

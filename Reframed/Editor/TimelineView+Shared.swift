@@ -6,7 +6,7 @@ extension TimelineView {
     VStack(spacing: 4) {
       Image(systemName: icon)
         .font(.system(size: FontSize.sm))
-      Text(label)
+      Text(LocalizedStringKey(label))
         .font(.system(size: FontSize.xxs, weight: .semibold))
     }
     .foregroundStyle(ReframedColors.primaryText)

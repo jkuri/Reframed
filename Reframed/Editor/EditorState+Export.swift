@@ -16,11 +16,11 @@ extension EditorState {
 
     if isMicProcessing {
       exportStatusMessage =
-        "Waiting for noise reduction… \(Int(micProcessingProgress * 100))%"
+        "正在等待降噪完成… \(Int(micProcessingProgress * 100))%"
       while isMicProcessing {
         try await Task.sleep(for: .milliseconds(100))
         exportStatusMessage =
-          "Waiting for noise reduction… \(Int(micProcessingProgress * 100))%"
+          "正在等待降噪完成… \(Int(micProcessingProgress * 100))%"
       }
       exportStatusMessage = nil
     }

@@ -80,7 +80,7 @@ extension TimelineView {
         }
         .fixedSize()
 
-        Text(message ?? "Generating waveform… \(Int(progress * 100))%")
+        Text(message ?? "正在生成波形… \(Int(progress * 100))%")
           .font(.system(size: FontSize.xs).monospacedDigit())
           .foregroundStyle(ReframedColors.primaryText)
           .frame(width: 160, alignment: .leading)

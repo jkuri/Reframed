@@ -64,7 +64,7 @@ extension TimelineView {
         Image(systemName: region.type.icon)
           .font(.system(size: Track.fontSize))
         if regionWidth > 50 {
-          Text(region.type.label)
+          Text(LocalizedStringKey(region.type.label))
             .font(.system(size: Track.fontSize, weight: Track.fontWeight))
             .lineLimit(1)
         }

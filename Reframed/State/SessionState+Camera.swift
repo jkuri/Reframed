@@ -49,7 +49,7 @@ extension SessionState {
       } catch {
         guard isCameraOn, options.selectedCamera?.id == cam.id else { return }
         cameraPreviewState = .failed(error.localizedDescription)
-        previewWindow.showError("Camera failed to start")
+        previewWindow.showError(NSLocalizedString("Camera failed to start", comment: ""))
         logger.error("Camera preview failed: \(error)")
       }
     }

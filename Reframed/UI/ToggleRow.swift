@@ -8,7 +8,7 @@ struct ToggleRow: View {
   var body: some View {
     let _ = colorScheme
     HStack {
-      Text(label)
+      Text(LocalizedStringKey(label))
         .font(.system(size: FontSize.xs))
         .foregroundStyle(ReframedColors.primaryText)
       Spacer()

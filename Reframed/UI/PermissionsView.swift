@@ -62,11 +62,11 @@ private struct PermissionRow: View {
   var body: some View {
     HStack(alignment: .center, spacing: 16) {
       VStack(alignment: .leading, spacing: 4) {
-        Text(title)
+        Text(LocalizedStringKey(title))
           .font(.system(size: FontSize.xs, weight: .medium))
           .foregroundStyle(ReframedColors.primaryText)
 
-        Text(description)
+        Text(LocalizedStringKey(description))
           .font(.system(size: FontSize.xs))
           .foregroundStyle(ReframedColors.secondaryText)
           .lineLimit(3)
@@ -86,7 +86,7 @@ private struct PermissionRow: View {
             Image(systemName: "checkmark")
               .font(.system(size: FontSize.xs, weight: .semibold))
           }
-          Text(granted ? grantedLabel : requestLabel)
+          Text(LocalizedStringKey(granted ? grantedLabel : requestLabel))
             .font(.system(size: FontSize.xs, weight: .medium))
         }
         .frame(width: 260)

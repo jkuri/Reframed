@@ -14,7 +14,7 @@ struct CheckmarkRow: View {
           .font(.system(size: FontSize.xs, weight: .bold))
           .frame(width: 14)
           .opacity(isSelected ? 1 : 0)
-        Text(title)
+        Text(LocalizedStringKey(title))
           .font(.system(size: FontSize.xs))
         Spacer()
       }

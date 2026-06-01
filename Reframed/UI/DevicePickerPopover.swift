@@ -15,7 +15,7 @@ struct DevicePickerPopover: View {
       SectionHeader(title: title)
 
       if devices.isEmpty {
-        Text(emptyMessage)
+        Text(LocalizedStringKey(emptyMessage))
           .font(.system(size: FontSize.xs))
           .foregroundStyle(ReframedColors.tertiaryText)
           .padding(.horizontal, 12)

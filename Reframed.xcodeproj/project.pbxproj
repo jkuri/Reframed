@@ -218,6 +218,8 @@
 		E1000000000000000000000C /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E1000000000000000000000B /* Sparkle */; };
 		E1000000000000000000000D /* SparkleUpdater.swift in Sources */ = {isa = PBXBuildFile; fileRef = E1000000000000000000000E /* SparkleUpdater.swift */; };
 		E30000000000000000000001 /* VideoCompositor+ManualExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000001 /* VideoCompositor+ManualExport.swift */; };
+		ZH0000000000000000000001 /* Localizable.strings in Resources */ = {isa = PBXBuildFile; fileRef = ZH0000000000000000000002 /* Localizable.strings */; };
+		ZH0000000000000000000003 /* InfoPlist.strings in Resources */ = {isa = PBXBuildFile; fileRef = ZH0000000000000000000004 /* InfoPlist.strings */; };
 		E30000000000000000000002 /* VideoCompositor+ParallelExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000002 /* VideoCompositor+ParallelExport.swift */; };
 		E30000000000000000000003 /* VideoCompositor+GIFExport.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000003 /* VideoCompositor+GIFExport.swift */; };
 		E30000000000000000000004 /* VideoCompositor+Audio.swift in Sources */ = {isa = PBXBuildFile; fileRef = E20000000000000000000004 /* VideoCompositor+Audio.swift */; };
@@ -362,6 +364,8 @@
 		B1000000000000000000004D /* PrimaryButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PrimaryButton.swift; sourceTree = "<group>"; };
 		B1000000000000000000004E /* SelectButton.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SelectButton.swift; sourceTree = "<group>"; };
 		B1000000000000000000004F /* LanguagePicker.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LanguagePicker.swift; sourceTree = "<group>"; };
+		ZH0000000000000000000002 /* Localizable.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = Localizable.strings; path = "Reframed/zh-Hans.lproj/Localizable.strings"; sourceTree = SOURCE_ROOT; };
+		ZH0000000000000000000004 /* InfoPlist.strings */ = {isa = PBXFileReference; lastKnownFileType = text.plist.strings; name = InfoPlist.strings; path = "Reframed/zh-Hans.lproj/InfoPlist.strings"; sourceTree = SOURCE_ROOT; };
 		B17A303B9C60827322EAE0A9 /* VideoPreviewContainer+Cursor.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = "VideoPreviewContainer+Cursor.swift"; sourceTree = "<group>"; };
 		B1F00000000000000000001 /* WindowPositionObserver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WindowPositionObserver.swift; sourceTree = "<group>"; };
 		B20000000000000000000001 /* WebcamCapture.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = WebcamCapture.swift; sourceTree = "<group>"; };
@@ -533,6 +537,8 @@
 			children = (
 				B10000000000000000000001 /* ReframedApp.swift */,
 				B10000000000000000000019 /* Info.plist */,
+				ZH0000000000000000000004 /* InfoPlist.strings */,
+				ZH0000000000000000000002 /* Localizable.strings */,
 				B1000000000000000000001A /* Reframed.entitlements */,
 				D10000000000000000000003 /* App */,
 				D10000000000000000000004 /* Logging */,
@@ -951,6 +957,7 @@
 			knownRegions = (
 				en,
 				Base,
+				"zh-Hans",
 			);
 			mainGroup = D10000000000000000000001;
 			packageReferences = (
@@ -976,6 +983,8 @@
 			files = (
 				3DCA03E12F3B511C003FE309 /* Assets.xcassets in Resources */,
 				AA0000000000000000000001 /* Credits.html in Resources */,
+				ZH0000000000000000000001 /* Localizable.strings in Resources */,
+				ZH0000000000000000000003 /* InfoPlist.strings in Resources */,
 			);
 		};
 /* End PBXResourcesBuildPhase section */

@@ -18,7 +18,7 @@ struct ShortcutRow: View {
   var body: some View {
     let _ = colorScheme
     HStack {
-      Text(action.label)
+      Text(LocalizedStringKey(action.label))
         .font(.system(size: FontSize.xs))
         .foregroundStyle(ReframedColors.primaryText)
       Spacer()

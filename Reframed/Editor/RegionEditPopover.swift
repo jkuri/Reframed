@@ -67,7 +67,7 @@ struct RegionEditPopover: View {
         value: $easeIn,
         range: 0.05...2.0,
         step: 0.05,
-        formattedValue: String(format: "%.2fs", easeIn),
+        formattedValue: String(format: "%.2f秒", easeIn),
         valueWidth: 42
       )
       .padding(.horizontal, 12)
@@ -79,7 +79,7 @@ struct RegionEditPopover: View {
         value: $easeOut,
         range: 0.05...2.0,
         step: 0.05,
-        formattedValue: String(format: "%.2fs", easeOut),
+        formattedValue: String(format: "%.2f秒", easeOut),
         valueWidth: 42
       )
       .padding(.horizontal, 12)

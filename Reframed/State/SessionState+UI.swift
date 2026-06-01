@@ -141,10 +141,10 @@ extension SessionState {
 
   func showError(_ message: String) {
     let alert = NSAlert()
-    alert.messageText = "Recording Error"
+    alert.messageText = NSLocalizedString("Recording Error", comment: "")
     alert.informativeText = message
     alert.alertStyle = .critical
-    alert.addButton(withTitle: "OK")
+    alert.addButton(withTitle: NSLocalizedString("OK", comment: ""))
     alert.runModal()
   }
 
