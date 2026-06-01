@@ -43,7 +43,7 @@ struct SelectButton<MenuContent: View>: View {
         if let leadingContent {
           leadingContent
         }
-        Text(label)
+        Text(LocalizedStringKey(label))
           .font(.system(size: FontSize.xs, weight: .medium))
           .foregroundStyle(ReframedColors.primaryText)
           .lineLimit(1)

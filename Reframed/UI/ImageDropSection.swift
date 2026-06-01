@@ -22,7 +22,7 @@ struct ImageDropSection: View {
       } label: {
         HStack {
           Image(systemName: "photo.on.rectangle")
-          Text(image != nil ? "Change Image" : "Choose Image")
+          Text(LocalizedStringKey(image != nil ? "Change Image" : "Choose Image"))
         }
         .font(.system(size: FontSize.xs))
         .frame(maxWidth: .infinity)

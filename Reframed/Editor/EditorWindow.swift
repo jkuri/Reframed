@@ -60,7 +60,7 @@ final class EditorWindow: NSObject, NSWindowDelegate {
     }
     window.isReleasedWhenClosed = false
     window.delegate = self
-    window.title = "Reframed Editor"
+    window.title = NSLocalizedString("Reframed Editor", comment: "")
     window.level = .floating
     window.makeKeyAndOrderFront(nil)
     NSApp.activate(ignoringOtherApps: true)

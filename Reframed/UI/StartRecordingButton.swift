@@ -17,7 +17,7 @@ struct StartRecordingButton: View {
       HStack(spacing: 6) {
         if let remaining {
           Image(systemName: "timer")
-          Text("Recording in \(remaining)...")
+          Text("\(remaining) 秒后开始录制...")
         } else {
           Image(systemName: "record.circle")
           Text("Start recording")

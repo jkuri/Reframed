@@ -71,8 +71,8 @@ struct SpotlightRegionEditPopover: View {
           range: 0...1.0,
           step: 0.05,
           formattedValue: localFadeDuration == 0
-            ? "Off"
-            : String(format: "%.2fs", localFadeDuration),
+            ? "关闭"
+            : String(format: "%.2f秒", localFadeDuration),
           valueWidth: 40
         )
         .onChange(of: localFadeDuration) { _, newValue in
@@ -119,7 +119,7 @@ struct SpotlightRegionEditPopover: View {
     onReset: @escaping () -> Void
   ) -> some View {
     VStack(alignment: .leading, spacing: 4) {
-      ToggleRow(label: "Custom \(label)", isOn: useCustom)
+      ToggleRow(label: "自定义\(localizedLabel(label))", isOn: useCustom)
         .onChange(of: useCustom.wrappedValue) { _, newValue in
           if newValue {
             localValue.wrappedValue = globalValue
@@ -143,6 +143,15 @@ struct SpotlightRegionEditPopover: View {
           onUpdate(newValue)
         }
       }
+    }
+  }
+
+  private func localizedLabel(_ label: String) -> String {
+    switch label {
+    case "Radius": return "半径"
+    case "Dim": return "暗化"
+    case "Softness": return "柔和度"
+    default: return label
     }
   }
 }

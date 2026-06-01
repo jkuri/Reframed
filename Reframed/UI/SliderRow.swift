@@ -15,12 +15,12 @@ struct SliderRow<V: BinaryFloatingPoint>: View where V.Stride: BinaryFloatingPoi
     HStack(spacing: 8) {
       if let label {
         if let labelWidth {
-          Text(label)
+          Text(LocalizedStringKey(label))
             .font(.system(size: FontSize.xs))
             .foregroundStyle(ReframedColors.secondaryText)
             .frame(width: labelWidth, alignment: .leading)
         } else {
-          Text(label)
+          Text(LocalizedStringKey(label))
             .font(.system(size: FontSize.xs))
             .foregroundStyle(ReframedColors.secondaryText)
         }

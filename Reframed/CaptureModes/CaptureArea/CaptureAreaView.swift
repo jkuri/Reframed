@@ -105,7 +105,7 @@ struct CaptureAreaView: View {
 
   private func fieldGroup<Content: View>(_ title: String, @ViewBuilder content: () -> Content) -> some View {
     VStack(spacing: 6) {
-      Text(title)
+      Text(LocalizedStringKey(title))
         .font(.system(size: FontSize.xxs, weight: .medium))
         .foregroundStyle(secondaryTextColor)
       content()

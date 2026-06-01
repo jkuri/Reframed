@@ -26,12 +26,12 @@ extension ZoomKeyframeEditor {
             .lineLimit(1)
         }
         if regionWidth > 90 {
-          Text(String(format: "%.1fs", totalDur))
+          Text(String(format: "%.1f秒", totalDur))
             .font(.system(size: Track.fontSize))
             .lineLimit(1)
         }
         if regionWidth > 160, easeIn > 0.01 || easeOut > 0.01 {
-          Text(String(format: "↗%.1fs ↘%.1fs", easeIn, easeOut))
+          Text(String(format: "↗%.1f秒 ↘%.1f秒", easeIn, easeOut))
             .font(.system(size: Track.fontSize - 1))
             .lineLimit(1)
         }

@@ -35,7 +35,7 @@ struct StartRecordingOverlayView: View {
 
       VStack(spacing: 12) {
         if totalScreens > 1 {
-          Text("Display \(screenIndex)")
+          Text("显示器 \(screenIndex)")
             .font(.system(size: FontSize.xxl, weight: .bold, design: .rounded))
             .foregroundStyle(Color.black)
         }

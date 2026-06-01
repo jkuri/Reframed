@@ -14,7 +14,7 @@ struct ModeButton: View {
         Image(systemName: icon)
           .font(.system(size: Layout.toolbarIconSize))
           .foregroundStyle(ReframedColors.primaryText)
-        Text(label)
+        Text(LocalizedStringKey(label))
           .font(.system(size: FontSize.xxs, weight: .semibold))
           .foregroundStyle(ReframedColors.primaryText)
       }

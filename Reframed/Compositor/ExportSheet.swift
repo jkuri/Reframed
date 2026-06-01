@@ -93,7 +93,7 @@ struct ExportSheet: View {
             )
           }
 
-          Text(settings.gifQuality.description)
+          Text(LocalizedStringKey(settings.gifQuality.description))
             .font(.system(size: FontSize.xs))
             .foregroundStyle(ReframedColors.secondaryText)
             .padding(.top, -10)
@@ -106,7 +106,7 @@ struct ExportSheet: View {
             )
           }
 
-          Text(settings.codec.description)
+          Text(LocalizedStringKey(settings.codec.description))
             .font(.system(size: FontSize.xs))
             .foregroundStyle(ReframedColors.secondaryText)
             .padding(.top, -10)
@@ -126,7 +126,7 @@ struct ExportSheet: View {
         }
 
         if sourceFPS < 60 {
-          Text("Source recorded at \(sourceFPS) fps. Higher frame rates are not available.")
+          Text("源录制帧率为 \(sourceFPS) fps，不能导出更高帧率。")
             .font(.system(size: FontSize.xs))
             .foregroundStyle(ReframedColors.secondaryText)
             .padding(.top, -10)
@@ -159,7 +159,7 @@ struct ExportSheet: View {
             )
           }
 
-          Text(settings.mode.description)
+          Text(LocalizedStringKey(settings.mode.description))
             .font(.system(size: FontSize.xs))
             .foregroundStyle(ReframedColors.secondaryText)
             .padding(.top, -10)
@@ -174,7 +174,7 @@ struct ExportSheet: View {
             )
           }
 
-          Text(settings.captionExportMode.description)
+          Text(LocalizedStringKey(settings.captionExportMode.description))
             .font(.system(size: FontSize.xs))
             .foregroundStyle(ReframedColors.secondaryText)
             .padding(.top, -10)
@@ -244,7 +244,7 @@ struct ExportSheet: View {
 
   func settingsRow<Content: View>(label: String, @ViewBuilder content: () -> Content) -> some View {
     VStack(alignment: .leading, spacing: 6) {
-      Text(label)
+      Text(LocalizedStringKey(label))
         .font(.system(size: FontSize.xs, weight: .medium))
         .foregroundStyle(ReframedColors.secondaryText)
       content()

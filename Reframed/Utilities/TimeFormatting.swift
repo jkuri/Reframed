@@ -33,7 +33,7 @@ func formatCompactTime(seconds: Double) -> String {
   if mins > 0 {
     return String(format: "%d:%04.1f", mins, secs)
   }
-  return String(format: "%.1fs", secs)
+  return String(format: "%.1f秒", secs)
 }
 
 func formatTimeRange(start: Double, end: Double) -> String {
@@ -57,12 +57,12 @@ func formatTimestamp(_ date: Date = Date()) -> String {
 
 func formatRelativeTime(_ date: Date) -> String {
   let seconds = Int(-date.timeIntervalSinceNow)
-  if seconds < 5 { return "just now" }
-  if seconds < 60 { return "\(seconds)s ago" }
+  if seconds < 5 { return "刚刚" }
+  if seconds < 60 { return "\(seconds) 秒前" }
   let minutes = seconds / 60
-  if minutes < 60 { return "\(minutes)m ago" }
+  if minutes < 60 { return "\(minutes) 分钟前" }
   let hours = minutes / 60
-  if hours < 24 { return "\(hours)h ago" }
+  if hours < 24 { return "\(hours) 小时前" }
   let days = hours / 24
-  return "\(days)d ago"
+  return "\(days) 天前"
 }

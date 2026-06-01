@@ -13,7 +13,7 @@ struct Dropdown<Item: Identifiable & Equatable, MenuContent: View>: View {
       menuContent()
     } label: {
       HStack {
-        Text(selectedLabel)
+        Text(LocalizedStringKey(selectedLabel))
           .font(.system(size: ButtonSize.small.fontSize, weight: ButtonSize.small.fontWeight))
           .foregroundStyle(ReframedColors.primaryText)
         Spacer()

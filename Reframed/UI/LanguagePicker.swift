@@ -41,7 +41,7 @@ struct LanguagePicker: View {
                 onSelect?()
               } label: {
                 HStack {
-                  Text(lang.label)
+                  Text(LocalizedStringKey(lang.label))
                     .font(.system(size: FontSize.xs))
                   Spacer()
                   if selection == lang {

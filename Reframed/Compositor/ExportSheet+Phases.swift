@@ -28,7 +28,7 @@ extension ExportSheet {
               .foregroundStyle(ReframedColors.secondaryText)
 
             if let eta = editorState.exportETA, eta > 0 {
-              Text("ETA \(formatDuration(seconds: Int(ceil(eta))))")
+              Text("预计剩余 \(formatDuration(seconds: Int(ceil(eta))))")
                 .font(.system(size: FontSize.xs).monospacedDigit())
                 .foregroundStyle(ReframedColors.secondaryText)
             }

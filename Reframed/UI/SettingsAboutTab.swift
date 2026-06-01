@@ -26,7 +26,7 @@ extension SettingsView {
         .foregroundStyle(ReframedColors.primaryText)
 
       VStack(spacing: 4) {
-        Text("Version \(UpdateChecker.currentVersion)")
+        Text("版本 \(UpdateChecker.currentVersion)")
           .font(.system(size: FontSize.xs))
           .foregroundStyle(ReframedColors.secondaryText)
 
@@ -73,7 +73,7 @@ extension SettingsView {
       HStack(spacing: 4) {
         Image(systemName: icon)
           .font(.system(size: FontSize.xs))
-        Text(title)
+        Text(LocalizedStringKey(title))
           .font(.system(size: FontSize.xs))
       }
       .foregroundStyle(ReframedColors.secondaryText)
@@ -97,7 +97,7 @@ private struct ChangelogView: View {
     Group {
       if let version, let changelog, !changelog.isEmpty {
         VStack(alignment: .leading, spacing: 8) {
-          Text("Latest Release — v\(version)")
+          Text("最新版本 - v\(version)")
             .font(.system(size: FontSize.xs, weight: .medium))
             .foregroundStyle(ReframedColors.primaryText)
 

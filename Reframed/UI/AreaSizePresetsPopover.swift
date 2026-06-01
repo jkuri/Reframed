@@ -52,7 +52,7 @@ private struct AreaPresetRow: View {
   var body: some View {
     Button(action: action) {
       HStack(spacing: 8) {
-        Text(label)
+        Text(LocalizedStringKey(label))
           .font(.system(size: FontSize.xs))
         Spacer()
       }

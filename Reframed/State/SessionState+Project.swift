@@ -62,7 +62,7 @@ extension SessionState {
       openEditor(project: project)
     } catch {
       logger.error("Failed to open project: \(error)")
-      showError("Failed to open project: \(error.localizedDescription)")
+      showError("打开项目失败：\(error.localizedDescription)")
     }
   }
 

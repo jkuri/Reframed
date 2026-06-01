@@ -40,7 +40,7 @@ final class WebcamPreviewWindow {
     spinner.startAnimation(nil)
     container.addSubview(spinner)
 
-    let label = NSTextField(labelWithString: "Camera is starting...")
+    let label = NSTextField(labelWithString: NSLocalizedString("Camera is starting...", comment: ""))
     label.font = NSFont.systemFont(ofSize: FontSize.xs, weight: .medium)
     label.textColor = ReframedColors.secondaryTextNS
     label.alignment = .center

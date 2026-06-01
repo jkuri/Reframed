@@ -73,10 +73,12 @@ extension PropertiesPanel {
               selection: $editorState.clickSoundStyle
             ) {
               ForEach(ClickSoundCategory.allCases, id: \.self) { category in
-                Section(category.label) {
+                Section(LocalizedStringKey(category.label)) {
                   ForEach(ClickSoundStyle.styles(for: category)) { style in
-                    Button(style.label) {
+                    Button {
                       editorState.clickSoundStyle = style
+                    } label: {
+                      Text(LocalizedStringKey(style.label))
                     }
                   }
                 }

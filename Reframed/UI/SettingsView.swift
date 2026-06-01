@@ -75,7 +75,7 @@ struct SettingsView: View {
           Button {
             selectedTab = tab
           } label: {
-            Text(tab.rawValue)
+            Text(LocalizedStringKey(tab.rawValue))
               .font(.system(size: FontSize.xs, weight: .medium))
               .foregroundStyle(selectedTab == tab ? ReframedColors.primaryText : ReframedColors.secondaryText)
               .frame(maxWidth: .infinity)
@@ -95,7 +95,7 @@ struct SettingsView: View {
 
   func settingsRow<Content: View>(label: String, @ViewBuilder content: () -> Content) -> some View {
     VStack(alignment: .leading, spacing: 6) {
-      Text(label)
+      Text(LocalizedStringKey(label))
         .font(.system(size: FontSize.xs, weight: .medium))
         .foregroundStyle(ReframedColors.primaryText)
       content()
@@ -104,7 +104,7 @@ struct SettingsView: View {
 
   func settingsToggle(_ title: String, isOn: Binding<Bool>) -> some View {
     HStack {
-      Text(title)
+      Text(LocalizedStringKey(title))
         .font(.system(size: FontSize.xs, weight: .medium))
         .foregroundStyle(ReframedColors.primaryText)
       Spacer()
@@ -127,7 +127,7 @@ struct SettingsView: View {
     panel.canChooseFiles = false
     panel.canCreateDirectories = true
     panel.allowsMultipleSelection = false
-    panel.prompt = "Select"
+    panel.prompt = NSLocalizedString("Select", comment: "")
 
     if panel.runModal() == .OK, let url = panel.url {
       let path = url.path.replacingOccurrences(
@@ -145,7 +145,7 @@ struct SettingsView: View {
     panel.canChooseFiles = false
     panel.canCreateDirectories = true
     panel.allowsMultipleSelection = false
-    panel.prompt = "Select"
+    panel.prompt = NSLocalizedString("Select", comment: "")
 
     if panel.runModal() == .OK, let url = panel.url {
       let path = url.path.replacingOccurrences(

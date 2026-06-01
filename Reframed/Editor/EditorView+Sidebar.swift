@@ -19,7 +19,7 @@ extension EditorView {
                 Image(systemName: tab.icon)
                   .font(.system(size: FontSize.base))
                   .foregroundStyle(ReframedColors.primaryText)
-                Text(tab.label)
+                Text(LocalizedStringKey(tab.label))
                   .font(.system(size: FontSize.xxs, weight: .semibold))
                   .foregroundStyle(selectedTab == tab ? ReframedColors.primaryText : ReframedColors.secondaryText)
               }

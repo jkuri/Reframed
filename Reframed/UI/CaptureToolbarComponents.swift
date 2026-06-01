@@ -41,7 +41,7 @@ struct ToolbarActionButton: View {
     }
     .buttonStyle(PlainCustomButtonStyle())
     .onHover { isHovered = $0 }
-    .help(tooltip)
+    .help(NSLocalizedString(tooltip, comment: ""))
   }
 }
 
@@ -60,7 +60,7 @@ struct ToolbarToggleButton: View {
         Image(systemName: isOn ? activeIcon : icon)
           .font(.system(size: Layout.toolbarIconSize))
           .foregroundStyle(iconColor)
-        Text(label)
+        Text(LocalizedStringKey(label))
           .font(.system(size: FontSize.xxs, weight: .semibold))
           .foregroundStyle(labelColor)
       }
@@ -71,7 +71,7 @@ struct ToolbarToggleButton: View {
     }
     .buttonStyle(PlainCustomButtonStyle())
     .disabled(!isAvailable)
-    .help(tooltip)
+    .help(NSLocalizedString(tooltip, comment: ""))
   }
 
   private var iconColor: Color {

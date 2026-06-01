@@ -141,9 +141,9 @@ struct EditorView: View {
         ? editorState.micProcessingProgress * 0.5
         : (micWaveformGenerator.isGenerating ? 0.5 + micWaveformGenerator.progress * 0.5 : nil),
       micAudioMessage: editorState.isMicProcessing
-        ? "Denoising… \(Int(editorState.micProcessingProgress * 100))%"
+        ? "正在降噪… \(Int(editorState.micProcessingProgress * 100))%"
         : (micWaveformGenerator.isGenerating
-          ? "Generating waveform… \(Int(micWaveformGenerator.progress * 100))%"
+          ? "正在生成波形… \(Int(micWaveformGenerator.progress * 100))%"
           : nil),
       onScrub: { time in
         editorState.pause()

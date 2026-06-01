@@ -33,7 +33,7 @@ extension PropertiesPanel {
       }
 
       if let model = WhisperModel(rawValue: editorState.captionModel) {
-        Text(model.description)
+        Text(LocalizedStringKey(model.description))
           .font(.system(size: FontSize.xs))
           .foregroundStyle(ReframedColors.secondaryText)
           .lineLimit(2)
@@ -102,7 +102,7 @@ extension PropertiesPanel {
               .frame(width: 32, alignment: .trailing)
           }
           HStack {
-            Text(transcriptionStatusText)
+            Text(LocalizedStringKey(transcriptionStatusText))
               .font(.system(size: FontSize.xs))
               .foregroundStyle(ReframedColors.secondaryText)
             Spacer()
@@ -116,7 +116,7 @@ extension PropertiesPanel {
         HStack(spacing: 8) {
           Button(
             editorState.captionSegments.isEmpty && !editorState.transcriptionDidFinishEmpty
-              ? "Generate Captions" : "Regenerate"
+              ? "生成字幕" : "重新生成"
           ) {
             handleGenerateAction()
           }
@@ -147,9 +147,9 @@ extension PropertiesPanel {
   private var transcriptionStatusText: String {
     let pct = Int(editorState.transcriptionProgress * 100)
     if editorState.transcriptionProgress < 0.15 {
-      return "Loading model… \(pct)%"
+      return "正在加载模型… \(pct)%"
     }
-    return "Transcribing… \(pct)%"
+    return "正在转写… \(pct)%"
   }
 
   private func handleGenerateAction() {
@@ -201,8 +201,10 @@ extension PropertiesPanel {
           .foregroundStyle(ReframedColors.secondaryText)
         HStack(spacing: 4) {
           ForEach(Array(CaptionPosition.presets.enumerated()), id: \.offset) { _, preset in
-            Button(preset.label) {
+            Button {
               editorState.captionPosition = preset.position
+            } label: {
+              Text(LocalizedStringKey(preset.label))
             }
             .buttonStyle(OutlineButtonStyle(size: .small, fullWidth: true))
           }
@@ -288,7 +290,7 @@ extension PropertiesPanel {
           Image(systemName: "list.bullet")
             .font(.system(size: FontSize.xs, weight: .semibold))
             .foregroundStyle(ReframedColors.accent)
-          Text("Segments (\(editorState.captionSegments.count))")
+          Text("片段（\(editorState.captionSegments.count)）")
             .font(.system(size: FontSize.xs, weight: .semibold))
             .foregroundStyle(ReframedColors.primaryText)
           Spacer()
