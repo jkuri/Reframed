@@ -35,6 +35,7 @@ final class EditorState {
   var cameraBorderWidth: CGFloat = 0
   var cameraBorderColor: CodableColor = CodableColor(r: 0, g: 0, b: 0, a: 1)
   var videoShadow: CGFloat = 0
+  var playbackSpeed: Double = 1.0
   var cameraShadow: CGFloat = 0
   var cameraMirrored: Bool = false
   var cameraFullscreenFillMode: CameraFullscreenFillMode = .fit
@@ -139,6 +140,13 @@ final class EditorState {
     videoRegions.reduce(0) { $0 + ($1.endSeconds - $1.startSeconds) }
   }
 
+  var exportedSourceDuration: Double {
+    guard !videoRegions.isEmpty else {
+      return max(0, CMTimeGetSeconds(trimEnd) - CMTimeGetSeconds(trimStart))
+    }
+    return videoRegionsTotalDuration
+  }
+
   var hasVideoRegionCuts: Bool {
     let dur = CMTimeGetSeconds(duration)
     guard !videoRegions.isEmpty else { return false }
@@ -192,6 +200,7 @@ final class EditorState {
       self.cameraBorderWidth = saved.cameraBorderWidth
       self.cameraBorderColor = saved.cameraBorderColor ?? CodableColor(r: 0, g: 0, b: 0, a: 1)
       self.videoShadow = saved.videoShadow ?? 0
+      self.playbackSpeed = saved.playbackSpeed ?? 1.0
       self.cameraShadow = saved.cameraShadow ?? 0
       self.cameraMirrored = saved.cameraMirrored ?? false
       self.cameraFullscreenFillMode = saved.cameraFullscreenFillMode ?? .fit
@@ -253,6 +262,7 @@ final class EditorState {
     }
     videoRegions = [VideoRegionData(startSeconds: 0, endSeconds: dur)]
     playerController.trimEnd = trimEnd
+    playerController.playbackSpeed = playbackSpeed
     syncAudioRegionsToPlayer()
     playerController.setupTimeObserver()
 

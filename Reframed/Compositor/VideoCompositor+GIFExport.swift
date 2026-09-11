@@ -10,6 +10,7 @@ extension VideoCompositor {
     renderSize: CGSize,
     fps: Int,
     trimDuration: CMTime,
+    speed: Double = 1.0,
     outputURL: URL,
     gifQuality: UInt8 = 90,
     progressHandler: (@MainActor @Sendable (Double, Double?) -> Void)?
@@ -47,7 +48,7 @@ extension VideoCompositor {
 
     reader.startReading()
 
-    let totalFrames = Int(ceil(CMTimeGetSeconds(trimDuration) * Double(fps)))
+    let totalFrames = TimeLapse.frameCount(duration: trimDuration, fps: fps, speed: speed)
     let timescale = CMTimeScale(fps)
 
     let width = UInt32(renderSize.width)
@@ -125,11 +126,12 @@ extension VideoCompositor {
             }
 
             let outputTime = CMTime(value: CMTimeValue(frameIndex), timescale: timescale)
-            let outputSeconds = CMTimeGetSeconds(outputTime)
+            let sourceTime = TimeLapse.sourceTime(forOutput: outputTime, speed: speed)
+            let sourceSeconds = CMTimeGetSeconds(sourceTime)
 
             while let next = nextScreenSample {
               if CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(next))
-                <= outputSeconds + 0.001
+                <= sourceSeconds + 0.001
               {
                 latestScreenSample = next
                 nextScreenSample = pipelineScreenOutput.copyNextSampleBuffer()
@@ -141,7 +143,7 @@ extension VideoCompositor {
             if pipelineWebcamOutput != nil {
               while let next = nextWebcamSample {
                 if CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(next))
-                  <= outputSeconds + 0.001
+                  <= sourceSeconds + 0.001
                 {
                   latestWebcamSample = next
                   nextWebcamSample = pipelineWebcamOutput!.copyNextSampleBuffer()
@@ -174,7 +176,7 @@ extension VideoCompositor {
               screenBuffer: screenBuffer,
               webcamBuffer: webcamBuffer,
               outputBuffer: outputBuffer,
-              compositionTime: outputTime,
+              compositionTime: sourceTime,
               instruction: instruction,
               processedWebcamImage: processedWebcam
             )

@@ -27,6 +27,17 @@ Before rendering starts, two optional steps happen:
 
 **Click sounds** -- if enabled and cursor data exists, filter clicks that fall within active audio regions, remap to composition timeline if video regions changed the timing, and generate an audio file with ClickSoundGenerator.
 
+## Playback speed
+
+When the editor's speed multiplier is above 1x, the exporters keep reading every source sample
+but emit fewer output frames: the writer PTS stays `frameIndex / fps` while the reader cursor and
+the renderer clock advance at `outputTime * speed` (`TimeLapse` in `Compositor/`). Overlay data
+(cursor, zoom, captions, camera and spotlight regions) therefore keeps being sampled in source
+time and needs no remapping.
+
+Speed above 1x forces the compositor path -- passthrough export cannot resample -- and drops all
+audio sources, including click sounds and microphone noise reduction.
+
 ## Canvas sizing
 
 1. Apply the canvas aspect ratio (or keep the recording's native ratio).

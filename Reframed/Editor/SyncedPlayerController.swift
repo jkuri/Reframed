@@ -20,6 +20,14 @@ final class SyncedPlayerController {
   var micAudioRegions: [(start: CMTime, end: CMTime)] = []
   var videoRegions: [(start: Double, end: Double)] = []
   var previewMode = false
+  var playbackSpeed: Double = 1.0 {
+    didSet {
+      guard playbackSpeed != oldValue else { return }
+      applyAudioMutingForSpeed()
+      if timeObserver != nil { setupTimeObserver() }
+      if isPlaying { applyPlaybackRates() }
+    }
+  }
 
   private var micAudioEngine: AVAudioEngine?
   private var micPlayerNode: AVAudioPlayerNode?
@@ -170,8 +178,28 @@ final class SyncedPlayerController {
     }
   }
 
+  private var dropsAudioForSpeed: Bool { TimeLapse.dropsAudio(speed: playbackSpeed) }
+
+  private func applyPlaybackRates() {
+    let speed = TimeLapse.clamp(playbackSpeed)
+    screenPlayer.rate = Float(speed)
+    webcamPlayer?.rate = Float(webcamDriftRatio * speed)
+    systemAudioPlayer?.rate = Float(systemAudioDriftRatio * speed)
+  }
+
+  private func applyAudioMutingForSpeed() {
+    if dropsAudioForSpeed {
+      systemAudioPlayer?.isMuted = true
+      micPlayerNode?.volume = 0
+    }
+  }
+
   func setupTimeObserver() {
-    let interval = CMTime(value: 1, timescale: 60)
+    if let obs = timeObserver {
+      screenPlayer.removeTimeObserver(obs)
+      timeObserver = nil
+    }
+    let interval = CMTime(value: CMTimeValue(max(1, Int(TimeLapse.clamp(playbackSpeed)))), timescale: 60)
     timeObserver = screenPlayer.addPeriodicTimeObserver(forInterval: interval, queue: .main) {
       [weak self] time in
       MainActor.assumeIsolated {
@@ -196,9 +224,7 @@ final class SyncedPlayerController {
       if let next = regions.first(where: { $0.start > time }) {
         let seekTime = CMTime(seconds: next.start, preferredTimescale: 600)
         seek(to: seekTime)
-        screenPlayer.play()
-        webcamPlayer?.rate = Float(webcamDriftRatio)
-        systemAudioPlayer?.rate = Float(systemAudioDriftRatio)
+        applyPlaybackRates()
         scheduleMicPlayback(from: seekTime)
       } else {
         pause()
@@ -211,14 +237,14 @@ final class SyncedPlayerController {
       let inRange = systemAudioRegions.contains { region in
         CMTimeCompare(time, region.start) >= 0 && CMTimeCompare(time, region.end) < 0
       }
-      sysPlayer.isMuted = !inRange
+      sysPlayer.isMuted = !inRange || dropsAudioForSpeed
     }
     if micPlayerNode != nil {
       let inRange = micAudioRegions.contains { region in
         CMTimeCompare(time, region.start) >= 0 && CMTimeCompare(time, region.end) < 0
       }
       micIsMutedByRegion = !inRange
-      micPlayerNode?.volume = micIsMutedByRegion ? 0 : micVolumeLevel
+      micPlayerNode?.volume = (micIsMutedByRegion || dropsAudioForSpeed) ? 0 : micVolumeLevel
     }
   }
 
@@ -227,10 +253,9 @@ final class SyncedPlayerController {
     if trimEnd.isValid && CMTimeCompare(currentTime, trimEnd) >= 0 {
       return
     }
-    screenPlayer.play()
-    webcamPlayer?.rate = Float(webcamDriftRatio)
-    systemAudioPlayer?.rate = Float(systemAudioDriftRatio)
+    applyPlaybackRates()
     scheduleMicPlayback(from: currentTime)
+    applyAudioMutingForSpeed()
     isPlaying = true
   }
 

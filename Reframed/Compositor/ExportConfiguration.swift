@@ -27,6 +27,7 @@ struct ExportConfiguration: Sendable {
   var cameraMirrored: Bool = false
   var cameraFullscreenFillMode: CameraFullscreenFillMode = .fit
   var cameraFullscreenAspect: CameraFullscreenAspect = .original
+  var playbackSpeed: Double = 1.0
   var exportSettings: ExportSettings = ExportSettings()
   var cursorSnapshot: CursorMetadataSnapshot? = nil
   var cursorStyle: CursorStyle = .centerDefault

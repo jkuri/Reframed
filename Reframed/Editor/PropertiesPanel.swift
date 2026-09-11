@@ -60,6 +60,7 @@ struct PropertiesPanel: View {
           projectSection
         case .video:
           canvasSection
+          speedSection
           paddingSection
           cornerRadiusSection
           videoShadowSection

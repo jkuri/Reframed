@@ -7,7 +7,7 @@ VERSION = $(shell grep MARKETING_VERSION Config.xcconfig | cut -d'=' -f2 | tr -d
 RELEASE_DIR = $(BUILD_DIR)/Build/Products/Release
 DEBUG_DIR = $(BUILD_DIR)/Build/Products/Debug
 
-.PHONY: build release run dev dmg dmg-release format clean help install uninstall changelog tag appcast publish
+.PHONY: build release run dev dmg dmg-release format test clean help install uninstall changelog tag appcast publish
 
 all: help
 
@@ -53,7 +53,10 @@ publish: tag dmg-release appcast
 	@./scripts/publish-release.sh
 
 format:
-	@swift format -i -r Reframed/
+	@swift format -i -r Reframed/ ReframedTests/
+
+test:
+	@xcodebuild test -project Reframed.xcodeproj -scheme $(SCHEME) -configuration Debug -quiet -derivedDataPath $(BUILD_DIR) -destination '$(DESTINATION)'
 
 clean:
 	@rm -rf $(BUILD_DIR) dist
@@ -73,6 +76,7 @@ help:
 	@echo "  run       - Build release and run"
 	@echo "  dev       - Build debug and run"
 	@echo "  format    - Format Swift source files"
+	@echo "  test      - Run unit tests"
 	@echo "  clean     - Clean build artifacts"
 	@echo "  tag       - Create git tag from Config.xcconfig version and generate changelog"
 	@echo "  changelog - Generate CHANGELOG.md"

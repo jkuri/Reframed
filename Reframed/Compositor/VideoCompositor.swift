@@ -17,6 +17,8 @@ enum VideoCompositor {
     config: ExportConfiguration,
     progressHandler: (@MainActor @Sendable (Double, Double?) -> Void)? = nil
   ) async throws -> URL {
+    let speed = TimeLapse.clamp(config.playbackSpeed)
+    let dropsAudio = TimeLapse.dropsAudio(speed: speed)
     let composition = AVMutableComposition()
     let screenAsset = AVURLAsset(url: result.screenVideoURL)
 
@@ -89,11 +91,11 @@ enum VideoCompositor {
       : [effectiveTrim]
 
     var audioSources: [AudioSource] = []
-    if let sysURL = result.systemAudioURL, config.systemAudioVolume > 0 {
+    if let sysURL = result.systemAudioURL, config.systemAudioVolume > 0, !dropsAudio {
       let sysRegs = config.systemAudioRegions ?? effectiveAudioRegions
       audioSources.append(AudioSource(url: sysURL, regions: sysRegs, volume: config.systemAudioVolume))
     }
-    if let micURL = result.microphoneAudioURL, config.micAudioVolume > 0 {
+    if let micURL = result.microphoneAudioURL, config.micAudioVolume > 0, !dropsAudio {
       let effectiveMicURL = processedMicURL ?? micURL
       let micRegs = config.micAudioRegions ?? effectiveAudioRegions
       audioSources.append(AudioSource(url: effectiveMicURL, regions: micRegs, volume: config.micAudioVolume))
@@ -154,6 +156,7 @@ enum VideoCompositor {
           renderSize: renderSize,
           fps: exportFPS,
           trimDuration: compositionDuration,
+          speed: speed,
           outputURL: outputURL,
           gifQuality: config.exportSettings.gifQuality.value,
           progressHandler: progressHandler
@@ -191,6 +194,7 @@ enum VideoCompositor {
           renderSize: renderSize,
           fps: exportFPS,
           trimDuration: compositionDuration,
+          speed: speed,
           outputURL: outputURL,
           fileType: config.exportSettings.format.fileType,
           codec: config.exportSettings.codec,
@@ -206,6 +210,7 @@ enum VideoCompositor {
           renderSize: renderSize,
           fps: exportFPS,
           trimDuration: compositionDuration,
+          speed: speed,
           outputURL: outputURL,
           fileType: config.exportSettings.format.fileType,
           codec: config.exportSettings.codec,

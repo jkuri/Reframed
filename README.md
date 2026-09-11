@@ -53,6 +53,7 @@ Or grab the `.dmg` from [Releases](https://github.com/jkuri/reframed/releases).
 - **Webcam background replacement** via person segmentation (blur, solid color, gradient, or custom image)
 - **Camera regions** set webcam visibility per-segment on the timeline (fullscreen, hidden, or custom position) with entry/exit transitions
 - **Video regions** for cutting segments from the timeline
+- **Time-lapse speed** (1x-16x) that shortens the export by the same factor
 - **Undo/redo history** and fullscreen preview with scrub
 
 ### Cursor

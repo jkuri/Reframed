@@ -23,6 +23,12 @@ extension History {
       let val = Int($0 ?? 0)
       return val == 0 ? "Video shadow removed" : "Video shadow set to \(val)"
     },
+    prop(\.playbackSpeed) {
+      let speed = $0 ?? 1.0
+      return speed == 1.0
+        ? "Playback speed reset to normal"
+        : "Playback speed set to \(String(format: "%.2f", speed))x"
+    },
 
     prop(\.cameraAspect) { "Camera aspect ratio set to \(($0 ?? .original).label)" },
     prop(\.cameraCornerRadius) { "Camera corner radius set to \(Int($0))px" },

@@ -7,6 +7,9 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		FE0000000000000000000009 /* TimeLapseTests.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE0000000000000000000008 /* TimeLapseTests.swift */; };
+		FE000000000000000000000B /* TimeLapse.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000000A /* TimeLapse.swift */; };
+		FE000000000000000000000C /* TimeLapse.swift in Sources */ = {isa = PBXBuildFile; fileRef = FE000000000000000000000A /* TimeLapse.swift */; };
 		0255AD69477B42D2B028628B /* CaptureTarget.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3CFD921258364EA6A604537F /* CaptureTarget.swift */; };
 		026E7D919650C4854FCBCF33 /* ExportSheet+Phases.swift in Sources */ = {isa = PBXBuildFile; fileRef = 496C1D98B8AB2982DF4AA7D4 /* ExportSheet+Phases.swift */; };
 		07D41C6C5E3E6E5D646991CC /* SessionState+Recording.swift in Sources */ = {isa = PBXBuildFile; fileRef = E926AD0DCDC6B2F794EF9C92 /* SessionState+Recording.swift */; };
@@ -254,6 +257,9 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		FE0000000000000000000006 /* ReframedTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = ReframedTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
+		FE0000000000000000000008 /* TimeLapseTests.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeLapseTests.swift; sourceTree = "<group>"; };
+		FE000000000000000000000A /* TimeLapse.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TimeLapse.swift; sourceTree = "<group>"; };
 		028393B5A95F5605BC666DB9 /* VideoPreviewView+Coordinator.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "VideoPreviewView+Coordinator.swift"; sourceTree = "<group>"; };
 		09CFADDE8FE6ED6F3B706F61 /* TimelineView+Overlays.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "TimelineView+Overlays.swift"; sourceTree = "<group>"; };
 		15FC8EFFF8F25B538B770019 /* ZoomKeyframeEditor+RegionView.swift */ = {isa = PBXFileReference; includeInIndex = 1; lastKnownFileType = sourcecode.swift; path = "ZoomKeyframeEditor+RegionView.swift"; sourceTree = "<group>"; };
@@ -515,11 +521,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		FE0000000000000000000007 /* ReframedTests */ = {
+			isa = PBXGroup;
+			children = (
+				FE0000000000000000000008 /* TimeLapseTests.swift */,
+			);
+			path = ReframedTests;
+			sourceTree = "<group>";
+		};
 		D10000000000000000000001 = {
 			isa = PBXGroup;
 			children = (
 				CC0000000000000000000001 /* Config.xcconfig */,
 				D10000000000000000000002 /* Reframed */,
+				FE0000000000000000000007 /* ReframedTests */,
 				D1000000000000000000000A /* Frameworks */,
 				D1000000000000000000000B /* Products */,
 			);
@@ -660,6 +675,7 @@
 			isa = PBXGroup;
 			children = (
 				B1000000000000000000001B /* Reframed.app */,
+				FE0000000000000000000006 /* ReframedTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -871,6 +887,7 @@
 		D40000000000000000000001 /* Compositor */ = {
 			isa = PBXGroup;
 			children = (
+				FE000000000000000000000A /* TimeLapse.swift */,
 				B20000000000000000000013 /* BackgroundStyle.swift */,
 				B20000000000000000000004 /* CameraLayout.swift */,
 				B2000000000000000000000F /* FrameRenderer.swift */,
@@ -906,6 +923,21 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		FE0000000000000000000001 /* ReframedTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FE0000000000000000000002 /* Build configuration list for PBXNativeTarget "ReframedTests" */;
+			buildPhases = (
+				FE0000000000000000000005 /* Sources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = ReframedTests;
+			productName = ReframedTests;
+			productReference = FE0000000000000000000006 /* ReframedTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 		F10000000000000000000001 /* Reframed */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = F10000000000000000000004 /* Build configuration list for PBXNativeTarget "Reframed" */;
@@ -943,6 +975,9 @@
 					F10000000000000000000001 = {
 						CreatedOnToolsVersion = 16.0;
 					};
+					FE0000000000000000000001 = {
+						CreatedOnToolsVersion = 16.0;
+					};
 				};
 			};
 			buildConfigurationList = F10000000000000000000003 /* Build configuration list for PBXProject "Reframed" */;
@@ -966,6 +1001,7 @@
 			projectRoot = "";
 			targets = (
 				F10000000000000000000001 /* Reframed */,
+				FE0000000000000000000001 /* ReframedTests */,
 			);
 		};
 /* End PBXProject section */
@@ -981,9 +1017,17 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		FE0000000000000000000005 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			files = (
+				FE0000000000000000000009 /* TimeLapseTests.swift in Sources */,
+				FE000000000000000000000C /* TimeLapse.swift in Sources */,
+			);
+		};
 		C10000000000000000000002 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			files = (
+				FE000000000000000000000B /* TimeLapse.swift in Sources */,
 				C8CC4187964D4445B613AEEB /* WindowSelectionCoordinator.swift in Sources */,
 				FE1324E865074398BCC4317D /* WindowSelectionOverlay.swift in Sources */,
 				F93F2FF47E12481595833E3E /* WindowSelectionView.swift in Sources */,
@@ -1224,6 +1268,50 @@
 /* End PBXSourcesBuildPhase section */
 
 /* Begin XCBuildConfiguration section */
+		FE0000000000000000000003 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = CC0000000000000000000001 /* Config.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5A5U3XX696;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = eu.jkuri.reframed.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Debug;
+		};
+		FE0000000000000000000004 /* Release */ = {
+			isa = XCBuildConfiguration;
+			baseConfigurationReference = CC0000000000000000000001 /* Config.xcconfig */;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5A5U3XX696;
+				GENERATE_INFOPLIST_FILE = YES;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/../Frameworks",
+					"@loader_path/../Frameworks",
+				);
+				MACOSX_DEPLOYMENT_TARGET = 15.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = eu.jkuri.reframed.tests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_VERSION = 6.0;
+			};
+			name = Release;
+		};
 		F10000000000000000000005 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -1439,6 +1527,14 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		FE0000000000000000000002 /* Build configuration list for PBXNativeTarget "ReframedTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				FE0000000000000000000003 /* Debug */,
+				FE0000000000000000000004 /* Release */,
+			);
+			defaultConfigurationName = Release;
+		};
 		F10000000000000000000003 /* Build configuration list for PBXProject "Reframed" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (

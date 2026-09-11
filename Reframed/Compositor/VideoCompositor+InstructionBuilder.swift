@@ -31,6 +31,7 @@ extension VideoCompositor {
       !sourceCodecMatchesExport || config.exportSettings.resolution != ExportResolution.original
       || config.exportSettings.fps != ExportFPS.original
     return hasVisualEffects
+      || TimeLapse.clamp(config.playbackSpeed) != 1.0
       || result.webcamVideoURL != nil
       || needsReencode
       || config.cursorSnapshot != nil

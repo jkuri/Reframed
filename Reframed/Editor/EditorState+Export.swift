@@ -166,6 +166,7 @@ extension EditorState {
       cameraMirrored: cameraMirrored,
       cameraFullscreenFillMode: cameraFullscreenFillMode,
       cameraFullscreenAspect: cameraFullscreenAspect,
+      playbackSpeed: playbackSpeed,
       exportSettings: settings,
       cursorSnapshot: cursorSnapshot,
       cursorStyle: cursorStyle,

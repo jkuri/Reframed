@@ -106,6 +106,7 @@ extension EditorState {
       cameraBorderWidth: cameraBorderWidth,
       cameraBorderColor: cameraBorderColor,
       videoShadow: videoShadow,
+      playbackSpeed: playbackSpeed,
       cameraShadow: cameraShadow,
       cameraMirrored: cameraMirrored,
       cameraFullscreenFillMode: cameraFullscreenFillMode,
@@ -147,6 +148,7 @@ extension EditorState {
     cameraBorderWidth = data.cameraBorderWidth
     cameraBorderColor = data.cameraBorderColor ?? CodableColor(r: 0, g: 0, b: 0, a: 1)
     videoShadow = data.videoShadow ?? 0
+    playbackSpeed = data.playbackSpeed ?? 1.0
     cameraShadow = data.cameraShadow ?? 0
     cameraMirrored = data.cameraMirrored ?? false
     cameraFullscreenFillMode = data.cameraFullscreenFillMode ?? .fit
@@ -359,6 +361,7 @@ extension EditorState {
       _ = self.cameraBorderWidth
       _ = self.cameraBorderColor
       _ = self.videoShadow
+      _ = self.playbackSpeed
       _ = self.cameraShadow
       _ = self.cameraMirrored
       _ = self.cameraFullscreenFillMode
@@ -425,6 +428,7 @@ extension EditorState {
         guard let self else { return }
         self.syncVideoRegionsToPlayer()
         self.playerController.previewMode = self.isPreviewMode
+        self.playerController.playbackSpeed = self.playbackSpeed
         self.scheduleSave()
         if !self.isRestoringState {
           self.scheduleUndoSnapshot()

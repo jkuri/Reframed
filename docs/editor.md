@@ -80,6 +80,16 @@ Four options:
 
 Backgrounds are visible when padding > 0 or when the canvas aspect ratio doesn't match the recording's native ratio.
 
+## Playback speed
+
+A single multiplier (1x-16x) that time-lapses the whole recording. The timeline, regions,
+keyframes and cursor data stay in source seconds -- only the export gets shorter, by
+`duration / speed`. Preview applies the same multiplier to the player rate.
+
+Above 1x the export drops audio entirely: system audio, microphone (including noise reduction)
+and click sounds. Sped-up audio is unusable and time-scaling it was removed from the compositor
+in v0.14.6 for quality reasons.
+
 ## Canvas and video styling
 
 - **Aspect ratios**: original, 16:9, 1:1, 4:3, 9:16

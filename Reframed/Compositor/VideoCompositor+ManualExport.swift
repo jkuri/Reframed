@@ -43,6 +43,7 @@ extension VideoCompositor {
     renderSize: CGSize,
     fps: Int,
     trimDuration: CMTime,
+    speed: Double = 1.0,
     outputURL: URL,
     fileType: AVFileType,
     codec: ExportCodec,
@@ -169,7 +170,7 @@ extension VideoCompositor {
       throw CaptureError.recordingFailed("Failed to create pixel buffer pool")
     }
 
-    let totalFrames = Int(ceil(CMTimeGetSeconds(trimDuration) * Double(fps)))
+    let totalFrames = TimeLapse.frameCount(duration: trimDuration, fps: fps, speed: speed)
     let timescale = CMTimeScale(fps)
     let exportStart = CFAbsoluteTimeGetCurrent()
 
@@ -248,10 +249,11 @@ extension VideoCompositor {
             if cancelled.pointee { break }
 
             let outputTime = CMTime(value: CMTimeValue(frameIndex), timescale: timescale)
-            let outputSeconds = CMTimeGetSeconds(outputTime)
+            let sourceTime = TimeLapse.sourceTime(forOutput: outputTime, speed: speed)
+            let sourceSeconds = CMTimeGetSeconds(sourceTime)
 
             while let next = nextScreenSample {
-              if CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(next)) <= outputSeconds + 0.001 {
+              if CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(next)) <= sourceSeconds + 0.001 {
                 latestScreenSample = next
                 nextScreenSample = pipelineScreenOutput.copyNextSampleBuffer()
               } else {
@@ -261,7 +263,7 @@ extension VideoCompositor {
 
             if pipelineWebcamOutput != nil {
               while let next = nextWebcamSample {
-                if CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(next)) <= outputSeconds + 0.001 {
+                if CMTimeGetSeconds(CMSampleBufferGetPresentationTimeStamp(next)) <= sourceSeconds + 0.001 {
                   latestWebcamSample = next
                   nextWebcamSample = pipelineWebcamOutput?.copyNextSampleBuffer()
                 } else {
@@ -298,7 +300,7 @@ extension VideoCompositor {
                 screenBuffer: screenBuffer,
                 webcamBuffer: webcamBuffer,
                 outputBuffer: outputBuffer,
-                compositionTime: outputTime,
+                compositionTime: sourceTime,
                 instruction: instruction,
                 processedWebcamImage: processedWebcam
               )
