@@ -66,4 +66,5 @@ struct ExportConfiguration: Sendable {
   var clickSoundEnabled: Bool = false
   var clickSoundVolume: Float = 0.5
   var clickSoundStyle: ClickSoundStyle = .click001
+  var projectName: String = ""
 }

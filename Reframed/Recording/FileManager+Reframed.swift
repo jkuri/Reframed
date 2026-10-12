@@ -59,6 +59,31 @@ extension FileManager {
     return defaultSaveDirectory().appendingPathComponent(tempURL.lastPathComponent)
   }
 
+  @MainActor
+  func defaultExportURL(for tempURL: URL, extension ext: String, projectName: String) -> URL {
+    let baseName =
+      sanitizedExportBaseName(projectName)
+      ?? tempURL.deletingPathExtension().lastPathComponent
+    return uniqueExportURL(in: defaultSaveDirectory(), baseName: baseName, extension: ext)
+  }
+
+  private func sanitizedExportBaseName(_ name: String) -> String? {
+    let disallowed = CharacterSet(charactersIn: "/:").union(.controlCharacters)
+    let cleaned = name.components(separatedBy: disallowed).joined()
+      .trimmingCharacters(in: .whitespacesAndNewlines)
+    return cleaned.isEmpty ? nil : cleaned
+  }
+
+  private func uniqueExportURL(in directory: URL, baseName: String, extension ext: String) -> URL {
+    var candidate = directory.appendingPathComponent("\(baseName).\(ext)")
+    var suffix = 2
+    while fileExists(atPath: candidate.path) {
+      candidate = directory.appendingPathComponent("\(baseName)-\(suffix).\(ext)")
+      suffix += 1
+    }
+    return candidate
+  }
+
   func moveToFinal(from source: URL, to destination: URL) throws {
     if fileExists(atPath: destination.path) {
       try removeItem(at: destination)

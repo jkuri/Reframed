@@ -204,7 +204,8 @@ extension EditorState {
       spotlightEdgeSoftness: spotlightEdgeSoftness,
       clickSoundEnabled: clickSoundEnabled && showCursor,
       clickSoundVolume: clickSoundVolume,
-      clickSoundStyle: clickSoundStyle
+      clickSoundStyle: clickSoundStyle,
+      projectName: projectName
     )
 
     let state = self

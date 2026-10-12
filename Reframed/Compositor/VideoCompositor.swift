@@ -160,7 +160,11 @@ enum VideoCompositor {
         )
 
         let destination = await MainActor.run {
-          FileManager.default.defaultSaveURL(for: outputURL, extension: "gif")
+          FileManager.default.defaultExportURL(
+            for: outputURL,
+            extension: "gif",
+            projectName: config.projectName
+          )
         }
         try FileManager.default.moveToFinal(from: outputURL, to: destination)
 
@@ -217,9 +221,10 @@ enum VideoCompositor {
       }
 
       let destination = await MainActor.run {
-        FileManager.default.defaultSaveURL(
+        FileManager.default.defaultExportURL(
           for: outputURL,
-          extension: config.exportSettings.format.fileExtension
+          extension: config.exportSettings.format.fileExtension,
+          projectName: config.projectName
         )
       }
       try FileManager.default.moveToFinal(from: outputURL, to: destination)
@@ -256,9 +261,10 @@ enum VideoCompositor {
     )
 
     let destination = await MainActor.run {
-      FileManager.default.defaultSaveURL(
+      FileManager.default.defaultExportURL(
         for: outputURL,
-        extension: config.exportSettings.format.fileExtension
+        extension: config.exportSettings.format.fileExtension,
+        projectName: config.projectName
       )
     }
     try FileManager.default.moveToFinal(from: outputURL, to: destination)
