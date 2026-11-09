@@ -128,7 +128,7 @@ final class EditorWindow: NSObject, NSWindowDelegate {
         return nil
       case 1:
         guard !state.isPreviewMode else { return event }
-        state.splitVideoRegionAtPlayhead()
+        state.splitAllRegionsAtPlayhead()
         return nil
       case 53:
         if state.isPreviewMode {

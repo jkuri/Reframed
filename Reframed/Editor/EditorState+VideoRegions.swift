@@ -39,12 +39,9 @@ extension EditorState {
     videoRegions.sort { $0.startSeconds < $1.startSeconds }
   }
 
-  @discardableResult
-  func splitVideoRegion(atTime time: Double) -> Bool {
-    let minPiece = 0.05
-    guard let idx = videoRegions.firstIndex(where: { time - $0.startSeconds >= minPiece && $0.endSeconds - time >= minPiece }) else {
-      return false
-    }
+  func splitVideoRegion(atTime time: Double) {
+    guard let idx = videoRegions.firstIndex(where: { canSplit(start: $0.startSeconds, end: $0.endSeconds, at: time) })
+    else { return }
     let original = videoRegions[idx]
     var head = VideoRegionData(startSeconds: original.startSeconds, endSeconds: time)
     head.entryTransition = original.entryTransition
@@ -53,11 +50,6 @@ extension EditorState {
     tail.exitTransition = original.exitTransition
     tail.exitTransitionDuration = original.exitTransitionDuration
     videoRegions.replaceSubrange(idx...idx, with: [head, tail])
-    return true
-  }
-
-  func splitVideoRegionAtPlayhead() {
-    splitVideoRegion(atTime: CMTimeGetSeconds(currentTime))
   }
 
   func removeVideoRegion(regionId: UUID) {

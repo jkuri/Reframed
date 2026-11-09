@@ -41,7 +41,7 @@ extension EditorView {
 
         if !isPreview {
           IconButton(systemName: "scissors") {
-            editorState.splitVideoRegionAtPlayhead()
+            editorState.splitAllRegionsAtPlayhead()
           }
 
           IconButton(

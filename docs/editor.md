@@ -8,7 +8,7 @@ The video has a single trim range (`trimStart`, `trimEnd`) that defines the play
 
 Video regions (`VideoRegionData`) work differently. They define the segments that are kept; a new project starts with one region covering the whole recording, and any gap between regions is cut out of the timeline entirely. When video regions exist, the compositor remaps all other regions (camera, captions, spotlight) to the resulting compressed timeline.
 
-To cut a bad part out of the middle, put the playhead at the start of it and press `S` (or click the scissors button in the transport bar), move to the end of it and press `S` again, then right-click the region between the two splits and choose Remove. `splitVideoRegion(atTime:)` divides the region under the playhead in two; the first half keeps the entry transition and the second half keeps the exit transition.
+To cut a bad part out of the middle, put the playhead at the start of it and press `S` (or click the scissors button in the transport bar), move to the end of it and press `S` again, then right-click the region between the two splits and choose Remove. `splitAllRegions(atTime:)` divides the region under the playhead in two on every track that has one there: video, system audio, microphone, camera and spotlight. The first half keeps the entry transition and the second half keeps the exit transition. Removing the video region between the splits cuts that span out of every track on export.
 
 ## Audio regions
 
