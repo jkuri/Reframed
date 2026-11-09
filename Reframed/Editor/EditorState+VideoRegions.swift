@@ -39,6 +39,27 @@ extension EditorState {
     videoRegions.sort { $0.startSeconds < $1.startSeconds }
   }
 
+  @discardableResult
+  func splitVideoRegion(atTime time: Double) -> Bool {
+    let minPiece = 0.05
+    guard let idx = videoRegions.firstIndex(where: { time - $0.startSeconds >= minPiece && $0.endSeconds - time >= minPiece }) else {
+      return false
+    }
+    let original = videoRegions[idx]
+    var head = VideoRegionData(startSeconds: original.startSeconds, endSeconds: time)
+    head.entryTransition = original.entryTransition
+    head.entryTransitionDuration = original.entryTransitionDuration
+    var tail = VideoRegionData(startSeconds: time, endSeconds: original.endSeconds)
+    tail.exitTransition = original.exitTransition
+    tail.exitTransitionDuration = original.exitTransitionDuration
+    videoRegions.replaceSubrange(idx...idx, with: [head, tail])
+    return true
+  }
+
+  func splitVideoRegionAtPlayhead() {
+    splitVideoRegion(atTime: CMTimeGetSeconds(currentTime))
+  }
+
   func removeVideoRegion(regionId: UUID) {
     videoRegions.removeAll { $0.id == regionId }
   }

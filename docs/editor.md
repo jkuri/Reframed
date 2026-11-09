@@ -6,7 +6,9 @@ After recording, Reframed opens a built-in editor. Everything lives in `EditorSt
 
 The video has a single trim range (`trimStart`, `trimEnd`) that defines the playback window. Audio tracks have independent trim systems -- each track gets its own array of `AudioRegionData` regions with start/end times. Gaps between regions are silence.
 
-Video regions (`VideoRegionData`) work differently. They define segments to cut out of the timeline entirely. When video regions exist, the compositor remaps all other regions (camera, captions, spotlight) to the resulting compressed timeline.
+Video regions (`VideoRegionData`) work differently. They define the segments that are kept; a new project starts with one region covering the whole recording, and any gap between regions is cut out of the timeline entirely. When video regions exist, the compositor remaps all other regions (camera, captions, spotlight) to the resulting compressed timeline.
+
+To cut a bad part out of the middle, put the playhead at the start of it and press `S` (or click the scissors button in the transport bar), move to the end of it and press `S` again, then right-click the region between the two splits and choose Remove. `splitVideoRegion(atTime:)` divides the region under the playhead in two; the first half keeps the entry transition and the second half keeps the exit transition.
 
 ## Audio regions
 

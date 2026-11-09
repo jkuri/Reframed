@@ -126,6 +126,10 @@ final class EditorWindow: NSObject, NSWindowDelegate {
       case 49, 36:
         state.togglePlayPause()
         return nil
+      case 1:
+        guard !state.isPreviewMode else { return event }
+        state.splitVideoRegionAtPlayhead()
+        return nil
       case 53:
         if state.isPreviewMode {
           state.isPreviewMode = false

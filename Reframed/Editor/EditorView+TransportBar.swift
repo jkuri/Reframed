@@ -40,6 +40,10 @@ extension EditorView {
         Spacer()
 
         if !isPreview {
+          IconButton(systemName: "scissors") {
+            editorState.splitVideoRegionAtPlayhead()
+          }
+
           IconButton(
             systemName: "minus.magnifyingglass",
             color: timelineZoom > 1.0 ? ReframedColors.primaryText : ReframedColors.disabledText
